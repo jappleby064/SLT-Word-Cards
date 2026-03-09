@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SLT Word Cards Search</title>
+    <!-- Google Fonts for modern typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="no-print-area" class="app-container">
+        <header class="app-header">
+            <h1>SLT Word Cards</h1>
+            <p>Search and print your speech and language therapy cards.</p>
+        </header>
+
+        <main class="main-content">
+            <!-- Search Section -->
+            <section class="glass-panel" id="search-section">
+                <h2>Search Criteria</h2>
+                <div class="input-group">
+                    <label for="initialSound">Word Initial Sound</label>
+                    <input type="text" id="initialSound" placeholder="e.g., k">
+                </div>
+                <div class="input-group">
+                    <label for="finalSound">Word Final Sound</label>
+                    <input type="text" id="finalSound" placeholder="e.g., t">
+                </div>
+                <div class="input-group">
+                    <label for="structure">Structure (e.g., cvc)</label>
+                    <input type="text" id="structure" placeholder="e.g., cvc">
+                </div>
+                
+                <div class="button-row">
+                    <button id="searchBtn" class="primary-btn pulse-on-hover">Search Cards</button>
+                    <!-- "Add Card" can just be an instruction for the git workflow in the web version -->
+                    <button id="infoBtn" class="secondary-btn">How to Add Cards</button>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="glass-panel" id="results-section">
+                <div class="results-header">
+                    <h2>Matching Words</h2>
+                    <span id="statusLabel" class="status-badge">Ready to search</span>
+                </div>
+                
+                <div class="list-controls">
+                    <label class="custom-checkbox select-all-btn">
+                        <input type="checkbox" id="selectAllCheckbox">
+                        <span class="checkmark"></span>
+                        Select All
+                    </label>
+                </div>
+
+                <div id="resultsList" class="results-container">
+                    <!-- Checkboxes will be injected here via JS -->
+                </div>
+
+                <div class="print-controls">
+                    <div class="input-group row-align">
+                        <label for="instanceCount">Instance Count:</label>
+                        <input type="number" id="instanceCount" value="1" min="1" max="10">
+                    </div>
+                    <button id="printBtn" class="primary-btn bounce-on-hover">Create List & Print</button>
+                </div>
+            </section>
+        </main>
+        
+        <!-- Info Modal -->
+        <div id="infoModal" class="modal">
+            <div class="modal-content glass-panel">
+                <span id="closeModal" class="close">&times;</span>
+                <h2>Adding New Cards</h2>
+                <p>Since this app is hosted via Git, adding new cards is easy!</p>
+                <ol>
+                    <li>Add your <strong>square JPEG images</strong> to the <code>images/</code> folder (e.g. <code>word.jpg</code>).</li>
+                    <li>Add a new row to the <code>cards.csv</code> file with the format:<br><code>word,initial_sound,final_sound,structure</code></li>
+                    <li>Commit and push the changes to your Git repository. The app will automatically update.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <!-- Print Area -->
+    <div id="print-area">
+        <div id="printGrid" class="print-grid">
+            <!-- Images will be injected here via JS for printing -->
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- PapaParse for parsing the CSV file locally -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
