@@ -13,10 +13,8 @@ const instanceCountInput = document.getElementById('instanceCount');
 const printBtn = document.getElementById('printBtn');
 const printArea = document.getElementById('print-area');
 
-// Modal Elements
+// Action Elements
 const infoBtn = document.getElementById('infoBtn');
-const infoModal = document.getElementById('infoModal');
-const closeModal = document.getElementById('closeModal');
 
 // Init
 document.addEventListener('DOMContentLoaded', () => {
@@ -80,19 +78,12 @@ function setupEventListeners() {
     // Print Action
     printBtn.addEventListener('click', generatePrintSelection);
 
-    // Modal behavior
+    // Request Card Email
     infoBtn.addEventListener('click', () => {
-        infoModal.classList.add('show');
-    });
-
-    closeModal.addEventListener('click', () => {
-        infoModal.classList.remove('show');
-    });
-
-    window.addEventListener('click', (e) => {
-        if (e.target === infoModal) {
-            infoModal.classList.remove('show');
-        }
+        const email = 'james@applebytechnical.com';
+        const subject = encodeURIComponent('Card Request');
+        const body = encodeURIComponent('Name : \nWord Initial Sound: \nWord Final Sound:  \nStructure:  \n500x500 image');
+        window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
     });
 }
 

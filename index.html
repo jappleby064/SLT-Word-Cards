@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     <!-- Main Stylesheet -->
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <div id="no-print-area" class="app-container">
         <header class="app-header">
@@ -32,11 +34,10 @@
                     <label for="structure">Structure (e.g., cvc)</label>
                     <input type="text" id="structure" placeholder="e.g., cvc">
                 </div>
-                
+
                 <div class="button-row">
                     <button id="searchBtn" class="primary-btn pulse-on-hover">Search Cards</button>
-                    <!-- "Add Card" can just be an instruction for the git workflow in the web version -->
-                    <button id="infoBtn" class="secondary-btn">How to Add Cards</button>
+                    <button id="infoBtn" class="secondary-btn">Request a Card</button>
                 </div>
             </section>
 
@@ -46,7 +47,7 @@
                     <h2>Matching Words</h2>
                     <span id="statusLabel" class="status-badge">Ready to search</span>
                 </div>
-                
+
                 <div class="list-controls">
                     <label class="custom-checkbox select-all-btn">
                         <input type="checkbox" id="selectAllCheckbox">
@@ -68,20 +69,7 @@
                 </div>
             </section>
         </main>
-        
-        <!-- Info Modal -->
-        <div id="infoModal" class="modal">
-            <div class="modal-content glass-panel">
-                <span id="closeModal" class="close">&times;</span>
-                <h2>Adding New Cards</h2>
-                <p>Since this app is hosted via Git, adding new cards is easy!</p>
-                <ol>
-                    <li>Add your <strong>square JPEG images</strong> to the <code>images/</code> folder (e.g. <code>word.jpg</code>).</li>
-                    <li>Add a new row to the <code>cards.csv</code> file with the format:<br><code>word,initial_sound,final_sound,structure</code></li>
-                    <li>Commit and push the changes to your Git repository. The app will automatically update.</li>
-                </ol>
-            </div>
-        </div>
+
     </div>
 
     <!-- Print Area -->
@@ -96,4 +84,5 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="app.js"></script>
 </body>
+
 </html>
