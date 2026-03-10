@@ -365,11 +365,11 @@ button {
 @media print {
     @page {
         size: A4 portrait;
-        margin: 0;
-        /* Zero margin suppresses browser headers/footers in Safari/Chrome,
-           giving the full 297mm page height to CSS. Visual margins are
-           applied via padding on .print-grid instead, so every page —
-           including page 2+ — gets consistent margins. */
+        /* 15mm ≈ 5% of 297mm (Python's margin_y), 10.5mm = 5% of 210mm (Python's margin_x).
+           Using real @page margins means browsers render H&F text inside this space
+           rather than clipping the content area, so layout is consistent regardless
+           of whether H&F are on or off in the print dialog. */
+        margin: 15mm 10.5mm;
     }
 
     html {
@@ -396,24 +396,17 @@ button {
         width: 100%;
     }
 
-    /* Page wrapper: full A4 page with Python-equivalent 5% margins.
-       Padding here (not on the grid) so that 1fr rows get the correct available height. */
-    .print-page {
-        /* No explicit height — auto-sizes to grid content + padding = 297mm */
-        width: 100%;
-        /* Python: margin_y = page_height * 0.05 = 14.85mm top/bottom
-                   margin_x = page_width  * 0.05 = 10.5mm left/right */
-        padding: 14.85mm 10.5mm;
-        box-sizing: border-box;
-    }
+    /* Structural wrapper only — JS applies break-after:page on non-last pages */
+    .print-page {}
 
     .print-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        /* Explicit row heights — grid intrinsic height = 4 × 66.825mm = 267.3mm.
-           No height:100% needed; explicit rows are deterministic. */
-        grid-template-rows: repeat(4, 66.825mm);
+        grid-template-rows: repeat(4, 1fr);
         width: 100%;
+        /* Explicit height = @page content area: 297mm - 2×15mm = 267mm.
+           1fr rows divide this known height: 267mm / 4 = 66.75mm each. */
+        height: 267mm;
     }
 
     .print-cell {
