@@ -365,17 +365,21 @@ button {
 @media print {
     @page {
         size: A4 portrait;
-        margin: 0;
+        margin: 10mm;
     }
 
-    html, body {
+    html {
+        height: auto !important;
+        min-height: 0 !important;
+    }
+
+    body {
         background: none !important;
         padding: 0 !important;
         margin: 0 !important;
         height: auto !important;
         min-height: 0 !important;
         display: block !important;
-        overflow: hidden !important;
     }
 
     /* Hide everything in the body, then selectively show only the print area */
@@ -386,7 +390,6 @@ button {
     #print-area {
         display: block !important;
         width: 100%;
-        overflow: hidden;
     }
 
     .print-grid {
@@ -394,9 +397,8 @@ button {
         grid-template-columns: repeat(3, 1fr);
         grid-template-rows: repeat(4, 1fr);
         width: 100%;
-        /* Full A4 page height — margin:0 removes H&F and all page margins */
-        height: 297mm;
-        overflow: hidden;
+        /* A4 (297mm) minus 10mm top and bottom @page margins = 277mm per page */
+        height: 277mm;
         /* Page breaks are applied per-grid in JS to avoid a forced break after the last grid */
     }
 
