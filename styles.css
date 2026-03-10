@@ -365,7 +365,7 @@ button {
 @media print {
     @page {
         size: A4 portrait;
-        margin: 10mm;
+        margin: 0;
     }
 
     html, body {
@@ -394,8 +394,8 @@ button {
         grid-template-columns: repeat(3, 1fr);
         grid-template-rows: repeat(4, 1fr);
         width: 100%;
-        /* A4 content height: 297mm minus 10mm top and bottom margins */
-        height: 277mm;
+        /* Full A4 page height — margin:0 removes H&F and all page margins */
+        height: 297mm;
         overflow: hidden;
         /* Page breaks are applied per-grid in JS to avoid a forced break after the last grid */
     }
