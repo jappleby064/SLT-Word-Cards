@@ -82,7 +82,7 @@ function setupEventListeners() {
     infoBtn.addEventListener('click', () => {
         const email = 'james@applebytechnical.com';
         const subject = encodeURIComponent('Card Request');
-        const body = encodeURIComponent('Name :\n\nWord Initial Sound:\n\nWord Final Sound:\n\nStructure (eg.cvc):\n\n500x500 Image:');
+        const body = encodeURIComponent('Name:\n\nWord Initial Sound:\n\nWord Final Sound:\n\nStructure (eg.cvc):\n\n500x500 Image:');
         window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
     });
 }
