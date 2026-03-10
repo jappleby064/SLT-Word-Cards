@@ -369,21 +369,24 @@ button {
     }
 
     html, body {
-        background: none;
-        padding: 0;
-        margin: 0;
-        height: auto;
+        background: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        height: auto !important;
         min-height: 0 !important;
         display: block !important;
+        overflow: hidden !important;
     }
 
-    #no-print-area {
+    /* Hide everything in the body, then selectively show only the print area */
+    body > * {
         display: none !important;
     }
 
     #print-area {
-        display: block;
+        display: block !important;
         width: 100%;
+        overflow: hidden;
     }
 
     .print-grid {
@@ -393,6 +396,7 @@ button {
         width: 100%;
         /* A4 content height: 297mm minus 10mm top and bottom margins */
         height: 277mm;
+        overflow: hidden;
         /* Page breaks are applied per-grid in JS to avoid a forced break after the last grid */
     }
 

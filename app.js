@@ -144,63 +144,80 @@ function generatePrintSelection() {
 
     const selectedWords = selectedCheckboxes.map(cb => ({
         word: cb.value,
-        // Resolve to absolute URL so images load correctly in the new window
-        image: new URL(cb.dataset.image, window.location.href).href
+        image: cb.dataset.image
     }));
 
     let count = parseInt(instanceCountInput.value, 10);
     if (isNaN(count) || count < 1) count = 1;
 
+    // Multiply selection by count
     const printList = [];
     for (let i = 0; i < count; i++) {
         printList.push(...selectedWords);
     }
 
-    openPrintWindow(printList);
+    renderPrintGrids(printList);
+
+    // Trigger print dialog
+    setTimeout(() => {
+        window.print();
+    }, 500); // Give DOM a brief moment to render images
 }
 
-function openPrintWindow(items) {
-    const itemsPerPage = 12;
-    const noImageUrl = new URL('images/no_image.jpg', window.location.href).href;
-    let gridsHtml = '';
+function renderPrintGrids(items) {
+    printArea.innerHTML = ''; // Clear previous
 
+    // Python code logic: 3 cols, 4 rows = 12 items per page
+    const itemsPerPage = 12;
+
+    // Chunk items into pages
     for (let i = 0; i < items.length; i += itemsPerPage) {
         const pageItems = items.slice(i, i + itemsPerPage);
-        const isLast = (i + itemsPerPage >= items.length);
-        const breakStyle = isLast ? '' : ' style="page-break-after:always;break-after:page;"';
+        const isLastPage = (i + itemsPerPage >= items.length);
 
-        let cellsHtml = pageItems.map(item =>
-            `<div class="cell"><div class="card"><img src="${item.image}" alt="${item.word}" onerror="if(this.src!=='${noImageUrl}')this.src='${noImageUrl}'"></div></div>`
-        ).join('');
+        // Create a grid container for the page
+        const grid = document.createElement('div');
+        grid.className = 'print-grid';
 
-        // Pad to fill the 3×4 grid
-        for (let j = pageItems.length; j < itemsPerPage; j++) {
-            cellsHtml += '<div class="cell"></div>';
+        // Only force a page break after non-last grids; never after the last
+        if (!isLastPage) {
+            grid.style.pageBreakAfter = 'always';
+            grid.style.breakAfter = 'page';
         }
 
-        gridsHtml += `<div class="grid"${breakStyle}>${cellsHtml}</div>`;
+        pageItems.forEach(item => {
+            const cell = document.createElement('div');
+            cell.className = 'print-cell';
+
+            const card = document.createElement('div');
+            card.className = 'print-card';
+
+            const img = document.createElement('img');
+            img.src = item.image;
+            img.alt = item.word;
+
+            // Fallback to no_image.jpg if image is missing
+            img.onerror = function () {
+                if (this.src !== 'images/no_image.jpg') {
+                    this.src = 'images/no_image.jpg';
+                }
+            };
+
+            card.appendChild(img);
+            cell.appendChild(card);
+            grid.appendChild(cell);
+        });
+
+        // Fill remaining cells on the last page with empty spaces to maintain grid layout
+        if (pageItems.length < itemsPerPage) {
+            const emptyCellsNeeded = itemsPerPage - pageItems.length;
+            for (let j = 0; j < emptyCellsNeeded; j++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'print-cell';
+                grid.appendChild(emptyCell);
+            }
+        }
+
+        printArea.appendChild(grid);
     }
-
-    const html = `<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>SLT Word Cards</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-@page{size:A4 portrait;margin:10mm}
-body{background:white}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(4,1fr);width:100%;height:277mm}
-.cell{display:flex;justify-content:center;align-items:center;width:100%;height:100%}
-.card{width:90%;aspect-ratio:1/1;max-height:90%;border:3px solid black}
-.card img{width:100%;height:100%;object-fit:contain;display:block}
-</style></head>
-<body>${gridsHtml}</body></html>`;
-
-    const w = window.open('', '_blank');
-    w.document.write(html);
-    w.document.close();
-
-    // Print once images have loaded
-    setTimeout(() => {
-        w.print();
-        w.addEventListener('afterprint', () => w.close());
-    }, 500);
 }
