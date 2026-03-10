@@ -410,7 +410,7 @@ button {
     .print-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        grid-template-rows: repeat(4, 1fr);
+        grid-template-rows: repeat(4, 66.825mm); /* 267.3mm / 4 rows */
         /* Fill the content area of .print-page (267.3mm × 189mm) */
         width: 100%;
         height: 100%;
