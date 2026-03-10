@@ -11,7 +11,6 @@ const statusLabel = document.getElementById('statusLabel');
 const selectAllCheckbox = document.getElementById('selectAllCheckbox');
 const instanceCountInput = document.getElementById('instanceCount');
 const printBtn = document.getElementById('printBtn');
-const printArea = document.getElementById('print-area');
 
 // Action Elements
 const infoBtn = document.getElementById('infoBtn');
@@ -134,11 +133,11 @@ function renderResults(matches) {
     });
 }
 
-function generatePrintSelection() {
+async function generatePrintSelection() {
     const selectedCheckboxes = Array.from(resultsList.querySelectorAll('input[type="checkbox"]:checked'));
 
     if (selectedCheckboxes.length === 0) {
-        alert("Please select at least one word to print.");
+        alert("Please select at least one word to generate a PDF.");
         return;
     }
 
@@ -150,78 +149,80 @@ function generatePrintSelection() {
     let count = parseInt(instanceCountInput.value, 10);
     if (isNaN(count) || count < 1) count = 1;
 
-    // Multiply selection by count
     const printList = [];
     for (let i = 0; i < count; i++) {
         printList.push(...selectedWords);
     }
 
-    renderPrintGrids(printList);
+    printBtn.disabled = true;
+    printBtn.textContent = 'Generating…';
 
-    // Trigger print dialog
-    setTimeout(() => {
-        window.print();
-    }, 500); // Give DOM a brief moment to render images
+    try {
+        await generatePDF(printList);
+    } finally {
+        printBtn.disabled = false;
+        printBtn.textContent = 'Download PDF';
+    }
 }
 
-function renderPrintGrids(items) {
-    printArea.innerHTML = ''; // Clear previous
+async function generatePDF(items) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-    // Python code logic: 3 cols, 4 rows = 12 items per page
-    const itemsPerPage = 12;
+    // Mirror Python QPrinter logic exactly
+    const pageW = 210, pageH = 297;
+    const marginX = pageW * 0.05;          // 10.5mm
+    const marginY = pageH * 0.05;          // 14.85mm
+    const cols = 3, rows = 4;
+    const itemsPerPage = cols * rows;      // 12
+    const cellW = (pageW - 2 * marginX) / cols;   // 63mm
+    const cellH = (pageH - 2 * marginY) / rows;   // 66.825mm
+    const cardSize = Math.min(cellW, cellH) * 0.9; // 56.7mm
 
-    // Chunk items into pages
-    for (let i = 0; i < items.length; i += itemsPerPage) {
-        const pageItems = items.slice(i, i + itemsPerPage);
-        const isLastPage = (i + itemsPerPage >= items.length);
-
-        // Wrapper provides the 5% margins; grid fills its content area
-        const page = document.createElement('div');
-        page.className = 'print-page';
-
-        // Only force a page break after non-last pages; never after the last
-        if (!isLastPage) {
-            page.style.pageBreakAfter = 'always';
-            page.style.breakAfter = 'page';
+    // Load one image src -> base64 data URL, falling back to no_image.jpg
+    async function toDataUrl(src) {
+        try {
+            const resp = await fetch(src);
+            if (!resp.ok) throw new Error('missing');
+            const blob = await resp.blob();
+            return await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        } catch {
+            const blob = await fetch('images/no_image.jpg').then(r => r.blob());
+            return await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
         }
-
-        const grid = document.createElement('div');
-        grid.className = 'print-grid';
-
-        pageItems.forEach(item => {
-            const cell = document.createElement('div');
-            cell.className = 'print-cell';
-
-            const card = document.createElement('div');
-            card.className = 'print-card';
-
-            const img = document.createElement('img');
-            img.src = item.image;
-            img.alt = item.word;
-
-            // Fallback to no_image.jpg if image is missing
-            img.onerror = function () {
-                if (this.src !== 'images/no_image.jpg') {
-                    this.src = 'images/no_image.jpg';
-                }
-            };
-
-            card.appendChild(img);
-            cell.appendChild(card);
-            grid.appendChild(cell);
-        });
-
-        // Fill remaining cells on the last page with empty spaces to maintain grid layout
-        if (pageItems.length < itemsPerPage) {
-            const emptyCellsNeeded = itemsPerPage - pageItems.length;
-            for (let j = 0; j < emptyCellsNeeded; j++) {
-                const emptyCell = document.createElement('div');
-                emptyCell.className = 'print-cell';
-                grid.appendChild(emptyCell);
-            }
-        }
-
-        page.appendChild(grid);
-        printArea.appendChild(page);
     }
+
+    // Pre-load all images in parallel
+    const dataUrls = await Promise.all(items.map(item => toDataUrl(item.image)));
+
+    doc.setLineWidth(0.3);
+    doc.setDrawColor(0, 0, 0);
+
+    for (let i = 0; i < items.length; i++) {
+        const slot = i % itemsPerPage;
+        if (slot === 0 && i > 0) doc.addPage();
+
+        const col = slot % cols;
+        const row = Math.floor(slot / cols);
+
+        // Centre card within its cell
+        const cardX = marginX + col * cellW + (cellW - cardSize) / 2;
+        const cardY = marginY + row * cellH + (cellH - cardSize) / 2;
+
+        // Image fills card area, border drawn on top
+        doc.addImage(dataUrls[i], 'JPEG', cardX, cardY, cardSize, cardSize, '', 'FAST');
+        doc.rect(cardX, cardY, cardSize, cardSize, 'S');
+    }
+
+    doc.save('word-cards.pdf');
 }
