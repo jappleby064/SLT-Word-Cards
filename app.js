@@ -175,15 +175,18 @@ function renderPrintGrids(items) {
         const pageItems = items.slice(i, i + itemsPerPage);
         const isLastPage = (i + itemsPerPage >= items.length);
 
-        // Create a grid container for the page
+        // Wrapper provides the 5% margins; grid fills its content area
+        const page = document.createElement('div');
+        page.className = 'print-page';
+
+        // Only force a page break after non-last pages; never after the last
+        if (!isLastPage) {
+            page.style.pageBreakAfter = 'always';
+            page.style.breakAfter = 'page';
+        }
+
         const grid = document.createElement('div');
         grid.className = 'print-grid';
-
-        // Only force a page break after non-last grids; never after the last
-        if (!isLastPage) {
-            grid.style.pageBreakAfter = 'always';
-            grid.style.breakAfter = 'page';
-        }
 
         pageItems.forEach(item => {
             const cell = document.createElement('div');
@@ -218,6 +221,7 @@ function renderPrintGrids(items) {
             }
         }
 
-        printArea.appendChild(grid);
+        page.appendChild(grid);
+        printArea.appendChild(page);
     }
 }

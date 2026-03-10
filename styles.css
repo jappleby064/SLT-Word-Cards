@@ -396,16 +396,24 @@ button {
         width: 100%;
     }
 
+    /* Page wrapper: full A4 page with Python-equivalent 5% margins.
+       Padding here (not on the grid) so that 1fr rows get the correct available height. */
+    .print-page {
+        width: 100%;
+        height: 297mm;
+        /* Python: margin_y = page_height * 0.05 = 14.85mm top/bottom
+                   margin_x = page_width  * 0.05 = 10.5mm left/right */
+        padding: 14.85mm 10.5mm;
+        box-sizing: border-box;
+    }
+
     .print-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         grid-template-rows: repeat(4, 1fr);
-        /* Full A4 page — padding provides the visual margins on every page */
+        /* Fill the content area of .print-page (267.3mm × 189mm) */
         width: 100%;
-        height: 297mm;
-        padding: 10mm;
-        box-sizing: border-box;
-        /* Page breaks are applied per-grid in JS to avoid a forced break after the last grid */
+        height: 100%;
     }
 
     .print-cell {
