@@ -169,14 +169,22 @@ function renderPrintGrids(items) {
 
     // Python code logic: 3 cols, 4 rows = 12 items per page
     const itemsPerPage = 12;
+    const totalPages = Math.ceil(items.length / itemsPerPage);
 
     // Chunk items into pages
     for (let i = 0; i < items.length; i += itemsPerPage) {
         const pageItems = items.slice(i, i + itemsPerPage);
+        const isLastPage = (i + itemsPerPage >= items.length);
 
         // Create a grid container for the page
         const grid = document.createElement('div');
         grid.className = 'print-grid';
+
+        // Only force a page break after non-last grids; never after the last
+        if (!isLastPage) {
+            grid.style.pageBreakAfter = 'always';
+            grid.style.breakAfter = 'page';
+        }
 
         pageItems.forEach(item => {
             const cell = document.createElement('div');

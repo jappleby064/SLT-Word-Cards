@@ -365,7 +365,7 @@ button {
 @media print {
     @page {
         size: A4 portrait;
-        margin: 5%; /* Approximates working_width offsets used in python code */
+        margin: 10mm;
     }
 
     html, body {
@@ -389,15 +389,9 @@ button {
         grid-template-columns: repeat(3, 1fr);
         grid-template-rows: repeat(4, 1fr);
         width: 100%;
-        /* A4 content height: 297mm minus 5% top and bottom @page margins (~14.85mm each) */
-        height: 267mm;
-        page-break-after: always;
-        break-after: page;
-    }
-
-    .print-grid:last-child {
-        page-break-after: avoid;
-        break-after: avoid;
+        /* A4 content height: 297mm minus 10mm top and bottom margins */
+        height: 277mm;
+        /* Page breaks are applied per-grid in JS to avoid a forced break after the last grid */
     }
 
     .print-cell {
