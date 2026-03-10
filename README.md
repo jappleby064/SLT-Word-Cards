@@ -19,3 +19,9 @@ To host it, connect this repository to a service like **Netlify**, **Vercel**, o
 
 ## Contributing / Adding Cards
 If you wish to request a card addition, use the **Request a Card** button in the web interface to format your request via email. Include the word structure and a square 500x500 JPEG image.
+
+## License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Full Disclosure
+This project is based on an original python code, revised by Gemini for the web.
