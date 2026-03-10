@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#6366f1" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <!-- Speech bubble: rounded rect body + tail bottom-left -->
+  <path d="M5,14 Q5,5 14,5 L86,5 Q95,5 95,14 L95,68 Q95,77 86,77 L44,77 L28,95 L28,77 L14,77 Q5,77 5,68 Z"
+        fill="url(#g)" filter="url(#shadow)"/>
+  <!-- Subtle highlight gloss -->
+  <ellipse cx="50" cy="22" rx="26" ry="8" fill="rgba(255,255,255,0.18)"/>
+  <!-- SLT text -->
+  <text x="50" y="44"
+        font-family="Inter, system-ui, -apple-system, sans-serif"
+        font-size="27" font-weight="700"
+        fill="white" text-anchor="middle" dominant-baseline="middle"
+        letter-spacing="1">SLT</text>
+</svg>
