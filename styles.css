@@ -389,15 +389,15 @@ button {
         grid-template-columns: repeat(3, 1fr);
         grid-template-rows: repeat(4, 1fr);
         width: 100%;
-        /* A4 aspect ratio height to ensure cells scale appropriately.
-           We use 100vh of the print area, but rely on page margins for edges.
-           We want the grid to fill the remaining space exactly. */
-        height: 100vh;
+        /* A4 content height: 297mm minus 5% top and bottom @page margins (~14.85mm each) */
+        height: 267mm;
         page-break-after: always;
+        break-after: page;
     }
 
     .print-grid:last-child {
         page-break-after: avoid;
+        break-after: avoid;
     }
 
     .print-cell {
