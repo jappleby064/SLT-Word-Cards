@@ -365,7 +365,11 @@ button {
 @media print {
     @page {
         size: A4 portrait;
-        margin: 10mm;
+        margin: 0;
+        /* Zero margin suppresses browser headers/footers in Safari/Chrome,
+           giving the full 297mm page height to CSS. Visual margins are
+           applied via padding on .print-grid instead, so every page —
+           including page 2+ — gets consistent margins. */
     }
 
     html {
@@ -396,9 +400,11 @@ button {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         grid-template-rows: repeat(4, 1fr);
+        /* Full A4 page — padding provides the visual margins on every page */
         width: 100%;
-        /* A4 (297mm) minus 10mm top and bottom @page margins = 277mm per page */
-        height: 277mm;
+        height: 297mm;
+        padding: 10mm;
+        box-sizing: border-box;
         /* Page breaks are applied per-grid in JS to avoid a forced break after the last grid */
     }
 
