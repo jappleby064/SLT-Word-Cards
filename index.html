@@ -47,8 +47,6 @@
     <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
-    <!-- Google Fonts for modern typography -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Main Stylesheet -->
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -149,10 +147,10 @@
     </div>
 
     <!-- Scripts -->
-    <!-- PapaParse for parsing the CSV file locally -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <!-- PapaParse for parsing the CSV file locally (self-hosted for firewall compatibility) -->
+    <script src="vendor/papaparse.min.js"></script>
     <!-- jsPDF for client-side PDF generation (bypasses browser print dialog entirely) -->
-    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+    <script src="vendor/jspdf.umd.min.js"></script>
     <script src="app.js"></script>
 </body>
 

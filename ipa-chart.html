@@ -13,7 +13,6 @@
     <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <style>
         /* Widen the container for the wide consonant table */
@@ -66,13 +65,14 @@
         .chip-desc { font-size: 0.68rem; color: var(--text-secondary); line-height: 1.2; }
 
         /* Vowel trapezium */
-        .vowel-wrap { max-width: 640px; margin: 0 auto; }
+        .vowel-wrap { max-width: 720px; margin: 0 auto; }
         .vowel-svg { width: 100%; height: auto; font-family: 'Inter', sans-serif; }
         .vowel-svg .v-outline { fill: none; stroke: #475569; stroke-width: 1.5; }
-        .vowel-svg .v-line { stroke: #475569; stroke-width: 1; }
+        .vowel-svg .v-line { fill: none; stroke: #475569; stroke-width: 1; }
+        .vowel-svg .v-guide { fill: none; stroke: #94a3b8; stroke-width: 0.8; stroke-dasharray: 5 4; }
         .vowel-svg .v-bullet { fill: #1e293b; }
-        .vowel-svg .v-label { fill: var(--text-secondary); font-size: 14px; font-weight: 600; }
-        .vowel-svg .vowel-sym { fill: var(--text-primary); font-size: 30px; cursor: pointer; transition: fill 0.12s ease; }
+        .vowel-svg .v-label { fill: var(--text-secondary); font-size: 15px; font-weight: 600; }
+        .vowel-svg .vowel-sym { fill: var(--text-primary); font-size: 28px; cursor: pointer; transition: fill 0.12s ease; }
         .vowel-svg .vowel-sym:hover { fill: var(--primary-color); }
         .vowel-svg .vowel-sym.copied { fill: #22c55e; }
         .vowel-svg .vowel-sym.has-audio { text-decoration: underline; text-decoration-color: rgba(99, 102, 241, 0.55); }
@@ -192,41 +192,79 @@
         }
 
         function vowelChart() {
-            const TOP = 110, BOT = 470, FRONT_TOP = 120, FRONT_BOT = 400, BACK = 700, CENT_TOP = 410, CENT_BOT = 550;
-            const vy = row => TOP + (BOT - TOP) * row / 6;
-            const frontX = y => FRONT_TOP + (FRONT_BOT - FRONT_TOP) * (y - TOP) / (BOT - TOP);
-            const centX = y => CENT_TOP + (CENT_BOT - CENT_TOP) * (y - TOP) / (BOT - TOP);
-            const nearFrontX = y => (frontX(y) + centX(y)) / 2;
-            const nearBackX = y => (centX(y) + BACK) / 2;
-            const posX = (pos, y) => pos === 'front' ? frontX(y) : pos === 'central' ? centX(y)
-                : pos === 'back' ? BACK : pos === 'nearfront' ? nearFrontX(y) : nearBackX(y);
+            // ── Coordinate system ────────────────────────────────────────────────
+            // ViewBox 880×510. Chart spans y 90..460, x 205..790.
+            // Left side is the diagonal Front edge; right side is vertical Back edge.
+            // Central column is the midpoint of the trapezoid at each height.
+            const VB_W = 880, VB_H = 510;
+            const CT = 90, CB = 460;         // chart top / bottom y
+            const FT = 205, FB = 515, BK = 790; // Front x at row 0, row 6; Back x (constant)
+
+            const rowY  = r => CT + (CB - CT) * r / 6;
+            const frntX = r => FT + (FB - FT) * r / 6;
+            const centX = r => (frntX(r) + BK) / 2;
+            const nfX   = r => (frntX(r) + centX(r)) / 2;   // Near-front
+            const nbX   = r => (centX(r) + BK) / 2;          // Near-back
+            const colX  = (pos, r) => ({
+                front: frntX(r), nearfront: nfX(r), central: centX(r), nearback: nbX(r), back: BK
+            }[pos]);
             const f = n => Number(n).toFixed(1);
 
             let s = '';
-            // Outline trapezium
-            s += `<polygon class="v-outline" points="${FRONT_TOP},${TOP} ${BACK},${TOP} ${BACK},${BOT} ${FRONT_BOT},${BOT}"/>`;
-            // Horizontal lines at close-mid (row 2) and open-mid (row 4)
-            [2, 4].forEach(r => { const y = vy(r); s += `<line class="v-line" x1="${f(frontX(y))}" y1="${y}" x2="${BACK}" y2="${y}"/>`; });
-            // Central guide line
-            s += `<line class="v-line" x1="${f(centX(TOP))}" y1="${TOP}" x2="${f(centX(BOT))}" y2="${BOT}"/>`;
 
-            // Column labels
-            [['Front', FRONT_TOP], ['Near front', (FRONT_TOP + CENT_TOP) / 2], ['Central', CENT_TOP], ['Near back', (CENT_TOP + BACK) / 2], ['Back', BACK]]
-                .forEach(([t, x]) => { s += `<text class="v-label" x="${f(x)}" y="92" text-anchor="middle">${t}</text>`; });
-            // Row labels
-            ['Close', 'Near close', 'Close mid', 'Mid', 'Open mid', 'Near open', 'Open']
-                .forEach((t, i) => { s += `<text class="v-label" x="2" y="${vy(i)}" dominant-baseline="central">${t}</text>`; });
+            // ── Trapezoid outline ────────────────────────────────────────────────
+            s += `<polygon class="v-outline" points="${f(frntX(0))},${CT} ${BK},${CT} ${BK},${CB} ${f(frntX(6))},${CB}"/>`;
 
-            // Bullets + clickable symbols
-            VOWELS.forEach(v => {
-                const y = vy(v.row), x = posX(v.pos, y);
-                const vc = sym => 'vowel-sym' + (AUDIO[sym] ? ' has-audio' : '');
-                s += `<circle class="v-bullet" cx="${f(x)}" cy="${y}" r="3"/>`;
-                if (v.un) s += `<text class="${vc(v.un)}" data-char="${attr(v.un)}" x="${f(x - 13)}" y="${y}" text-anchor="end" dominant-baseline="central">${esc(v.un)}</text>`;
-                if (v.ro) s += `<text class="${vc(v.ro)}" data-char="${attr(v.ro)}" x="${f(x + 13)}" y="${y}" text-anchor="start" dominant-baseline="central">${esc(v.ro)}</text>`;
+            // ── Interior horizontal lines at Close-mid (2) and Open-mid (4) ──────
+            [2, 4].forEach(r => {
+                s += `<line class="v-line" x1="${f(frntX(r))}" y1="${f(rowY(r))}" x2="${BK}" y2="${f(rowY(r))}"/>`;
             });
 
-            return `<div class="vowel-wrap"><svg class="vowel-svg" viewBox="0 0 770 505" role="img" aria-label="IPA vowel chart">${s}</svg></div>`;
+            // ── Near-close: short horizontal tick from Near-front to Near-back ───
+            {
+                const r = 1, y = rowY(r);
+                s += `<line class="v-line" x1="${f(nfX(r))}" y1="${f(y)}" x2="${f(nbX(r))}" y2="${f(y)}"/>`;
+            }
+
+            // ── Central dashed guide line ────────────────────────────────────────
+            s += `<line class="v-guide" x1="${f(centX(0))}" y1="${CT}" x2="${f(centX(6))}" y2="${CB}"/>`;
+
+            // ── Column labels (above chart) ──────────────────────────────────────
+            // "Near-front" and "Near-back" are two-line to avoid crowding
+            [
+                ['Front',          frntX(0)],
+                [['Near', 'front'], nfX(0)],
+                ['Central',        centX(0)],
+                [['Near', 'back'],  nbX(0)],
+                ['Back',           BK]
+            ].forEach(([lbl, x]) => {
+                if (Array.isArray(lbl)) {
+                    s += `<text class="v-label" text-anchor="middle">` +
+                         `<tspan x="${f(x)}" y="${CT - 27}">${lbl[0]}-</tspan>` +
+                         `<tspan x="${f(x)}" dy="18">${lbl[1]}</tspan>` +
+                         `</text>`;
+                } else {
+                    s += `<text class="v-label" x="${f(x)}" y="${CT - 12}" text-anchor="middle">${lbl}</text>`;
+                }
+            });
+
+            // ── Row labels (left of chart) ───────────────────────────────────────
+            ['Close', 'Near-close', 'Close-mid', 'Mid', 'Open-mid', 'Near-open', 'Open']
+                .forEach((lbl, r) => {
+                    s += `<text class="v-label" x="5" y="${f(rowY(r))}" dominant-baseline="central">${lbl}</text>`;
+                });
+
+            // ── Bullets + clickable vowel symbols ────────────────────────────────
+            VOWELS.forEach(v => {
+                const y = rowY(v.row), x = colX(v.pos, v.row);
+                if (x === undefined) return;
+                const cls = sym => 'vowel-sym' + (AUDIO[sym] ? ' has-audio' : '');
+                s += `<circle class="v-bullet" cx="${f(x)}" cy="${f(y)}" r="3.5"/>`;
+                if (v.un) s += `<text class="${cls(v.un)}" data-char="${attr(v.un)}" x="${f(x - 10)}" y="${f(y)}" text-anchor="end" dominant-baseline="central">${esc(v.un)}</text>`;
+                if (v.ro) s += `<text class="${cls(v.ro)}" data-char="${attr(v.ro)}" x="${f(x + 10)}" y="${f(y)}" text-anchor="start" dominant-baseline="central">${esc(v.ro)}</text>`;
+            });
+
+            return `<div class="vowel-wrap"><svg class="vowel-svg" viewBox="0 0 ${VB_W} ${VB_H}" role="img" aria-label="IPA vowel chart">${s}</svg></div>`;
         }
 
         function section(title, inner, subtitle) {
