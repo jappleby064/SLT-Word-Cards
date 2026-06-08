@@ -72,16 +72,40 @@
             <section class="glass-panel" id="search-section">
                 <h2>Search Criteria</h2>
                 <div class="input-group">
+                    <label for="wordSearch">Word / Number</label>
+                    <input type="text" id="wordSearch" placeholder="e.g., two or 2">
+                </div>
+                <div class="input-group">
+                    <label for="firstLetter">First Letter</label>
+                    <input type="text" id="firstLetter" placeholder="e.g., c">
+                </div>
+                <div class="input-group">
+                    <label for="typeFilter">Card Type</label>
+                    <select id="typeFilter">
+                        <option value="all">All cards</option>
+                        <option value="word">Words only</option>
+                        <option value="number">Numbers only</option>
+                    </select>
+                </div>
+                <div class="input-group">
                     <label for="initialSound">Word Initial Sound</label>
-                    <input type="text" id="initialSound" placeholder="e.g., k">
+                    <div class="ipa-field">
+                        <input type="text" id="initialSound" placeholder="e.g., k">
+                        <button type="button" id="ipaToggle" class="ipa-toggle" aria-label="Open IPA keyboard" aria-expanded="false" title="IPA keyboard">⌨</button>
+                        <div id="ipaKeyboard" class="ipa-popup" hidden></div>
+                    </div>
                 </div>
                 <div class="input-group">
                     <label for="finalSound">Word Final Sound</label>
-                    <input type="text" id="finalSound" placeholder="e.g., t">
+                    <div class="ipa-field">
+                        <input type="text" id="finalSound" placeholder="e.g., t">
+                        <button type="button" id="ipaToggleFinal" class="ipa-toggle" aria-label="Open IPA keyboard" aria-expanded="false" title="IPA keyboard">⌨</button>
+                        <div id="ipaKeyboardFinal" class="ipa-popup" hidden></div>
+                    </div>
                 </div>
                 <div class="input-group">
-                    <label for="structure">Structure (e.g., cvc)</label>
-                    <input type="text" id="structure" placeholder="e.g., cvc">
+                    <label for="structure">Structure (e.g., CVC)</label>
+                    <input type="text" id="structure" placeholder="e.g., CVC">
                 </div>
 
                 <div class="button-row">
@@ -120,7 +144,7 @@
         </main>
 
         <footer style="text-align: center; color: var(--text-secondary); font-size: 0.9rem; padding-top: 1rem;">
-            made with love
+            made with love · <span id="appVersion">v1.1.0</span>
         </footer>
     </div>
 

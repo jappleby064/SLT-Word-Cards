@@ -116,7 +116,7 @@ label {
     color: var(--text-secondary);
 }
 
-input[type="text"], input[type="number"] {
+input[type="text"], input[type="number"], select {
     width: 100%;
     padding: 0.75rem 1rem;
     border: 1px solid rgba(203, 213, 225, 0.8);
@@ -127,11 +127,112 @@ input[type="text"], input[type="number"] {
     transition: all 0.2s ease;
 }
 
+select {
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+}
+
 input[type="number"] {
     width: 80px;
 }
 
-input[type="text"]:focus, input[type="number"]:focus {
+/* IPA keyboard popup */
+.ipa-field {
+    position: relative;
+}
+
+.ipa-field input[type="text"] {
+    padding-right: 3rem;
+}
+
+.ipa-toggle {
+    position: absolute;
+    top: 50%;
+    right: 0.45rem;
+    transform: translateY(-50%);
+    width: 2.1rem;
+    height: 2.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 6px;
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--primary-hover);
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.ipa-toggle:hover {
+    background: rgba(99, 102, 241, 0.2);
+}
+
+.ipa-popup {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(203, 213, 225, 0.8);
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+    padding: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    max-height: 340px;
+    overflow-y: auto;
+}
+
+.ipa-popup[hidden] {
+    display: none;
+}
+
+.ipa-section-title {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    margin-bottom: 0.45rem;
+}
+
+.ipa-keys {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.35rem;
+}
+
+.ipa-key {
+    padding: 0.5rem 0;
+    border: 1px solid rgba(203, 213, 225, 0.8);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.9);
+    font-size: 1.05rem;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.ipa-key:hover {
+    background: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+}
+
+input[type="text"]:focus, input[type="number"]:focus, select:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
