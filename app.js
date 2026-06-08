@@ -8,7 +8,6 @@ function capitalize(str) {
 // DOM Elements
 const searchBtn = document.getElementById('searchBtn');
 const wordSearchInput = document.getElementById('wordSearch');
-const firstLetterInput = document.getElementById('firstLetter');
 const typeFilterSelect = document.getElementById('typeFilter');
 const initialSoundInput = document.getElementById('initialSound');
 const finalSoundInput = document.getElementById('finalSound');
@@ -140,7 +139,7 @@ function setupEventListeners() {
     searchBtn.addEventListener('click', onSearch);
 
     // Allow 'Enter' key to trigger search in inputs
-    const inputs = [wordSearchInput, firstLetterInput, initialSoundInput, finalSoundInput, structureInput];
+    const inputs = [wordSearchInput, initialSoundInput, finalSoundInput, structureInput];
     inputs.forEach(input => {
         input.addEventListener('keyup', (e) => {
             if (e.key === 'Enter') {
@@ -178,7 +177,6 @@ function onSearch() {
     const structure = structureInput.value.trim().toLowerCase();
     const typeFilter = typeFilterSelect.value;            // 'all' | 'word' | 'number'
     const query = wordSearchInput.value.trim().toLowerCase();
-    const firstLetter = firstLetterInput.value.trim().toLowerCase();
 
     // Replicating Python perform_search behavior, plus type + word/number text search.
     const matches = allCards.filter(card => {
@@ -187,7 +185,6 @@ function onSearch() {
         if (final && card.final !== final) return false;
         if (structure && card.structure !== structure) return false;
         if (query && !matchesQuery(card, query)) return false;
-        if (firstLetter && !card.word.toLowerCase().startsWith(firstLetter)) return false;
         return true;
     });
 
