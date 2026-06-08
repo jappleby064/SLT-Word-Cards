@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPA Chart | SLT Word Cards</title>
+    <meta name="description" content="Full International Phonetic Alphabet (IPA) chart laid out in the standard arrangement. Click any symbol to copy it to your clipboard.">
+    <link rel="canonical" href="https://speakeasy-slt.uk/ipa-chart.html">
+
+    <!-- Favicon -->
+    <link rel="icon" href="logo.svg" type="image/svg+xml">
+    <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Widen the container for the wide consonant table */
+        .app-container { max-width: 1140px; }
+
+        .chart { display: flex; flex-direction: column; gap: 1.5rem; }
+        .chart-section { gap: 1rem; }
+        .chart-sub { color: var(--text-secondary); font-size: 0.9rem; margin-top: -0.5rem; }
+
+        .table-scroll { overflow-x: auto; }
+        .ipa-table { border-collapse: collapse; width: 100%; }
+        .ipa-table th,
+        .ipa-table td { border: 1px solid rgba(203, 213, 225, 0.7); text-align: center; padding: 2px; }
+        .ipa-table thead th {
+            font-size: 0.68rem; font-weight: 600; color: var(--text-secondary);
+            padding: 5px 3px; background: rgba(99, 102, 241, 0.06); line-height: 1.15;
+        }
+        .ipa-table .rowhead {
+            font-size: 0.72rem; font-weight: 600; color: var(--text-secondary);
+            text-align: left; white-space: nowrap; padding: 0 8px; background: rgba(99, 102, 241, 0.06);
+        }
+        .ipa-table td.shaded {
+            background: repeating-linear-gradient(45deg,
+                rgba(148, 163, 184, 0.28), rgba(148, 163, 184, 0.28) 4px,
+                rgba(148, 163, 184, 0.12) 4px, rgba(148, 163, 184, 0.12) 8px);
+        }
+        .vowel-table td { width: 33.33%; height: 2.7rem; }
+
+        .ipa-chip {
+            min-width: 2rem; height: 2rem; padding: 0 0.35rem; margin: 1px;
+            border: 1px solid rgba(203, 213, 225, 0.8); border-radius: 6px;
+            background: rgba(255, 255, 255, 0.9); font-family: 'Inter', sans-serif;
+            font-size: 1.15rem; line-height: 1; color: var(--text-primary);
+            cursor: pointer; transition: all 0.12s ease;
+        }
+        .ipa-chip:hover { background: var(--primary-color); color: #fff; border-color: var(--primary-color); transform: translateY(-1px); }
+        .ipa-chip.copied { background: #22c55e; color: #fff; border-color: #22c55e; }
+
+        .chip-grid { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+        .chip-item { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; width: 6rem; text-align: center; }
+        .chip-desc { font-size: 0.68rem; color: var(--text-secondary); line-height: 1.2; }
+
+        .ipa-toast {
+            position: fixed; left: 50%; bottom: 2rem; transform: translateX(-50%) translateY(1rem);
+            background: rgba(30, 41, 59, 0.95); color: #fff; padding: 0.6rem 1.1rem;
+            border-radius: 9999px; font-size: 0.9rem; font-weight: 500;
+            box-shadow: var(--shadow-md); opacity: 0; transition: all 0.2s ease;
+            pointer-events: none; z-index: 100;
+        }
+        .ipa-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <nav class="top-nav">
+            <a href="index.html" class="nav-link">Word Cards</a>
+            <a href="ipa-chart.html" class="nav-link active">IPA Chart</a>
+        </nav>
+        <header class="app-header">
+            <h1>IPA Chart</h1>
+            <p>The full International Phonetic Alphabet. Click any symbol to copy it.</p>
+        </header>
+
+        <main id="chart" class="chart"></main>
+
+        <footer style="text-align: center; color: var(--text-secondary); font-size: 0.9rem; padding-top: 1rem;">
+            made with love · <a href="index.html" style="color: var(--primary-hover);">Word Cards</a>
+        </footer>
+    </div>
+
+    <div id="toast" class="ipa-toast" hidden></div>
+
+    <script>
+        // ---- Data ------------------------------------------------------------
+        const N = null; // shaded (articulation judged impossible)
+
+        const PLACES = ['Bilabial', 'Labiodental', 'Dental', 'Alveolar', 'Postalveolar', 'Retroflex', 'Palatal', 'Velar', 'Uvular', 'Pharyngeal', 'Glottal'];
+
+        // Each manner row: 11 cells. Cell = array of symbols (voiceless, voiced),
+        // [] = possible but unattested (blank), N = shaded (impossible).
+        const MANNERS = [
+            ['Plosive',             [['p', 'b'], [], [], ['t', 'd'], [], ['ʈ', 'ɖ'], ['c', 'ɟ'], ['k', 'ɡ'], ['q', 'ɢ'], N, ['ʔ']]],
+            ['Nasal',               [['m'], ['ɱ'], [], ['n'], [], ['ɳ'], ['ɲ'], ['ŋ'], ['ɴ'], N, N]],
+            ['Trill',               [['ʙ'], [], [], ['r'], [], N, N, N, ['ʀ'], N, N]],
+            ['Tap or Flap',         [N, ['ⱱ'], [], ['ɾ'], [], ['ɽ'], N, N, N, N, N]],
+            ['Fricative',           [['ɸ', 'β'], ['f', 'v'], ['θ', 'ð'], ['s', 'z'], ['ʃ', 'ʒ'], ['ʂ', 'ʐ'], ['ç', 'ʝ'], ['x', 'ɣ'], ['χ', 'ʁ'], ['ħ', 'ʕ'], ['h', 'ɦ']]],
+            ['Lateral fricative',   [N, N, [], ['ɬ', 'ɮ'], [], [], [], [], N, N, N]],
+            ['Approximant',         [[], ['ʋ'], [], ['ɹ'], [], ['ɻ'], ['j'], ['ɰ'], [], [], []]],
+            ['Lateral approximant', [N, N, [], ['l'], [], ['ɭ'], ['ʎ'], ['ʟ'], [], N, N]]
+        ];
+
+        const CLICKS = [['ʘ', 'Bilabial'], ['ǀ', 'Dental'], ['ǃ', '(Post)alveolar'], ['ǂ', 'Palatoalveolar'], ['ǁ', 'Alveolar lateral']];
+        const IMPLOSIVES = [['ɓ', 'Bilabial'], ['ɗ', 'Dental/alveolar'], ['ʄ', 'Palatal'], ['ɠ', 'Velar'], ['ʛ', 'Uvular']];
+        const EJECTIVES = [['ʼ', 'Ejective mark'], ['pʼ', 'Bilabial'], ['tʼ', 'Alveolar'], ['kʼ', 'Velar'], ['sʼ', 'Alveolar fricative']];
+
+        const OTHER = [
+            ['ʍ', 'Voiceless labial-velar fricative'],
+            ['w', 'Voiced labial-velar approximant'],
+            ['ɥ', 'Voiced labial-palatal approximant'],
+            ['ʜ', 'Voiceless epiglottal fricative'],
+            ['ʢ', 'Voiced epiglottal fricative'],
+            ['ʡ', 'Epiglottal plosive'],
+            ['ɕ', 'Voiceless alveolo-palatal fricative'],
+            ['ʑ', 'Voiced alveolo-palatal fricative'],
+            ['ɺ', 'Voiced alveolar lateral flap'],
+            ['ɧ', 'Simultaneous ʃ and x'],
+            ['t͡s', 'Affricate (tie bar)'],
+            ['t͡ʃ', 'Affricate'],
+            ['d͡ʒ', 'Affricate'],
+            ['k͡p', 'Double articulation']
+        ];
+
+        const VOWEL_COLS = ['Front', 'Central', 'Back'];
+        const VOWEL_ROWS = [
+            ['Close',      [['i', 'y'], ['ɨ', 'ʉ'], ['ɯ', 'u']]],
+            ['Near-close', [['ɪ', 'ʏ'], [], ['ʊ']]],
+            ['Close-mid',  [['e', 'ø'], ['ɘ', 'ɵ'], ['ɤ', 'o']]],
+            ['Mid',        [[], ['ə'], []]],
+            ['Open-mid',   [['ɛ', 'œ'], ['ɜ', 'ɞ'], ['ʌ', 'ɔ']]],
+            ['Near-open',  [['æ'], ['ɐ'], []]],
+            ['Open',       [['a', 'ɶ'], [], ['ɑ', 'ɒ']]]
+        ];
+
+        // [copyChar, displayChar, description] — combining marks shown on ◌ (U+25CC)
+        const DIACRITICS = [
+            ['̥', '◌̥', 'Voiceless'],
+            ['̬', '◌̬', 'Voiced'],
+            ['ʰ', 'ʰ', 'Aspirated'],
+            ['̹', '◌̹', 'More rounded'],
+            ['̜', '◌̜', 'Less rounded'],
+            ['̟', '◌̟', 'Advanced'],
+            ['̠', '◌̠', 'Retracted'],
+            ['̈', '◌̈', 'Centralized'],
+            ['̽', '◌̽', 'Mid-centralized'],
+            ['̩', '◌̩', 'Syllabic'],
+            ['̯', '◌̯', 'Non-syllabic'],
+            ['˞', '˞', 'Rhoticity'],
+            ['̤', '◌̤', 'Breathy voiced'],
+            ['̰', '◌̰', 'Creaky voiced'],
+            ['̼', '◌̼', 'Linguolabial'],
+            ['ʷ', 'ʷ', 'Labialized'],
+            ['ʲ', 'ʲ', 'Palatalized'],
+            ['ˠ', 'ˠ', 'Velarized'],
+            ['ˤ', 'ˤ', 'Pharyngealized'],
+            ['̝', '◌̝', 'Raised'],
+            ['̞', '◌̞', 'Lowered'],
+            ['̘', '◌̘', 'Advanced tongue root'],
+            ['̙', '◌̙', 'Retracted tongue root'],
+            ['̪', '◌̪', 'Dental'],
+            ['̺', '◌̺', 'Apical'],
+            ['̻', '◌̻', 'Laminal'],
+            ['̃', '◌̃', 'Nasalized'],
+            ['ⁿ', 'ⁿ', 'Nasal release'],
+            ['ˡ', 'ˡ', 'Lateral release'],
+            ['̚', '◌̚', 'No audible release']
+        ];
+
+        const SUPRA = [
+            ['ˈ', 'ˈ', 'Primary stress'],
+            ['ˌ', 'ˌ', 'Secondary stress'],
+            ['ː', 'ː', 'Long'],
+            ['ˑ', 'ˑ', 'Half-long'],
+            ['̆', '◌̆', 'Extra-short'],
+            ['|', '|', 'Minor (foot) group'],
+            ['‖', '‖', 'Major (intonation) group'],
+            ['.', '.', 'Syllable break'],
+            ['‿', '‿', 'Linking (absence of a break)']
+        ];
+
+        const TONES = [
+            ['˥', '˥', 'Extra high'],
+            ['˦', '˦', 'High'],
+            ['˧', '˧', 'Mid'],
+            ['˨', '˨', 'Low'],
+            ['˩', '˩', 'Extra low'],
+            ['̋', '◌̋', 'Extra high'],
+            ['́', '◌́', 'High'],
+            ['̄', '◌̄', 'Mid'],
+            ['̀', '◌̀', 'Low'],
+            ['̏', '◌̏', 'Extra low'],
+            ['̌', '◌̌', 'Rising'],
+            ['̂', '◌̂', 'Falling'],
+            ['ꜜ', 'ꜜ', 'Downstep'],
+            ['ꜛ', 'ꜛ', 'Upstep'],
+            ['↗', '↗', 'Global rise'],
+            ['↘', '↘', 'Global fall']
+        ];
+
+        // ---- Render ----------------------------------------------------------
+        function esc(s) { return String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
+        function attr(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+        function chip(copyChar, display, title) {
+            const d = display !== undefined ? display : copyChar;
+            return `<button type="button" class="ipa-chip" data-char="${attr(copyChar)}"${title ? ` title="${attr(title)}"` : ''}>${esc(d)}</button>`;
+        }
+
+        function consonantTable() {
+            const head = '<th class="rowhead"></th>' + PLACES.map(p => `<th>${esc(p)}</th>`).join('');
+            const rows = MANNERS.map(([manner, cells]) => {
+                const tds = cells.map(cell => {
+                    if (cell === N) return '<td class="shaded"></td>';
+                    if (cell.length === 0) return '<td></td>';
+                    return '<td>' + cell.map(s => chip(s)).join('') + '</td>';
+                }).join('');
+                return `<tr><th class="rowhead">${esc(manner)}</th>${tds}</tr>`;
+            }).join('');
+            return `<div class="table-scroll"><table class="ipa-table"><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
+        }
+
+        function vowelTable() {
+            const head = '<th class="rowhead"></th>' + VOWEL_COLS.map(c => `<th>${esc(c)}</th>`).join('');
+            const rows = VOWEL_ROWS.map(([label, cells]) => {
+                const tds = cells.map(cell => cell.length ? '<td>' + cell.map(s => chip(s)).join('') + '</td>' : '<td></td>').join('');
+                return `<tr><th class="rowhead">${esc(label)}</th>${tds}</tr>`;
+            }).join('');
+            return `<div class="table-scroll"><table class="ipa-table vowel-table"><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
+        }
+
+        // items: [char, desc] or [copyChar, displayChar, desc]
+        function chipGrid(items) {
+            return '<div class="chip-grid">' + items.map(it => {
+                const copyChar = it[0];
+                const hasDisplay = it.length === 3;
+                const display = hasDisplay ? it[1] : it[0];
+                const desc = hasDisplay ? it[2] : it[1];
+                return `<div class="chip-item">${chip(copyChar, display, desc)}<span class="chip-desc">${esc(desc)}</span></div>`;
+            }).join('') + '</div>';
+        }
+
+        function section(title, inner, subtitle) {
+            return `<section class="glass-panel chart-section">
+                <h2>${esc(title)}</h2>
+                ${subtitle ? `<p class="chart-sub">${esc(subtitle)}</p>` : ''}
+                ${inner}
+            </section>`;
+        }
+
+        document.getElementById('chart').innerHTML = [
+            section('Consonants (Pulmonic)', consonantTable(), 'Where symbols appear in pairs, the one to the left is voiceless. Shaded areas are judged impossible.'),
+            section('Consonants (Non-Pulmonic)',
+                '<h3 class="chart-sub" style="font-weight:600;">Clicks</h3>' + chipGrid(CLICKS) +
+                '<h3 class="chart-sub" style="font-weight:600;">Voiced implosives</h3>' + chipGrid(IMPLOSIVES) +
+                '<h3 class="chart-sub" style="font-weight:600;">Ejectives</h3>' + chipGrid(EJECTIVES)),
+            section('Other Symbols', chipGrid(OTHER)),
+            section('Vowels', vowelTable(), 'Where symbols appear in pairs, the one to the right is rounded.'),
+            section('Diacritics', chipGrid(DIACRITICS), 'Combining marks are shown on a dotted circle ◌; only the mark is copied.'),
+            section('Suprasegmentals', chipGrid(SUPRA)),
+            section('Tones & Word Accents', chipGrid(TONES))
+        ].join('');
+
+        // ---- Copy ------------------------------------------------------------
+        function legacyCopy(text) {
+            const t = document.createElement('textarea');
+            t.value = text;
+            t.style.position = 'fixed';
+            t.style.opacity = '0';
+            document.body.appendChild(t);
+            t.focus();
+            t.select();
+            let ok = false;
+            try { ok = document.execCommand('copy'); } catch (e) { /* ignore */ }
+            document.body.removeChild(t);
+            return ok;
+        }
+
+        // Always resolves (never rejects) so UI feedback fires even if the
+        // async Clipboard API is unavailable or blocked.
+        function copy(text) {
+            return new Promise(resolve => {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(
+                        () => resolve(true),
+                        () => resolve(legacyCopy(text))
+                    );
+                } else {
+                    resolve(legacyCopy(text));
+                }
+            });
+        }
+
+        let toastTimer;
+        function showToast(msg) {
+            const el = document.getElementById('toast');
+            el.textContent = msg;
+            el.hidden = false;
+            // force reflow so the transition runs
+            void el.offsetWidth;
+            el.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                el.classList.remove('show');
+                setTimeout(() => { el.hidden = true; }, 200);
+            }, 1300);
+        }
+
+        document.getElementById('chart').addEventListener('click', (e) => {
+            const btn = e.target.closest('.ipa-chip');
+            if (!btn) return;
+            const ch = btn.dataset.char;
+            copy(ch).then(() => {
+                showToast('Copied  ' + btn.textContent);
+                btn.classList.add('copied');
+                setTimeout(() => btn.classList.remove('copied'), 450);
+            });
+        });
+    </script>
+</body>
+
+</html>

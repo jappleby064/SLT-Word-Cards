@@ -37,6 +37,36 @@ body {
     gap: 2rem;
 }
 
+/* Top navigation */
+.top-nav {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.nav-link {
+    padding: 0.5rem 1.2rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    color: var(--primary-hover);
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+    background: rgba(99, 102, 241, 0.2);
+}
+
+.nav-link.active {
+    background: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+}
+
 /* Header */
 .app-header {
     text-align: center;
