@@ -50,6 +50,16 @@
         }
         .ipa-chip:hover { background: var(--primary-color); color: #fff; border-color: var(--primary-color); transform: translateY(-1px); }
         .ipa-chip.copied { background: #22c55e; color: #fff; border-color: #22c55e; }
+        /* Underline marks symbols that can be played aloud */
+        .ipa-chip.has-audio { text-decoration: underline; text-decoration-color: rgba(99, 102, 241, 0.55); text-decoration-thickness: 2px; text-underline-offset: 2px; }
+
+        .sound-bar { display: flex; justify-content: center; }
+        .sound-toggle {
+            padding: 0.5rem 1.2rem; border-radius: 9999px; font-weight: 600; font-size: 0.95rem;
+            cursor: pointer; color: #fff; background: var(--primary-color);
+            border: 1px solid var(--primary-color); transition: all 0.2s ease;
+        }
+        .sound-toggle.off { background: rgba(99, 102, 241, 0.1); color: var(--primary-hover); }
 
         .chip-grid { display: flex; flex-wrap: wrap; gap: 0.75rem; }
         .chip-item { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; width: 6rem; text-align: center; }
@@ -65,6 +75,7 @@
         .vowel-svg .vowel-sym { fill: var(--text-primary); font-size: 30px; cursor: pointer; transition: fill 0.12s ease; }
         .vowel-svg .vowel-sym:hover { fill: var(--primary-color); }
         .vowel-svg .vowel-sym.copied { fill: #22c55e; }
+        .vowel-svg .vowel-sym.has-audio { text-decoration: underline; text-decoration-color: rgba(99, 102, 241, 0.55); }
 
         .ipa-toast {
             position: fixed; left: 50%; bottom: 2rem; transform: translateX(-50%) translateY(1rem);
@@ -85,13 +96,19 @@
         </nav>
         <header class="app-header">
             <h1>IPA Chart</h1>
-            <p>Consonants and vowels in the standard arrangement. Click any symbol to copy it.</p>
+            <p>Consonants and vowels in the standard arrangement. Click a symbol to copy it — <u>underlined</u> symbols also play a sound.</p>
         </header>
+
+        <div class="sound-bar">
+            <button type="button" id="soundToggle" class="sound-toggle" aria-pressed="true">🔊 Sound on</button>
+        </div>
 
         <main id="chart" class="chart"></main>
 
         <footer style="text-align: center; color: var(--text-secondary); font-size: 0.9rem; padding-top: 1rem;">
             made with love · <a href="index.html" style="color: var(--primary-hover);">Word Cards</a>
+            <br>
+            <span style="font-size: 0.8rem;">Audio: <a href="https://commons.wikimedia.org/" style="color: var(--primary-hover);">Wikimedia Commons</a> contributors, CC BY-SA 3.0 (<a href="audio/CREDITS.md" style="color: var(--primary-hover);">credits</a>)</span>
         </footer>
     </div>
 
@@ -142,13 +159,17 @@
             { row: 6, pos: 'back',      un: 'ɑ', ro: 'ɒ' }
         ];
 
+        // Symbol -> audio file slug (audio/<slug>.mp3). Sourced from Wikimedia Commons.
+        const AUDIO = { 'p': 'p', 'b': 'b', 't': 't', 'd': 'd', 'k': 'k', 'ɡ': 'g', 'm': 'm', 'n': 'n', 'ŋ': 'eng', 'f': 'f', 'v': 'v', 'θ': 'theta', 'ð': 'eth', 's': 's', 'z': 'z', 'ʃ': 'esh', 'ʒ': 'ezh', 'h': 'h', 'l': 'l', 'r': 'r', 'ɹ': 'turned_r', 'j': 'j', 'w': 'w', 'i': 'i', 'ɪ': 'ih', 'e': 'e', 'ɛ': 'eps', 'æ': 'ae', 'a': 'a', 'ɑ': 'alpha', 'ɒ': 'turned_script_a', 'ɔ': 'open_o', 'o': 'o', 'ʊ': 'upsilon', 'u': 'u', 'ʌ': 'turned_v', 'ɜ': 'rev_eps', 'ə': 'schwa', 'ɐ': 'turned_a', 'ø': 'oslash', 'y': 'y' };
+
         // ---- Render ----------------------------------------------------------
         function esc(s) { return String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
         function attr(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 
         function chip(copyChar, display, title) {
             const d = display !== undefined ? display : copyChar;
-            return `<button type="button" class="ipa-chip" data-char="${attr(copyChar)}"${title ? ` title="${attr(title)}"` : ''}>${esc(d)}</button>`;
+            const cls = 'ipa-chip' + (AUDIO[copyChar] ? ' has-audio' : '');
+            return `<button type="button" class="${cls}" data-char="${attr(copyChar)}"${title ? ` title="${attr(title)}"` : ''}>${esc(d)}</button>`;
         }
 
         function consonantTable() {
@@ -199,9 +220,10 @@
             // Bullets + clickable symbols
             VOWELS.forEach(v => {
                 const y = vy(v.row), x = posX(v.pos, y);
+                const vc = sym => 'vowel-sym' + (AUDIO[sym] ? ' has-audio' : '');
                 s += `<circle class="v-bullet" cx="${f(x)}" cy="${y}" r="3"/>`;
-                if (v.un) s += `<text class="vowel-sym" data-char="${attr(v.un)}" x="${f(x - 13)}" y="${y}" text-anchor="end" dominant-baseline="central">${esc(v.un)}</text>`;
-                if (v.ro) s += `<text class="vowel-sym" data-char="${attr(v.ro)}" x="${f(x + 13)}" y="${y}" text-anchor="start" dominant-baseline="central">${esc(v.ro)}</text>`;
+                if (v.un) s += `<text class="${vc(v.un)}" data-char="${attr(v.un)}" x="${f(x - 13)}" y="${y}" text-anchor="end" dominant-baseline="central">${esc(v.un)}</text>`;
+                if (v.ro) s += `<text class="${vc(v.ro)}" data-char="${attr(v.ro)}" x="${f(x + 13)}" y="${y}" text-anchor="start" dominant-baseline="central">${esc(v.ro)}</text>`;
             });
 
             return `<div class="vowel-wrap"><svg class="vowel-svg" viewBox="0 0 770 505" role="img" aria-label="IPA vowel chart">${s}</svg></div>`;
@@ -268,12 +290,36 @@
             }, 1300);
         }
 
+        // ---- Audio -----------------------------------------------------------
+        let soundOn = true;
+        const audioEl = new Audio();
+        audioEl.preload = 'none';
+        function playSound(slug) {
+            try {
+                audioEl.pause();
+                audioEl.src = 'audio/' + slug + '.mp3';
+                audioEl.currentTime = 0;
+                audioEl.play().catch(() => { /* autoplay/gesture issues ignored */ });
+            } catch (e) { /* ignore */ }
+        }
+
+        const soundToggle = document.getElementById('soundToggle');
+        soundToggle.addEventListener('click', () => {
+            soundOn = !soundOn;
+            soundToggle.textContent = soundOn ? '🔊 Sound on' : '🔇 Sound off';
+            soundToggle.setAttribute('aria-pressed', String(soundOn));
+            soundToggle.classList.toggle('off', !soundOn);
+        });
+
         document.getElementById('chart').addEventListener('click', (e) => {
             const el = e.target.closest('[data-char]');
             if (!el) return;
             const ch = el.dataset.char;
+            const slug = AUDIO[ch];
+            const played = soundOn && slug;
+            if (played) playSound(slug);
             copy(ch).then(() => {
-                showToast('Copied  ' + el.textContent);
+                showToast((played ? '🔊 ' : '') + 'Copied  ' + el.textContent);
                 el.classList.add('copied');
                 setTimeout(() => el.classList.remove('copied'), 450);
             });
