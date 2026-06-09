@@ -71,9 +71,10 @@
         .chip-item { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; width: 6rem; text-align: center; }
         .chip-desc { font-size: 0.68rem; color: var(--text-secondary); line-height: 1.2; }
 
-        /* Vowel trapezium */
-        .vowel-wrap { width: 100%; max-width: 820px; margin: 0 auto; }
-        .vowel-svg { width: 100%; height: auto; font-family: 'Inter', sans-serif; }
+        /* Vowel trapezium — scrollable on mobile, full-size on wide screens */
+        .vowel-scroll { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+        .vowel-wrap { width: 820px; }
+        .vowel-svg { width: 820px; height: auto; font-family: 'Inter', sans-serif; }
         .vowel-svg .v-outline { fill: none; stroke: #94a3b8; stroke-width: 1.5; }
         .vowel-svg .v-line { fill: none; stroke: #94a3b8; stroke-width: 1; }
         .vowel-svg .v-guide { fill: none; stroke: #cbd5e1; stroke-width: 0.8; stroke-dasharray: 5 4; }
@@ -268,7 +269,40 @@
         ];
 
         // Symbol -> audio file slug (audio/<slug>.mp3). Sourced from Wikimedia Commons.
-        const AUDIO = { 'p': 'p', 'b': 'b', 't': 't', 'd': 'd', 'k': 'k', 'ɡ': 'g', 'ʈ': 'retroflex_plosive_vl', 'ɖ': 'retroflex_plosive_vd', 'ʔ': 'glottal_stop', 'm': 'm', 'n': 'n', 'ŋ': 'eng', 'ɱ': 'labiodental_nasal', 'f': 'f', 'v': 'v', 'θ': 'theta', 'ð': 'eth', 's': 's', 'z': 'z', 'ʃ': 'esh', 'ʒ': 'ezh', 'ç': 'palatal_fric_vl', 'h': 'h', 'l': 'l', 'r': 'r', 'ɹ': 'turned_r', 'j': 'j', 'w': 'w', 'i': 'i', 'ɪ': 'ih', 'e': 'e', 'ɛ': 'eps', 'æ': 'ae', 'a': 'a', 'ɑ': 'alpha', 'ɒ': 'turned_script_a', 'ɔ': 'open_o', 'o': 'o', 'ʊ': 'upsilon', 'u': 'u', 'ʌ': 'turned_v', 'ɜ': 'rev_eps', 'ə': 'schwa', 'ɐ': 'turned_a', 'ø': 'oslash', 'y': 'y' };
+        const AUDIO = {
+            // Plosives
+            'p': 'p', 'b': 'b', 't': 't', 'd': 'd', 'k': 'k', 'ɡ': 'g',
+            'ʈ': 'retroflex_plosive_vl', 'ɖ': 'retroflex_plosive_vd',
+            'c': 'palatal_plosive_vl', 'ɟ': 'palatal_plosive_vd',
+            'q': 'uvular_plosive_vl', 'ɢ': 'uvular_plosive_vd',
+            'ʔ': 'glottal_stop',
+            // Nasals
+            'm': 'm', 'n': 'n', 'ŋ': 'eng',
+            'ɱ': 'labiodental_nasal', 'ɳ': 'retroflex_nasal',
+            'ɲ': 'palatal_nasal', 'ɴ': 'uvular_nasal',
+            // Trills
+            'ʙ': 'bilabial_trill', 'r': 'r', 'ʀ': 'uvular_trill',
+            // Taps / Flaps
+            'ⱱ': 'labiodental_flap', 'ɾ': 'alveolar_tap', 'ɽ': 'retroflex_flap',
+            // Fricatives
+            'ɸ': 'bilabial_fric_vl', 'β': 'bilabial_fric_vd',
+            'f': 'f', 'v': 'v', 'θ': 'theta', 'ð': 'eth',
+            's': 's', 'z': 'z', 'ʃ': 'esh', 'ʒ': 'ezh',
+            'ç': 'palatal_fric_vl', 'h': 'h',
+            // Approximants
+            'ɹ': 'turned_r', 'j': 'j', 'w': 'w',
+            // Lateral approximants
+            'l': 'l',
+            // Vowels
+            'i': 'i', 'ɪ': 'ih', 'e': 'e', 'ɛ': 'eps', 'æ': 'ae',
+            'a': 'a', 'ɑ': 'alpha', 'ɒ': 'turned_script_a',
+            'ɔ': 'open_o', 'o': 'o', 'ʊ': 'upsilon', 'u': 'u',
+            'ʌ': 'turned_v', 'ɜ': 'rev_eps', 'ə': 'schwa',
+            'ɐ': 'turned_a', 'ø': 'oslash', 'y': 'y',
+            'ɵ': 'closemid_central_rounded', 'ɤ': 'closemid_back_unrounded',
+            'œ': 'openmid_front_rounded', 'ɞ': 'openmid_central_rounded',
+            'ɶ': 'open_front_rounded',
+        };
 
         // English phoneme set used by the Practice feature
         const ENGLISH_SOUNDS = [
@@ -416,7 +450,7 @@
             // Chips rendered last so hover outline is never clipped
             s += chips.join('');
 
-            return `<div class="vowel-wrap"><svg class="vowel-svg" viewBox="0 0 ${VB_W} ${VB_H}" role="img" aria-label="IPA vowel chart">${s}</svg></div>`;
+            return `<div class="vowel-scroll"><div class="vowel-wrap"><svg class="vowel-svg" viewBox="0 0 ${VB_W} ${VB_H}" role="img" aria-label="IPA vowel chart">${s}</svg></div></div>`;
         }
 
         function section(title, inner, subtitle) {
@@ -511,12 +545,12 @@
 
         document.getElementById('chart').innerHTML = [
             section('Consonants (Pulmonic)', consonantTable(), 'Where symbols appear in pairs, the one to the left is voiceless and the one to the right is voiced. Shaded areas are judged impossible.'),
+            section('Vowels', vowelChart(), 'Where symbols appear in pairs, the one to the left is unrounded and the one to the right is rounded.'),
             section('Consonants (Non-Pulmonic)',
                 '<h3 class="chart-sub" style="font-weight:600;">Clicks</h3>' + chipGrid(CLICKS) +
                 '<h3 class="chart-sub" style="font-weight:600;">Voiced implosives</h3>' + chipGrid(IMPLOSIVES) +
                 '<h3 class="chart-sub" style="font-weight:600;">Ejectives</h3>' + chipGrid(EJECTIVES)),
             section('Other Symbols', chipGrid(OTHER)),
-            section('Vowels', vowelChart(), 'Where symbols appear in pairs, the one to the left is unrounded and the one to the right is rounded.'),
             section('Practice', practiceSection(), 'English phonemes — click each card to reveal the name and classification. Switch to Aural to practise by ear.')
         ].join('');
 
