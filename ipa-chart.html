@@ -65,7 +65,7 @@
         .chip-desc { font-size: 0.68rem; color: var(--text-secondary); line-height: 1.2; }
 
         /* Vowel trapezium */
-        .vowel-wrap { max-width: 720px; margin: 0 auto; }
+        .vowel-wrap { width: 100%; max-width: 720px; margin: 0 auto; }
         .vowel-svg { width: 100%; height: auto; font-family: 'Inter', sans-serif; }
         .vowel-svg .v-outline { fill: none; stroke: #475569; stroke-width: 1.5; }
         .vowel-svg .v-line { fill: none; stroke: #475569; stroke-width: 1; }
@@ -136,6 +136,19 @@
         const CLICKS = [['ʘ', 'Bilabial'], ['ǀ', 'Dental'], ['ǃ', '(Post)alveolar'], ['ǂ', 'Palatoalveolar'], ['ǁ', 'Alveolar lateral']];
         const IMPLOSIVES = [['ɓ', 'Bilabial'], ['ɗ', 'Dental/alveolar'], ['ʄ', 'Palatal'], ['ɠ', 'Velar'], ['ʛ', 'Uvular']];
         const EJECTIVES = [['ʼ', 'Ejective mark'], ['pʼ', 'Bilabial'], ['tʼ', 'Alveolar'], ['kʼ', 'Velar'], ['sʼ', 'Alveolar fricative']];
+
+        const OTHER = [
+            ['ʍ', 'Voiceless labial-velar fricative'],
+            ['w', 'Voiced labial-velar approximant'],
+            ['ɥ', 'Voiced labial-palatal approximant'],
+            ['ʜ', 'Voiceless epiglottal fricative'],
+            ['ʢ', 'Voiced epiglottal fricative'],
+            ['ʡ', 'Epiglottal plosive'],
+            ['ɕ', 'Voiceless alveolo-palatal fricative'],
+            ['ʑ', 'Voiced alveolo-palatal fricative'],
+            ['ɺ', 'Voiced alveolar lateral flap'],
+            ['ɧ', 'Simultaneous ʃ and x']
+        ];
 
         // Vowels positioned on the trapezium. row 0..6 (Close..Open),
         // pos = front | nearfront | central | nearback | back.
@@ -281,6 +294,7 @@
                 '<h3 class="chart-sub" style="font-weight:600;">Clicks</h3>' + chipGrid(CLICKS) +
                 '<h3 class="chart-sub" style="font-weight:600;">Voiced implosives</h3>' + chipGrid(IMPLOSIVES) +
                 '<h3 class="chart-sub" style="font-weight:600;">Ejectives</h3>' + chipGrid(EJECTIVES)),
+            section('Other Symbols', chipGrid(OTHER)),
             section('Vowels', vowelChart(), 'Where symbols appear in pairs, the one to the left is unrounded and the one to the right is rounded.')
         ].join('');
 
