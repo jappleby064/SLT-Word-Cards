@@ -54,11 +54,18 @@
 
         .sound-bar { display: flex; justify-content: center; }
         .sound-toggle {
-            padding: 0.5rem 1.2rem; border-radius: 9999px; font-weight: 600; font-size: 0.95rem;
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.55rem 1.4rem; border-radius: 9999px; font-weight: 600; font-size: 0.9rem;
             cursor: pointer; color: #fff; background: var(--primary-color);
-            border: 1px solid var(--primary-color); transition: all 0.2s ease;
+            border: none; transition: all 0.2s ease;
+            box-shadow: 0 2px 10px rgba(99,102,241,0.3);
         }
-        .sound-toggle.off { background: rgba(99, 102, 241, 0.1); color: var(--primary-hover); }
+        .sound-toggle:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(99,102,241,0.35); }
+        .sound-toggle.off {
+            background: rgba(255,255,255,0.85); color: var(--text-secondary);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08); border: 1px solid rgba(203,213,225,0.9);
+        }
+        .sound-toggle svg { flex-shrink: 0; }
 
         .chip-grid { display: flex; flex-wrap: wrap; gap: 0.75rem; }
         .chip-item { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; width: 6rem; text-align: center; }
@@ -114,7 +121,7 @@
         @media (max-width: 640px) { .test-grid { grid-template-columns: repeat(2, 1fr); } }
 
         /* Card flip */
-        .test-card { perspective: 900px; cursor: pointer; aspect-ratio: 1; }
+        .test-card { perspective: 900px; aspect-ratio: 1; }
         .test-card-inner {
             width: 100%; height: 100%; position: relative;
             transform-style: preserve-3d; transition: transform 0.42s ease;
@@ -124,12 +131,11 @@
             position: absolute; inset: 0; backface-visibility: hidden;
             -webkit-backface-visibility: hidden; border-radius: 12px;
             display: flex; flex-direction: column; align-items: center;
-            justify-content: center; gap: 0.25rem; padding: 0.6rem;
+            justify-content: center; gap: 0.5rem; padding: 0.65rem 0.5rem 0.5rem;
             border: 1.5px solid rgba(203,213,225,0.85);
             background: rgba(255,255,255,0.92); text-align: center;
             user-select: none; overflow: hidden;
         }
-        .test-card-front:hover { border-color: rgba(99,102,241,0.45); background: rgba(99,102,241,0.04); }
         .test-card-back {
             transform: rotateY(180deg);
             background: rgba(99,102,241,0.05);
@@ -138,14 +144,33 @@
         .card-sym-lg { font-size: clamp(2rem,4vw,3rem); line-height: 1; color: var(--text-primary); }
         .card-sym-sm { font-size: clamp(1.4rem,2.8vw,2rem); line-height: 1; color: var(--primary-color); font-weight: 600; }
         .card-label { font-size: clamp(0.58rem,1vw,0.72rem); color: var(--text-secondary); line-height: 1.3; font-weight: 500; }
-        .card-hint { font-size: 0.58rem; color: #94a3b8; margin-top: auto; letter-spacing: 0.01em; }
-        .card-icon { font-size: clamp(1.6rem,3vw,2.2rem); line-height: 1; }
-        .card-replay {
-            margin-top: 4px; font-size: 0.62rem; color: var(--primary-hover); font-weight: 600;
-            padding: 2px 8px; border-radius: 9999px; background: rgba(99,102,241,0.1);
-            border: none; cursor: pointer; pointer-events: all;
+        /* Play button — circular, prominent */
+        .card-play-btn {
+            width: 3rem; height: 3rem; border-radius: 50%; border: none; cursor: pointer;
+            background: var(--primary-color); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 10px rgba(99,102,241,0.35); transition: all 0.15s ease;
+            pointer-events: all; flex-shrink: 0;
         }
-        .card-replay:hover { background: rgba(99,102,241,0.2); }
+        .card-play-btn:hover { transform: scale(1.1); box-shadow: 0 4px 14px rgba(99,102,241,0.45); }
+        .card-play-btn:active { transform: scale(0.94); }
+        /* Reveal button — subtle pill at bottom of card */
+        .card-reveal-btn {
+            margin-top: auto; padding: 0.22rem 0.8rem; border-radius: 9999px;
+            border: 1.5px solid rgba(99,102,241,0.3); background: transparent;
+            color: var(--primary-hover); font-size: 0.65rem; font-weight: 600;
+            cursor: pointer; transition: all 0.15s ease; pointer-events: all;
+        }
+        .card-reveal-btn:hover { background: rgba(99,102,241,0.08); border-color: var(--primary-color); }
+        /* Replay button on the back face */
+        .card-replay-btn {
+            display: inline-flex; align-items: center; gap: 0.25rem;
+            padding: 0.22rem 0.7rem; border-radius: 9999px; border: none;
+            background: rgba(99,102,241,0.1); color: var(--primary-hover);
+            font-size: 0.65rem; font-weight: 600; cursor: pointer;
+            transition: background 0.15s; pointer-events: all;
+        }
+        .card-replay-btn:hover { background: rgba(99,102,241,0.2); }
 
         .ipa-toast {
             position: fixed; left: 50%; bottom: 2rem; transform: translateX(-50%) translateY(1rem);
@@ -170,7 +195,7 @@
         </header>
 
         <div class="sound-bar">
-            <button type="button" id="soundToggle" class="sound-toggle" aria-pressed="true">🔊 Sound on</button>
+            <button type="button" id="soundToggle" class="sound-toggle" aria-pressed="true"></button>
         </div>
 
         <main id="chart" class="chart"></main>
@@ -421,13 +446,18 @@
             return shuffle(pool).slice(0, 10);
         }
 
+        const SVG_PLAY = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true"><path fill-rule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd"/></svg>`;
+        const SVG_REPLAY = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="12" height="12" aria-hidden="true"><path fill-rule="evenodd" d="M15.312 11.424a5.5 5.5 0 0 1-9.201 2.466l-.312-.311h2.433a.75.75 0 0 0 0-1.5H3.989a.75.75 0 0 0-.75.75v4.242a.75.75 0 0 0 1.5 0v-2.43l.31.31a7 7 0 0 0 11.712-3.138.75.75 0 0 0-1.449-.39Zm1.23-3.723a.75.75 0 0 0 .219-.53V3.93a.75.75 0 0 0-1.5 0V6.36l-.31-.31A7 7 0 0 0 3.239 9.187a.75.75 0 1 0 1.448.389A5.5 5.5 0 0 1 13.89 6.11l.311.31h-2.432a.75.75 0 0 0 0 1.5h4.243a.75.75 0 0 0 .53-.219Z" clip-rule="evenodd"/></svg>`;
+        const SVG_SPEAKER_ON  = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true"><path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318.664-2.66 1.905A9.76 9.76 0 0 0 1.5 12c0 .898.121 1.768.35 2.595.341 1.24 1.518 1.905 2.659 1.905h1.93l4.5 4.5c.945.945 2.561.276 2.561-1.06V4.06ZM18.584 5.106a.75.75 0 0 1 1.06 0c3.808 3.807 3.808 9.98 0 13.788a.75.75 0 0 1-1.06-1.06 8.25 8.25 0 0 0 0-11.668.75.75 0 0 1 0-1.06Z"/><path d="M15.932 7.757a.75.75 0 0 1 1.061 0 6 6 0 0 1 0 8.486.75.75 0 0 1-1.06-1.061 4.5 4.5 0 0 0 0-6.364.75.75 0 0 1 0-1.06Z"/></svg>`;
+        const SVG_SPEAKER_OFF = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true"><path d="M13.5 4.06c0-1.336-1.616-2.005-2.56-1.06l-4.5 4.5H4.508c-1.141 0-2.318.664-2.66 1.905A9.76 9.76 0 0 0 1.5 12c0 .898.121 1.768.35 2.595.341 1.24 1.518 1.905 2.659 1.905h1.93l4.5 4.5c.945.945 2.561.276 2.561-1.06V4.06ZM17.78 9.22a.75.75 0 1 0-1.06 1.06L18.44 12l-1.72 1.72a.75.75 0 1 0 1.06 1.06l1.72-1.72 1.72 1.72a.75.75 0 1 0 1.06-1.06L20.56 12l1.72-1.72a.75.75 0 0 0-1.06-1.06l-1.72 1.72-1.72-1.72Z"/></svg>`;
+
         function renderTestCard(item) {
             if (testMode === 'visual') {
                 return `<div class="test-card">
                     <div class="test-card-inner">
                         <div class="test-card-front">
                             <span class="card-sym-lg">${esc(item.sym)}</span>
-                            <span class="card-hint">tap to reveal</span>
+                            <button class="card-reveal-btn">Reveal</button>
                         </div>
                         <div class="test-card-back">
                             <span class="card-sym-sm">${esc(item.sym)}</span>
@@ -436,16 +466,16 @@
                     </div>
                 </div>`;
             } else {
-                return `<div class="test-card" data-sym="${attr(item.sym)}">
+                return `<div class="test-card">
                     <div class="test-card-inner">
                         <div class="test-card-front">
-                            <span class="card-icon">🔊</span>
-                            <span class="card-hint">tap to hear</span>
+                            <button class="card-play-btn" data-sym="${attr(item.sym)}" aria-label="Play sound">${SVG_PLAY}</button>
+                            <button class="card-reveal-btn">Reveal</button>
                         </div>
                         <div class="test-card-back">
                             <span class="card-sym-sm">${esc(item.sym)}</span>
                             <span class="card-label">${esc(item.label)}</span>
-                            <button class="card-replay" data-sym="${attr(item.sym)}" aria-label="Replay">↻ replay</button>
+                            <button class="card-replay-btn" data-sym="${attr(item.sym)}" aria-label="Replay">${SVG_REPLAY} replay</button>
                         </div>
                     </div>
                 </div>`;
@@ -508,23 +538,29 @@
         document.getElementById('testNewBtn').addEventListener('click', renderTest);
 
         document.getElementById('testGrid').addEventListener('click', e => {
-            // Replay button on the back face
-            const replay = e.target.closest('.card-replay');
-            if (replay) {
-                e.stopPropagation();
-                const slug = AUDIO[replay.dataset.sym];
+            // Replay button (back face)
+            const replayBtn = e.target.closest('.card-replay-btn');
+            if (replayBtn) {
+                const slug = AUDIO[replayBtn.dataset.sym];
                 if (slug) playSound(slug);
                 return;
             }
-            // Card flip
-            const card = e.target.closest('.test-card');
-            if (!card || card.classList.contains('flipped')) return;
-            card.classList.add('flipped');
-            if (testMode === 'aural') {
-                const slug = AUDIO[card.dataset.sym];
+            // Play button (front face) — sound only, no flip
+            const playBtn = e.target.closest('.card-play-btn');
+            if (playBtn) {
+                const slug = AUDIO[playBtn.dataset.sym];
                 if (slug) playSound(slug);
+                return;
             }
-            updateProgress();
+            // Reveal button — flip only, no sound
+            const revealBtn = e.target.closest('.card-reveal-btn');
+            if (revealBtn) {
+                const card = revealBtn.closest('.test-card');
+                if (card && !card.classList.contains('flipped')) {
+                    card.classList.add('flipped');
+                    updateProgress();
+                }
+            }
         });
 
         // ---- Copy ------------------------------------------------------------
@@ -585,11 +621,18 @@
         }
 
         const soundToggle = document.getElementById('soundToggle');
+        function updateSoundToggle() {
+            soundToggle.innerHTML = soundOn
+                ? `${SVG_SPEAKER_ON}<span>Sound on</span>`
+                : `${SVG_SPEAKER_OFF}<span>Sound off</span>`;
+            soundToggle.setAttribute('aria-pressed', String(soundOn));
+            soundToggle.setAttribute('aria-label', soundOn ? 'Sound on' : 'Sound off');
+            soundToggle.classList.toggle('off', !soundOn);
+        }
+        updateSoundToggle();
         soundToggle.addEventListener('click', () => {
             soundOn = !soundOn;
-            soundToggle.textContent = soundOn ? '🔊 Sound on' : '🔇 Sound off';
-            soundToggle.setAttribute('aria-pressed', String(soundOn));
-            soundToggle.classList.toggle('off', !soundOn);
+            updateSoundToggle();
         });
 
         document.getElementById('chart').addEventListener('click', (e) => {
