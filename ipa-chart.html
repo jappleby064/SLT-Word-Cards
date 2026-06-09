@@ -314,8 +314,8 @@
         }
 
         function vowelChart() {
-            const VB_W = 980, VB_H = 530;
-            const CT = 100, CB = 470;
+            const VB_W = 980, VB_H = 590;
+            const CT = 150, CB = 520;   // more top padding so column labels clear the chip boxes
             const FT = 230, FB = 550, BK = 870;
 
             const rowY  = r => CT + (CB - CT) * r / 6;
@@ -352,10 +352,10 @@
             ].forEach(([lbl, x]) => {
                 if (Array.isArray(lbl)) {
                     s += `<text class="v-label" text-anchor="middle">` +
-                         `<tspan x="${f(x)}" y="${CT - 28}">${lbl[0]}-</tspan>` +
+                         `<tspan x="${f(x)}" y="${CT - 46}">${lbl[0]}-</tspan>` +
                          `<tspan x="${f(x)}" dy="18">${lbl[1]}</tspan></text>`;
                 } else {
-                    s += `<text class="v-label" x="${f(x)}" y="${CT - 13}" text-anchor="middle">${lbl}</text>`;
+                    s += `<text class="v-label" x="${f(x)}" y="${CT - 28}" text-anchor="middle">${lbl}</text>`;
                 }
             });
 
