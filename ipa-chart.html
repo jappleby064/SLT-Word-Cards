@@ -85,6 +85,68 @@
         .vowel-chip.copied .vowel-sym { fill: #fff; }
         .vowel-svg .vowel-sym { fill: var(--text-primary); font-size: 22px; transition: fill 0.12s ease; pointer-events: none; }
 
+        /* ---- Practice / Test feature ---------------------------------------- */
+        .practice-controls {
+            display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+        }
+        .mode-tabs {
+            display: flex; background: rgba(99,102,241,0.1);
+            border-radius: 9999px; padding: 3px; gap: 2px;
+        }
+        .mode-tab {
+            padding: 0.38rem 1.1rem; border-radius: 9999px; font-size: 0.88rem;
+            font-weight: 600; cursor: pointer; border: none;
+            background: transparent; color: var(--primary-hover); transition: all 0.15s ease;
+        }
+        .mode-tab.active { background: var(--primary-color); color: #fff; }
+        .new-set-btn {
+            padding: 0.38rem 1.1rem; border-radius: 9999px; font-size: 0.88rem; font-weight: 600;
+            cursor: pointer; background: transparent;
+            border: 1.5px solid rgba(99,102,241,0.3); color: var(--primary-hover);
+            transition: all 0.15s ease;
+        }
+        .new-set-btn:hover { border-color: var(--primary-color); background: rgba(99,102,241,0.07); }
+        .practice-progress { margin-left: auto; font-size: 0.82rem; color: var(--text-secondary); font-weight: 500; }
+
+        .test-grid {
+            display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem;
+        }
+        @media (max-width: 640px) { .test-grid { grid-template-columns: repeat(2, 1fr); } }
+
+        /* Card flip */
+        .test-card { perspective: 900px; cursor: pointer; aspect-ratio: 1; }
+        .test-card-inner {
+            width: 100%; height: 100%; position: relative;
+            transform-style: preserve-3d; transition: transform 0.42s ease;
+        }
+        .test-card.flipped .test-card-inner { transform: rotateY(180deg); }
+        .test-card-front, .test-card-back {
+            position: absolute; inset: 0; backface-visibility: hidden;
+            -webkit-backface-visibility: hidden; border-radius: 12px;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; gap: 0.25rem; padding: 0.6rem;
+            border: 1.5px solid rgba(203,213,225,0.85);
+            background: rgba(255,255,255,0.92); text-align: center;
+            user-select: none; overflow: hidden;
+        }
+        .test-card-front:hover { border-color: rgba(99,102,241,0.45); background: rgba(99,102,241,0.04); }
+        .test-card-back {
+            transform: rotateY(180deg);
+            background: rgba(99,102,241,0.05);
+            border-color: rgba(99,102,241,0.25);
+        }
+        .card-sym-lg { font-size: clamp(2rem,4vw,3rem); line-height: 1; color: var(--text-primary); }
+        .card-sym-sm { font-size: clamp(1.4rem,2.8vw,2rem); line-height: 1; color: var(--primary-color); font-weight: 600; }
+        .card-label { font-size: clamp(0.58rem,1vw,0.72rem); color: var(--text-secondary); line-height: 1.3; font-weight: 500; }
+        .card-hint { font-size: 0.58rem; color: #94a3b8; margin-top: auto; letter-spacing: 0.01em; }
+        .card-icon { font-size: clamp(1.6rem,3vw,2.2rem); line-height: 1; }
+        .card-replay {
+            margin-top: 4px; font-size: 0.62rem; color: var(--primary-hover); font-weight: 600;
+            padding: 2px 8px; border-radius: 9999px; background: rgba(99,102,241,0.1);
+            border: none; cursor: pointer; pointer-events: all;
+        }
+        .card-replay:hover { background: rgba(99,102,241,0.2); }
+
         .ipa-toast {
             position: fixed; left: 50%; bottom: 2rem; transform: translateX(-50%) translateY(1rem);
             background: rgba(30, 41, 59, 0.95); color: #fff; padding: 0.6rem 1.1rem;
@@ -182,6 +244,45 @@
 
         // Symbol -> audio file slug (audio/<slug>.mp3). Sourced from Wikimedia Commons.
         const AUDIO = { 'p': 'p', 'b': 'b', 't': 't', 'd': 'd', 'k': 'k', 'ɡ': 'g', 'm': 'm', 'n': 'n', 'ŋ': 'eng', 'f': 'f', 'v': 'v', 'θ': 'theta', 'ð': 'eth', 's': 's', 'z': 'z', 'ʃ': 'esh', 'ʒ': 'ezh', 'h': 'h', 'l': 'l', 'r': 'r', 'ɹ': 'turned_r', 'j': 'j', 'w': 'w', 'i': 'i', 'ɪ': 'ih', 'e': 'e', 'ɛ': 'eps', 'æ': 'ae', 'a': 'a', 'ɑ': 'alpha', 'ɒ': 'turned_script_a', 'ɔ': 'open_o', 'o': 'o', 'ʊ': 'upsilon', 'u': 'u', 'ʌ': 'turned_v', 'ɜ': 'rev_eps', 'ə': 'schwa', 'ɐ': 'turned_a', 'ø': 'oslash', 'y': 'y' };
+
+        // English phoneme set used by the Practice feature
+        const ENGLISH_SOUNDS = [
+            { sym: 'p',  label: 'Voiceless bilabial plosive' },
+            { sym: 'b',  label: 'Voiced bilabial plosive' },
+            { sym: 't',  label: 'Voiceless alveolar plosive' },
+            { sym: 'd',  label: 'Voiced alveolar plosive' },
+            { sym: 'k',  label: 'Voiceless velar plosive' },
+            { sym: 'ɡ',  label: 'Voiced velar plosive' },
+            { sym: 'm',  label: 'Bilabial nasal' },
+            { sym: 'n',  label: 'Alveolar nasal' },
+            { sym: 'ŋ',  label: 'Velar nasal' },
+            { sym: 'f',  label: 'Voiceless labiodental fricative' },
+            { sym: 'v',  label: 'Voiced labiodental fricative' },
+            { sym: 'θ',  label: 'Voiceless dental fricative' },
+            { sym: 'ð',  label: 'Voiced dental fricative' },
+            { sym: 's',  label: 'Voiceless alveolar sibilant' },
+            { sym: 'z',  label: 'Voiced alveolar sibilant' },
+            { sym: 'ʃ',  label: 'Voiceless palato-alveolar fricative' },
+            { sym: 'ʒ',  label: 'Voiced palato-alveolar fricative' },
+            { sym: 'h',  label: 'Voiceless glottal fricative' },
+            { sym: 'ɹ',  label: 'Alveolar approximant' },
+            { sym: 'j',  label: 'Palatal approximant' },
+            { sym: 'w',  label: 'Labial-velar approximant' },
+            { sym: 'l',  label: 'Alveolar lateral approximant' },
+            { sym: 'i',  label: 'Close front unrounded vowel' },
+            { sym: 'ɪ',  label: 'Near-close near-front unrounded vowel' },
+            { sym: 'e',  label: 'Close-mid front unrounded vowel' },
+            { sym: 'ɛ',  label: 'Open-mid front unrounded vowel' },
+            { sym: 'æ',  label: 'Near-open front unrounded vowel' },
+            { sym: 'ɑ',  label: 'Open back unrounded vowel' },
+            { sym: 'ɒ',  label: 'Open back rounded vowel' },
+            { sym: 'ɔ',  label: 'Open-mid back rounded vowel' },
+            { sym: 'ʊ',  label: 'Near-close near-back rounded vowel' },
+            { sym: 'u',  label: 'Close back rounded vowel' },
+            { sym: 'ʌ',  label: 'Open-mid back unrounded vowel' },
+            { sym: 'ɜ',  label: 'Open-mid central unrounded vowel' },
+            { sym: 'ə',  label: 'Mid central vowel' },
+        ];
 
         // ---- Render ----------------------------------------------------------
         function esc(s) { return String(s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
@@ -301,6 +402,83 @@
             </section>`;
         }
 
+        // ---- Practice feature -----------------------------------------------
+        function shuffle(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        let testMode = 'visual';
+
+        function pickItems() {
+            const pool = testMode === 'aural'
+                ? ENGLISH_SOUNDS.filter(s => AUDIO[s.sym])
+                : ENGLISH_SOUNDS;
+            return shuffle(pool).slice(0, 10);
+        }
+
+        function renderTestCard(item) {
+            if (testMode === 'visual') {
+                return `<div class="test-card">
+                    <div class="test-card-inner">
+                        <div class="test-card-front">
+                            <span class="card-sym-lg">${esc(item.sym)}</span>
+                            <span class="card-hint">tap to reveal</span>
+                        </div>
+                        <div class="test-card-back">
+                            <span class="card-sym-sm">${esc(item.sym)}</span>
+                            <span class="card-label">${esc(item.label)}</span>
+                        </div>
+                    </div>
+                </div>`;
+            } else {
+                return `<div class="test-card" data-sym="${attr(item.sym)}">
+                    <div class="test-card-inner">
+                        <div class="test-card-front">
+                            <span class="card-icon">🔊</span>
+                            <span class="card-hint">tap to hear</span>
+                        </div>
+                        <div class="test-card-back">
+                            <span class="card-sym-sm">${esc(item.sym)}</span>
+                            <span class="card-label">${esc(item.label)}</span>
+                            <button class="card-replay" data-sym="${attr(item.sym)}" aria-label="Replay">↻ replay</button>
+                        </div>
+                    </div>
+                </div>`;
+            }
+        }
+
+        function updateProgress() {
+            const revealed = document.querySelectorAll('#testGrid .test-card.flipped').length;
+            const el = document.getElementById('testProgress');
+            if (el) el.textContent = `${revealed} / 10 revealed`;
+        }
+
+        function renderTest() {
+            const items = pickItems();
+            const grid = document.getElementById('testGrid');
+            if (!grid) return;
+            grid.innerHTML = items.map(renderTestCard).join('');
+            const el = document.getElementById('testProgress');
+            if (el) el.textContent = '0 / 10 revealed';
+        }
+
+        function practiceSection() {
+            return `<div class="practice-controls">
+                <div class="mode-tabs">
+                    <button type="button" class="mode-tab active" id="testVisualBtn">Visual</button>
+                    <button type="button" class="mode-tab" id="testAuralBtn">Aural</button>
+                </div>
+                <button type="button" class="new-set-btn" id="testNewBtn">↻ New set</button>
+                <span class="practice-progress" id="testProgress">0 / 10 revealed</span>
+            </div>
+            <div class="test-grid" id="testGrid"></div>`;
+        }
+
         document.getElementById('chart').innerHTML = [
             section('Consonants (Pulmonic)', consonantTable(), 'Where symbols appear in pairs, the one to the left is voiceless and the one to the right is voiced. Shaded areas are judged impossible.'),
             section('Consonants (Non-Pulmonic)',
@@ -308,8 +486,46 @@
                 '<h3 class="chart-sub" style="font-weight:600;">Voiced implosives</h3>' + chipGrid(IMPLOSIVES) +
                 '<h3 class="chart-sub" style="font-weight:600;">Ejectives</h3>' + chipGrid(EJECTIVES)),
             section('Other Symbols', chipGrid(OTHER)),
-            section('Vowels', vowelChart(), 'Where symbols appear in pairs, the one to the left is unrounded and the one to the right is rounded.')
+            section('Vowels', vowelChart(), 'Where symbols appear in pairs, the one to the left is unrounded and the one to the right is rounded.'),
+            section('Practice', practiceSection(), 'English phonemes — click each card to reveal the name and classification. Switch to Aural to practise by ear.')
         ].join('');
+
+        // ---- Practice events -------------------------------------------------
+        renderTest();
+
+        document.getElementById('testVisualBtn').addEventListener('click', () => {
+            testMode = 'visual';
+            document.getElementById('testVisualBtn').classList.add('active');
+            document.getElementById('testAuralBtn').classList.remove('active');
+            renderTest();
+        });
+        document.getElementById('testAuralBtn').addEventListener('click', () => {
+            testMode = 'aural';
+            document.getElementById('testAuralBtn').classList.add('active');
+            document.getElementById('testVisualBtn').classList.remove('active');
+            renderTest();
+        });
+        document.getElementById('testNewBtn').addEventListener('click', renderTest);
+
+        document.getElementById('testGrid').addEventListener('click', e => {
+            // Replay button on the back face
+            const replay = e.target.closest('.card-replay');
+            if (replay) {
+                e.stopPropagation();
+                const slug = AUDIO[replay.dataset.sym];
+                if (slug) playSound(slug);
+                return;
+            }
+            // Card flip
+            const card = e.target.closest('.test-card');
+            if (!card || card.classList.contains('flipped')) return;
+            card.classList.add('flipped');
+            if (testMode === 'aural') {
+                const slug = AUDIO[card.dataset.sym];
+                if (slug) playSound(slug);
+            }
+            updateProgress();
+        });
 
         // ---- Copy ------------------------------------------------------------
         function legacyCopy(text) {
