@@ -5,7 +5,15 @@ A web-based application designed for Speech and Language Therapy (SLT). This sta
 ## Features
 - **Search & Filter:** Find cards by *Word Initial Sound*, *Word Final Sound*, and *Word Structure* (e.g., CVC).
 - **Print Formatting:** Automatically formats selected cards into a 3x4 grid on A4 paper for easy printing and cutting.
+- **Present Mode:** Work through a selection one card at a time on screen — click or tap to reveal the word, with arrow keys, shuffle, and a progress indicator.
+- **Shareable Decks:** Send a deck as a link. Only the list of cards travels, and it is held in the URL fragment so it never reaches a server.
 - **Git-Integrated Data:** New cards are added simply by committing images to the `images/` directory and adding rows to the `cards.csv` file.
+
+## Native app
+`ios/` holds a SwiftUI app for iPhone, iPad and Mac that uses this repository's
+`cards.csv` and `images/` as its card source, so a card added here appears there
+too. It adds decks saved under client names, iCloud sync, and deck packs that
+interchange with the web app's share links. See [ios/README.md](ios/README.md).
 
 ## Tech Stack
 - HTML5

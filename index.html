@@ -136,14 +136,90 @@
                         <label for="instanceCount">Instance Count:</label>
                         <input type="number" id="instanceCount" value="1" min="1" max="10">
                     </div>
+                    <button id="presentBtn" class="primary-btn bounce-on-hover">Present Deck</button>
                     <button id="printBtn" class="primary-btn bounce-on-hover">Download PDF</button>
+                    <button id="shareBtn" class="secondary-btn">Share Deck</button>
                 </div>
             </section>
         </main>
 
         <footer style="text-align: center; color: var(--text-secondary); font-size: 0.9rem; padding-top: 1rem;">
-            made with love · <span id="appVersion">v1.1.0</span>
+            made with love · <span id="appVersion">v1.2.0</span>
         </footer>
+    </div>
+
+    <!-- Present mode: one card at a time, click to reveal the word. -->
+    <div id="presenter" class="presenter" hidden aria-modal="true" role="dialog" aria-label="Present deck">
+        <div class="presenter-bar">
+            <button type="button" id="presenterClose" class="presenter-btn">Close</button>
+            <span id="presenterTitle" class="presenter-title">Deck</span>
+            <div class="presenter-bar-actions">
+                <label class="presenter-toggle">
+                    <input type="checkbox" id="presenterAlwaysShow">
+                    Always show word
+                </label>
+                <button type="button" id="presenterShuffle" class="presenter-btn">Shuffle</button>
+            </div>
+        </div>
+
+        <div class="presenter-stage">
+            <button type="button" id="presenterCard" class="presenter-card" aria-label="Show the word">
+                <img id="presenterImage" class="presenter-image" alt="">
+                <span id="presenterFaceText" class="presenter-face-text" hidden></span>
+            </button>
+            <div class="presenter-label-slot">
+                <span id="presenterWord" class="presenter-word"></span>
+                <span id="presenterHint" class="presenter-hint">Tap the card to show the word</span>
+            </div>
+        </div>
+
+        <div class="presenter-controls">
+            <button type="button" id="presenterPrev" class="presenter-nav" aria-label="Previous card">‹</button>
+            <div class="presenter-progress">
+                <span id="presenterCount">1 of 1</span>
+                <progress id="presenterProgress" value="1" max="1"></progress>
+            </div>
+            <button type="button" id="presenterNext" class="presenter-nav" aria-label="Next card">›</button>
+        </div>
+    </div>
+
+    <!-- Share a deck as a link. The card list lives in the URL fragment. -->
+    <div id="shareDialog" class="modal" hidden aria-modal="true" role="dialog" aria-label="Share deck">
+        <div class="modal-panel">
+            <h2>Share this deck</h2>
+            <p class="modal-note">
+                The link holds only the list of cards — no pictures and no names. It stays
+                in the part of the address after the <code>#</code>, so it is never sent to
+                a server.
+            </p>
+            <label class="input-group" for="shareDeckName">
+                <span>Deck name</span>
+                <input type="text" id="shareDeckName" placeholder="e.g. Final /k/ practice">
+            </label>
+            <textarea id="shareLink" class="share-link" readonly rows="3"></textarea>
+            <p id="shareLength" class="modal-note"></p>
+            <div class="button-row">
+                <button type="button" id="shareCopyBtn" class="primary-btn">Copy Link</button>
+                <button type="button" id="shareSystemBtn" class="secondary-btn" hidden>Share…</button>
+                <button type="button" id="shareCloseBtn" class="secondary-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Offered when the page is opened with a shared deck in the address. -->
+    <div id="incomingDialog" class="modal" hidden aria-modal="true" role="dialog" aria-label="Shared deck">
+        <div class="modal-panel">
+            <h2 id="incomingTitle">Shared deck</h2>
+            <p id="incomingSummary" class="modal-note"></p>
+            <div class="button-row">
+                <button type="button" id="incomingPresentBtn" class="primary-btn">Present Deck</button>
+                <button type="button" id="incomingSelectBtn" class="secondary-btn">Select the Cards</button>
+                <button type="button" id="incomingDismissBtn" class="secondary-btn">Dismiss</button>
+            </div>
+            <p class="modal-note">
+                Got the app? <a id="incomingAppLink" href="#">Open this deck in the app</a>.
+            </p>
+        </div>
     </div>
 
     <!-- Scripts -->

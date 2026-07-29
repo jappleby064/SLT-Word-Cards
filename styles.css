@@ -483,3 +483,259 @@ button {
 }
 
 /* PDF generation is handled client-side by jsPDF — no @media print rules needed. */
+
+/* ==========================================================================
+   Present mode — full-screen, one card at a time.
+   ========================================================================== */
+
+body.presenting {
+    overflow: hidden;
+}
+
+.presenter {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-gradient);
+}
+
+.presenter[hidden] {
+    display: none;
+}
+
+.presenter-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--surface-color);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-color);
+    flex-wrap: wrap;
+}
+
+.presenter-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    flex: 1 1 auto;
+    text-align: center;
+    min-width: 6rem;
+}
+
+.presenter-bar-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.presenter-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.presenter-btn {
+    padding: 0.4rem 0.9rem;
+    border: 1px solid rgba(99, 102, 241, 0.35);
+    border-radius: 8px;
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--primary-hover);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.presenter-btn:hover {
+    background: rgba(99, 102, 241, 0.2);
+}
+
+.presenter-stage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    min-height: 0;
+}
+
+/* The card is square and scales to whichever axis runs out first. */
+.presenter-card {
+    width: min(72vh, 92vw, 620px);
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    box-shadow: var(--shadow-md);
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.presenter-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.presenter-face-text {
+    font-size: clamp(4rem, 26vh, 14rem);
+    font-weight: 700;
+    color: #000;
+    line-height: 1;
+}
+
+/* Fixed-height slot so the card never shifts when the word appears, and the
+   hint never rewraps between cards. */
+.presenter-label-slot {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 4rem;
+    flex: 0 0 auto;
+}
+
+.presenter-word,
+.presenter-hint {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+    transition: opacity 0.18s ease;
+}
+
+.presenter-word {
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.presenter-hint {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.presenter-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 1.5rem 1.25rem;
+    background: var(--surface-color);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--border-color);
+}
+
+.presenter-nav {
+    width: 3.25rem;
+    height: 3.25rem;
+    border: 1px solid rgba(99, 102, 241, 0.35);
+    border-radius: 50%;
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--primary-hover);
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.presenter-nav:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.presenter-progress {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.presenter-progress progress {
+    width: 8rem;
+    height: 0.4rem;
+}
+
+/* ==========================================================================
+   Modals — share a deck, and open one that arrived in a link.
+   ========================================================================== */
+
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    background: rgba(15, 23, 42, 0.45);
+}
+
+.modal[hidden] {
+    display: none;
+}
+
+.modal-panel {
+    width: min(560px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    box-shadow: var(--shadow-md);
+}
+
+.modal-note {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.modal-note code {
+    padding: 0.1rem 0.3rem;
+    background: rgba(99, 102, 241, 0.12);
+    border-radius: 4px;
+}
+
+.share-link {
+    width: 100%;
+    padding: 0.7rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.78rem;
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 8px;
+    resize: vertical;
+    word-break: break-all;
+}
+
+@media (max-width: 640px) {
+    .presenter-bar-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .presenter-controls {
+        padding: 0.6rem 1rem 1rem;
+    }
+}

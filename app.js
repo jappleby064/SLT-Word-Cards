@@ -1,6 +1,29 @@
 // SLT Word Cards Web Application Logic
 let allCards = [];
 
+// Chosen cards, in the order they were ticked. Held here rather than read back
+// out of the checkboxes so a selection survives re-running the search, and so
+// present / print / share all work from the same list.
+let selectedIds = [];
+
+function isSelected(id) {
+    return selectedIds.includes(id);
+}
+
+function setSelected(id, on) {
+    const at = selectedIds.indexOf(id);
+    if (on && at === -1) selectedIds.push(id);
+    if (!on && at !== -1) selectedIds.splice(at, 1);
+}
+
+function cardById(id) {
+    return allCards.find(card => card.id === id);
+}
+
+function selectedCards() {
+    return selectedIds.map(cardById).filter(Boolean);
+}
+
 function capitalize(str) {
     return str ? str.charAt(0).toUpperCase() + str.slice(1) : str;
 }
@@ -20,6 +43,8 @@ const printBtn = document.getElementById('printBtn');
 
 // Action Elements
 const infoBtn = document.getElementById('infoBtn');
+const presentBtn = document.getElementById('presentBtn');
+const shareBtn = document.getElementById('shareBtn');
 
 // English (RP) phoneme inventory for the IPA keyboard, grouped for the popup.
 const IPA_SOUNDS = {
@@ -34,6 +59,8 @@ document.addEventListener('DOMContentLoaded', () => {
     setupIpaField(initialSoundInput, document.getElementById('ipaToggle'), document.getElementById('ipaKeyboard'));
     setupIpaField(finalSoundInput, document.getElementById('ipaToggleFinal'), document.getElementById('ipaKeyboardFinal'));
     setupEventListeners();
+    setupPresenter();
+    setupSharing();
 });
 
 // Fill `container` with the grouped phoneme keys; clicking one sets `targetInput`.
@@ -108,6 +135,9 @@ function loadCards() {
                     : '';
 
                 return {
+                    // Stable identity, shared with the iOS/Mac app so a deck can
+                    // travel between them as a list of ids.
+                    id: `${word}|${type}|${variant}`,
                     word,
                     initial: (row['Word Initial'] || '').trim().toLowerCase(),
                     final: (row['Word Final'] || '').trim().toLowerCase(),
@@ -121,8 +151,21 @@ function loadCards() {
                     image: isNumber ? null : `images/${word}.jpg`
                 };
             });
+
+            // Drop exact duplicates (cards.csv lists "peg" twice) so ids stay unique.
+            const seenIds = new Set();
+            allCards = allCards.filter(card => {
+                if (seenIds.has(card.id)) return false;
+                seenIds.add(card.id);
+                return true;
+            });
+
             console.log("Loaded cards:", allCards);
             statusLabel.textContent = `Loaded ${allCards.length} cards. Ready.`;
+
+            // A shared deck in the address can only be resolved once the cards
+            // are known.
+            window.dispatchEvent(new Event('cards-loaded'));
         },
         error: function (err) {
             console.error("Error loading CSV:", err);
@@ -151,11 +194,19 @@ function setupEventListeners() {
     // Re-run the search immediately when the card type filter changes
     typeFilterSelect.addEventListener('change', onSearch);
 
+    // Keep the ordered selection in step with the checkboxes.
+    resultsList.addEventListener('change', (e) => {
+        const checkbox = e.target;
+        if (checkbox.type !== 'checkbox') return;
+        setSelected(checkbox.dataset.id, checkbox.checked);
+    });
+
     // Select All Checkbox
     selectAllCheckbox.addEventListener('change', (e) => {
         const checkboxes = resultsList.querySelectorAll('input[type="checkbox"]');
         checkboxes.forEach(cb => {
             cb.checked = e.target.checked;
+            setSelected(cb.dataset.id, e.target.checked);
         });
     });
 
@@ -217,7 +268,9 @@ function renderResults(matches) {
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.value = card.label;
+        checkbox.dataset.id = card.id;
         checkbox.dataset.type = card.type;
+        if (isSelected(card.id)) checkbox.checked = true;
         if (card.type === 'number') {
             checkbox.dataset.text = card.renderText;
         } else {
@@ -236,18 +289,18 @@ function renderResults(matches) {
 }
 
 async function generatePrintSelection() {
-    const selectedCheckboxes = Array.from(resultsList.querySelectorAll('input[type="checkbox"]:checked'));
+    const chosen = selectedCards();
 
-    if (selectedCheckboxes.length === 0) {
+    if (chosen.length === 0) {
         alert("Please select at least one word to generate a PDF.");
         return;
     }
 
-    const selectedWords = selectedCheckboxes.map(cb => ({
-        word: cb.value,
-        type: cb.dataset.type,
-        image: cb.dataset.image,
-        text: cb.dataset.text
+    const selectedWords = chosen.map(card => ({
+        word: card.label,
+        type: card.type,
+        image: card.image,
+        text: card.renderText
     }));
 
     let count = parseInt(instanceCountInput.value, 10);
@@ -355,4 +408,303 @@ async function generatePDF(items) {
     }
 
     doc.save('word-cards.pdf');
+}
+
+// ---------------------------------------------------------------------------
+// Present mode
+//
+// One card at a time, click or tap to reveal the word — the same flow as the
+// iOS/Mac app's presenter, including arrow keys and space to reveal.
+// ---------------------------------------------------------------------------
+
+const presenter = {
+    root: null,
+    order: [],
+    index: 0,
+    revealed: false
+};
+
+function setupPresenter() {
+    presenter.root = document.getElementById('presenter');
+
+    presentBtn.addEventListener('click', () => {
+        const chosen = selectedCards();
+        if (chosen.length === 0) {
+            alert('Select at least one card to present.');
+            return;
+        }
+        openPresenter(chosen, 'Selection');
+    });
+
+    document.getElementById('presenterClose').addEventListener('click', closePresenter);
+    document.getElementById('presenterPrev').addEventListener('click', () => movePresenter(-1));
+    document.getElementById('presenterNext').addEventListener('click', () => movePresenter(1));
+    document.getElementById('presenterCard').addEventListener('click', toggleReveal);
+
+    document.getElementById('presenterShuffle').addEventListener('click', () => {
+        for (let i = presenter.order.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [presenter.order[i], presenter.order[j]] = [presenter.order[j], presenter.order[i]];
+        }
+        presenter.index = 0;
+        presenter.revealed = false;
+        renderPresenter();
+    });
+
+    document.getElementById('presenterAlwaysShow').addEventListener('change', renderPresenter);
+
+    document.addEventListener('keydown', (e) => {
+        if (presenter.root.hidden) return;
+        if (e.key === 'ArrowRight') { movePresenter(1); e.preventDefault(); }
+        else if (e.key === 'ArrowLeft') { movePresenter(-1); e.preventDefault(); }
+        else if (e.key === ' ' || e.key === 'Enter') { toggleReveal(); e.preventDefault(); }
+        else if (e.key === 'Escape') { closePresenter(); }
+    });
+}
+
+function openPresenter(cards, title) {
+    presenter.order = cards.slice();
+    presenter.index = 0;
+    presenter.revealed = false;
+    document.getElementById('presenterTitle').textContent = title;
+    presenter.root.hidden = false;
+    document.body.classList.add('presenting');
+    renderPresenter();
+}
+
+function closePresenter() {
+    presenter.root.hidden = true;
+    document.body.classList.remove('presenting');
+}
+
+function movePresenter(step) {
+    const next = presenter.index + step;
+    if (next < 0 || next >= presenter.order.length) return;
+    presenter.index = next;
+    presenter.revealed = false;
+    renderPresenter();
+}
+
+function toggleReveal() {
+    presenter.revealed = !presenter.revealed;
+    renderPresenter();
+}
+
+function renderPresenter() {
+    const card = presenter.order[presenter.index];
+    if (!card) return;
+
+    const image = document.getElementById('presenterImage');
+    const faceText = document.getElementById('presenterFaceText');
+
+    // Number cards show their numeral or spelled word where the picture goes,
+    // matching the printed card.
+    if (card.type === 'number') {
+        image.hidden = true;
+        image.removeAttribute('src');
+        faceText.hidden = false;
+        faceText.textContent = card.renderText;
+    } else {
+        faceText.hidden = true;
+        image.hidden = false;
+        image.src = card.image;
+        image.alt = '';
+        image.onerror = () => { image.src = 'images/no_image.jpg'; };
+    }
+
+    const alwaysShow = document.getElementById('presenterAlwaysShow').checked;
+    const showWord = alwaysShow || presenter.revealed;
+
+    const word = document.getElementById('presenterWord');
+    word.textContent = capitalize(card.label);
+    word.style.opacity = showWord ? '1' : '0';
+    document.getElementById('presenterHint').style.opacity = showWord ? '0' : '1';
+
+    document.getElementById('presenterCount').textContent =
+        `${presenter.index + 1} of ${presenter.order.length}`;
+    const progress = document.getElementById('presenterProgress');
+    progress.max = presenter.order.length;
+    progress.value = presenter.index + 1;
+
+    document.getElementById('presenterPrev').disabled = presenter.index === 0;
+    document.getElementById('presenterNext').disabled =
+        presenter.index >= presenter.order.length - 1;
+}
+
+// ---------------------------------------------------------------------------
+// Sharing a deck
+//
+// A deck is just a list of card ids, because every copy of the app — web, iOS
+// and Mac — resolves pictures from the same cards.csv and images/. That list is
+// base64url-encoded JSON in the URL *fragment*, so it never reaches a server.
+// The encoding is byte-for-byte the same as the app's .sltdeck payload.
+// ---------------------------------------------------------------------------
+
+const DECK_PAYLOAD_VERSION = 1;
+const APP_URL_SCHEME = 'sltcards://deck?d=';
+
+function base64UrlEncode(text) {
+    const bytes = new TextEncoder().encode(text);
+    let binary = '';
+    bytes.forEach(byte => { binary += String.fromCharCode(byte); });
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function base64UrlDecode(encoded) {
+    let padded = encoded.replace(/-/g, '+').replace(/_/g, '/');
+    while (padded.length % 4 !== 0) padded += '=';
+    const binary = atob(padded);
+    const bytes = Uint8Array.from(binary, ch => ch.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
+}
+
+function encodeDeckPayload(name, cards, copies) {
+    return base64UrlEncode(JSON.stringify({
+        v: DECK_PAYLOAD_VERSION,
+        n: name,
+        c: cards.map(card => card.id),
+        p: copies
+    }));
+}
+
+function decodeDeckPayload(encoded) {
+    try {
+        const payload = JSON.parse(base64UrlDecode(encoded));
+        if (!payload || typeof payload !== 'object') return null;
+        if (Number(payload.v) > DECK_PAYLOAD_VERSION) return null;
+        if (!Array.isArray(payload.c) || payload.c.length === 0) return null;
+        return {
+            version: Number(payload.v) || 1,
+            name: typeof payload.n === 'string' ? payload.n : 'Shared deck',
+            cardIds: payload.c.filter(id => typeof id === 'string'),
+            copies: Number(payload.p) > 0 ? Number(payload.p) : 1
+        };
+    } catch (err) {
+        return null;
+    }
+}
+
+function setupSharing() {
+    const dialog = document.getElementById('shareDialog');
+    const nameInput = document.getElementById('shareDeckName');
+    const linkField = document.getElementById('shareLink');
+    const lengthNote = document.getElementById('shareLength');
+    const systemShareBtn = document.getElementById('shareSystemBtn');
+
+    const refresh = () => {
+        const chosen = selectedCards();
+        const copies = Math.max(1, parseInt(instanceCountInput.value, 10) || 1);
+        const name = nameInput.value.trim() || 'Shared deck';
+        const payload = encodeDeckPayload(name, chosen, copies);
+        const base = `${location.origin}${location.pathname}`;
+        linkField.value = `${base}#deck=${payload}`;
+        lengthNote.textContent =
+            `${chosen.length} card${chosen.length === 1 ? '' : 's'} · ${linkField.value.length} characters`;
+    };
+
+    shareBtn.addEventListener('click', () => {
+        if (selectedCards().length === 0) {
+            alert('Select at least one card to share.');
+            return;
+        }
+        if (!nameInput.value.trim()) nameInput.value = 'Shared deck';
+        refresh();
+        dialog.hidden = false;
+    });
+
+    nameInput.addEventListener('input', refresh);
+
+    document.getElementById('shareCloseBtn').addEventListener('click', () => {
+        dialog.hidden = true;
+    });
+
+    document.getElementById('shareCopyBtn').addEventListener('click', async () => {
+        const button = document.getElementById('shareCopyBtn');
+        try {
+            await navigator.clipboard.writeText(linkField.value);
+        } catch (err) {
+            // Clipboard API needs a secure context; fall back to selecting the text.
+            linkField.select();
+            document.execCommand('copy');
+        }
+        button.textContent = 'Copied';
+        setTimeout(() => { button.textContent = 'Copy Link'; }, 2000);
+    });
+
+    // Only offer the system share sheet where the browser actually has one.
+    if (navigator.share) {
+        systemShareBtn.hidden = false;
+        systemShareBtn.addEventListener('click', () => {
+            navigator.share({
+                title: nameInput.value.trim() || 'SLT card deck',
+                text: 'Practise these cards:',
+                url: linkField.value
+            }).catch(() => { /* dismissed */ });
+        });
+    }
+
+    setupIncomingDeck();
+}
+
+// A link opened with #deck=… offers to present it or tick the cards.
+function setupIncomingDeck() {
+    const dialog = document.getElementById('incomingDialog');
+
+    document.getElementById('incomingDismissBtn').addEventListener('click', () => {
+        dialog.hidden = true;
+    });
+
+    // On first load, and again if a new deck link is pasted into the address bar
+    // of an already-open page — a fragment change alone never reloads.
+    window.addEventListener('cards-loaded', offerIncomingDeck);
+    window.addEventListener('hashchange', () => {
+        if (allCards.length > 0) offerIncomingDeck();
+    });
+
+    function offerIncomingDeck() {
+        const payload = readDeckFromLocation();
+        if (!payload) return;
+
+        const cards = payload.cardIds.map(cardById).filter(Boolean);
+        const missing = payload.cardIds.length - cards.length;
+        if (cards.length === 0) {
+            statusLabel.textContent = 'That shared deck has no cards this version knows about.';
+            return;
+        }
+
+        document.getElementById('incomingTitle').textContent = payload.name;
+        document.getElementById('incomingSummary').textContent =
+            `${cards.length} card${cards.length === 1 ? '' : 's'} ready` +
+            (missing > 0 ? ` · ${missing} not in this card set yet` : '') +
+            '. Nothing was uploaded — the deck came from the link itself.';
+        document.getElementById('incomingAppLink').href =
+            APP_URL_SCHEME + encodeDeckPayload(payload.name, cards, payload.copies);
+
+        document.getElementById('incomingPresentBtn').onclick = () => {
+            dialog.hidden = true;
+            openPresenter(cards, payload.name);
+        };
+
+        document.getElementById('incomingSelectBtn').onclick = () => {
+            dialog.hidden = true;
+            selectedIds = cards.map(card => card.id);
+            instanceCountInput.value = payload.copies;
+            wordSearchInput.value = '';
+            initialSoundInput.value = '';
+            finalSoundInput.value = '';
+            structureInput.value = '';
+            typeFilterSelect.value = 'all';
+            renderResults(cards);
+            statusLabel.textContent = `${cards.length} cards from "${payload.name}" selected.`;
+        };
+
+        dialog.hidden = false;
+    }
+}
+
+function readDeckFromLocation() {
+    const fragment = location.hash.startsWith('#') ? location.hash.slice(1) : location.hash;
+    const params = new URLSearchParams(fragment);
+    const encoded = params.get('deck');
+    return encoded ? decodeDeckPayload(encoded) : null;
 }
