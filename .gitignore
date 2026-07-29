@@ -1,0 +1,6 @@
+.DS_Store
+.venv/
+__pycache__/
+
+# Local machine settings; .claude/launch.json is shared
+.claude/settings.local.json
