@@ -176,11 +176,12 @@ enum AirPrint {
             return
         }
 
-        if UIDevice.current.userInterfaceIdiom == .pad {
+        // iPad and Mac require a presentation anchor; iPhone does not.
+        if UIDevice.current.userInterfaceIdiom == .phone {
+            controller.present(animated: true, completionHandler: nil)
+        } else {
             let anchor = CGRect(x: window.bounds.midX, y: window.bounds.maxY - 80, width: 1, height: 1)
             controller.present(from: anchor, in: window, animated: true, completionHandler: nil)
-        } else {
-            controller.present(animated: true, completionHandler: nil)
         }
     }
 }

@@ -15,6 +15,7 @@ struct DeckDetailView: View {
     @State private var isRenaming = false
     @State private var renameText = ""
     @State private var editMode: EditMode = .inactive
+    @State private var isSharing = false
 
     private var deck: Deck? {
         decks.deck(id: deckID, in: client)
@@ -56,10 +57,22 @@ struct DeckDetailView: View {
                         } label: {
                             Label("Shuffle Saved Order", systemImage: "shuffle")
                         }
+                        Divider()
+                        Button {
+                            isSharing = true
+                        } label: {
+                            Label("Send Deck…", systemImage: "square.and.arrow.up")
+                        }
+                        .disabled(deck.cardIDs.isEmpty)
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
                 }
+            }
+        }
+        .sheet(isPresented: $isSharing) {
+            if let deck {
+                SendDeckSheet(deck: deck)
             }
         }
         .sheet(isPresented: $isPresenting) {

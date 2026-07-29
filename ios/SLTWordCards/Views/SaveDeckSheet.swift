@@ -32,7 +32,7 @@ struct SaveDeckSheet: View {
 
                 Section("Client") {
                     Picker("Client", selection: $clientID) {
-                        ForEach(decks.clients) { client in
+                        ForEach(decks.therapistClients) { client in
                             Text(client.name).tag(Client.ID?.some(client.id))
                         }
                         Text("New client…").tag(Client.ID?.none)
@@ -80,7 +80,7 @@ struct SaveDeckSheet: View {
                 }
             }
             .onAppear {
-                clientID = decks.clients.first?.id
+                clientID = decks.therapistClients.first?.id
                 if deckName.isEmpty {
                     deckName = Self.suggestedName()
                 }
@@ -93,7 +93,7 @@ struct SaveDeckSheet: View {
     }
 
     private var selectedClient: Client? {
-        decks.clients.first { $0.id == clientID }
+        decks.therapistClients.first { $0.id == clientID }
     }
 
     private var availableDecks: [Deck] {

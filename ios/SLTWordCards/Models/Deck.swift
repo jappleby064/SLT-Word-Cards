@@ -12,6 +12,9 @@ struct Deck: Identifiable, Codable, Hashable, Sendable {
     var printCopies: Int
     var createdAt: Date
     var updatedAt: Date
+    /// Set when the deck arrived as a pack from someone else. Optional so decks
+    /// saved before packs existed still decode.
+    var importedAt: Date?
 
     init(
         id: UUID = UUID(),
@@ -19,7 +22,8 @@ struct Deck: Identifiable, Codable, Hashable, Sendable {
         cardIDs: [Card.ID] = [],
         printCopies: Int = 1,
         createdAt: Date = Date(),
-        updatedAt: Date = Date()
+        updatedAt: Date = Date(),
+        importedAt: Date? = nil
     ) {
         self.id = id
         self.name = name
@@ -27,9 +31,12 @@ struct Deck: Identifiable, Codable, Hashable, Sendable {
         self.printCopies = printCopies
         self.createdAt = createdAt
         self.updatedAt = updatedAt
+        self.importedAt = importedAt
     }
 
     var cardCount: Int { cardIDs.count }
+
+    var isImported: Bool { importedAt != nil }
 
     /// Adds cards that aren't already present, preserving existing order.
     mutating func add(_ ids: [Card.ID]) {

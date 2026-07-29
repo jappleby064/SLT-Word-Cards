@@ -35,6 +35,7 @@ final class DeckLibrary {
 
     private var root: URL = DeckStorage.localRoot
     private let coder = DeckStorage.Coder()
+    private let watcher = ICloudWatcher()
 
     // MARK: Lifecycle
 
@@ -52,6 +53,16 @@ final class DeckLibrary {
 
         reload()
         isReady = true
+
+        if resolved.location == .iCloud {
+            // Clients and decks both live in this container, so one watcher
+            // keeps the whole two-tier library live.
+            watcher.start { [weak self] in
+                guard let self else { return }
+                Task { await DeckStorage.requestDownloads(in: self.root) }
+                self.reload()
+            }
+        }
     }
 
     /// Re-reads from disk. Called on foreground so edits made on another device
@@ -80,9 +91,28 @@ final class DeckLibrary {
 
     // MARK: Clients
 
+    /// Reserved collection holding the decks a person makes for themselves in
+    /// Client mode. Storing it as an ordinary client keeps one storage and sync
+    /// path for both modes; the therapist-facing lists filter it out.
+    static let personalClientID = UUID(uuidString: "5C1DECC0-0000-4000-8000-000000000001")!
+
+    /// Clients a therapist manages — everything except the personal collection.
+    var therapistClients: [Client] {
+        clients.filter { $0.id != Self.personalClientID }
+    }
+
+    /// The personal collection, created on first use.
     @discardableResult
-    func addClient(named name: String) -> Client {
-        let client = Client(name: name.trimmed)
+    func personalCollection() -> Client {
+        if let existing = clients.first(where: { $0.id == Self.personalClientID }) {
+            return existing
+        }
+        return addClient(named: "My Decks", id: Self.personalClientID)
+    }
+
+    @discardableResult
+    func addClient(named name: String, id: UUID = UUID()) -> Client {
+        let client = Client(id: id, name: name.trimmed)
         coder.write(client, root: root)
         clients.append(client)
         clients.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
@@ -131,6 +161,34 @@ final class DeckLibrary {
     func delete(_ deck: Deck, from client: Client) {
         coder.delete(deck, for: client, root: root)
         decksByClient[client.id]?.removeAll { $0.id == deck.id }
+    }
+
+    // MARK: Packs
+
+    /// Saves a received pack as a new deck. Never overwrites an existing deck —
+    /// importing the same pack twice gives you "Name 2" rather than replacing
+    /// work in progress.
+    @discardableResult
+    func importPack(_ pack: DeckPack, for client: Client) -> Deck {
+        let deck = Deck(
+            name: uniqueName(from: pack.name, for: client),
+            cardIDs: pack.cardIDs,
+            printCopies: max(1, pack.printCopies),
+            importedAt: Date()
+        )
+        coder.write(deck, for: client, root: root)
+        decksByClient[client.id, default: []].insert(deck, at: 0)
+        return deck
+    }
+
+    private func uniqueName(from name: String, for client: Client) -> String {
+        let base = name.trimmed.isEmpty ? "Imported Deck" : name.trimmed
+        let existing = Set(decks(for: client).map(\.name))
+        guard existing.contains(base) else { return base }
+
+        var suffix = 2
+        while existing.contains("\(base) \(suffix)") { suffix += 1 }
+        return "\(base) \(suffix)"
     }
 
     /// Adds cards to an existing deck, skipping ones already in it.

@@ -1,7 +1,10 @@
-# SLT Word Cards — iOS app
+# SLT Word Cards — iPhone, iPad and Mac app
 
-A native iPhone/iPad companion to the web app. Same `cards.csv`, same search, same
-print sheet — plus saved decks and an on-device presenter.
+A native companion to the web app. Same `cards.csv`, same search, same print
+sheet — plus saved decks, an on-device presenter, and shareable deck packs.
+
+One target covers all three platforms via Mac Catalyst, deliberately keeping the
+same bundle id so every platform shares one iCloud container.
 
 ## Open it
 
@@ -25,6 +28,12 @@ Device (team `3PJCNVU63X`, automatic signing):
 
 ```bash
 xcodebuild -project ios/SLTWordCards.xcodeproj -scheme SLTWordCards -sdk iphoneos -destination 'generic/platform=iOS' -allowProvisioningUpdates build
+```
+
+Mac:
+
+```bash
+xcodebuild -project ios/SLTWordCards.xcodeproj -scheme SLTWordCards -destination 'platform=macOS,variant=Mac Catalyst' -allowProvisioningUpdates build
 ```
 
 ## How content works
@@ -65,6 +74,48 @@ becomes available.
 Note that iCloud is inert in the Simulator unless the build is signed with the
 entitlement, so the Decks tab will say "Saved on this device" there. That is
 expected, not a failure.
+
+## Modes
+
+Chosen on first launch, changeable in Settings, and never destructive either way:
+
+- **Therapist** — the full library: clients, decks grouped under them, and packs
+  to send out.
+- **Client** — one flat list of their own decks plus the ones a therapist sent.
+  No client creation and no grouping.
+
+Client mode is backed by a reserved client record (a fixed UUID named "My Decks")
+so both modes share exactly one storage and sync path; the therapist-facing lists
+simply filter it out. Switching to Client mode hides client folders rather than
+touching them.
+
+## Deck packs
+
+A pack is a deck's **name and card ids** — nothing else. Every install resolves
+pictures from the same `cards.csv` and `images/`, so naming the cards is enough.
+That keeps a twelve-card pack around a kilobyte, and means it carries no images
+and, deliberately, no client identity.
+
+One payload, three carriers:
+
+| Carrier | Form | Used by |
+|---|---|---|
+| File | `Name.sltdeck` (pretty JSON) | AirDrop, Mail, Messages, Files |
+| Web link | `https://speakeasy-slt.uk/#deck=<base64url>` | the web app |
+| App link | `sltcards://deck?d=<base64url>` | the web page's "Open in the app" |
+
+The link payload lives in the URL **fragment**, so it is never sent to a server.
+The base64url transform and compact JSON keys (`v`, `n`, `c`, `p`) are identical
+in `DeckPack.swift` and `app.js`, verified round-tripping in both directions.
+
+Incoming packs are always confirmed before saving, are never allowed to overwrite
+an existing deck (a second import becomes "Name 2"), and report how many cards
+aren't in the local card set yet — those resolve on their own after a content sync.
+
+Universal links would let a web link open the app directly without the custom
+scheme. That needs an `apple-app-site-association` file served from the domain
+plus the associated-domains capability, so it is left as a follow-up rather than
+half-configured here.
 
 ## Print layout
 

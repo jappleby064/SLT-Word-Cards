@@ -12,7 +12,7 @@ struct ClientsView: View {
     var body: some View {
         NavigationStack {
             List {
-                if decks.clients.isEmpty {
+                if decks.therapistClients.isEmpty {
                     Section {
                         ContentUnavailableView {
                             Label("No clients yet", systemImage: "folder.badge.plus")
@@ -26,7 +26,7 @@ struct ClientsView: View {
                     }
                 } else {
                     Section {
-                        ForEach(decks.clients) { client in
+                        ForEach(decks.therapistClients) { client in
                             NavigationLink(value: client) {
                                 row(for: client)
                             }
@@ -46,7 +46,7 @@ struct ClientsView: View {
                         }
                         .onDelete { offsets in
                             for index in offsets {
-                                decks.delete(decks.clients[index])
+                                decks.delete(decks.therapistClients[index])
                             }
                         }
                     } footer: {

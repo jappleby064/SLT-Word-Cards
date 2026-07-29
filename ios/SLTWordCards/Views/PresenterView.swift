@@ -2,6 +2,10 @@ import SwiftUI
 
 /// The on-device deck: one card at a time, tap to reveal the word, swipe or use
 /// the buttons to move through.
+///
+/// Renders only the current card rather than a paged `TabView` — the page style
+/// is iPhone/iPad-only, and this keeps one code path across iOS and Mac while
+/// still supporting swipe, buttons, and arrow keys.
 struct PresenterView: View {
     let cards: [Card]
     let title: String
@@ -12,6 +16,7 @@ struct PresenterView: View {
     @State private var index = 0
     @State private var isWordRevealed = false
     @State private var alwaysShowWord = false
+    @State private var dragOffset: Double = 0
 
     var body: some View {
         NavigationStack {
@@ -29,10 +34,10 @@ struct PresenterView: View {
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Done") { dismiss() }
                 }
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Menu {
                         Toggle("Always show word", isOn: $alwaysShowWord)
                         Button {
@@ -58,19 +63,16 @@ struct PresenterView: View {
         }
     }
 
+    private var current: Card? {
+        order.indices.contains(index) ? order[index] : nil
+    }
+
     private var content: some View {
         VStack(spacing: 0) {
-            TabView(selection: $index) {
-                ForEach(Array(order.enumerated()), id: \.offset) { position, card in
-                    cardPage(card)
-                        .tag(position)
-                }
+            if let current {
+                cardPage(current)
+                    .frame(maxHeight: .infinity)
             }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .onChange(of: index) { _, _ in
-                isWordRevealed = false
-            }
-
             controls
         }
         .background(Color(.systemGroupedBackground))
@@ -83,9 +85,13 @@ struct PresenterView: View {
             CardFaceView(card: card, cornerRadius: 24)
                 .padding(.horizontal, 24)
                 .shadow(color: .black.opacity(0.12), radius: 12, y: 6)
+                .id(card.id)
+                .transition(.opacity)
+                .offset(x: dragOffset)
                 .onTapGesture {
                     withAnimation(.snappy) { isWordRevealed.toggle() }
                 }
+                .gesture(swipe)
 
             // Both states share one fixed-height, full-width block: the hint must
             // not be laid out inside the word's frame, or its line count and
@@ -98,7 +104,7 @@ struct PresenterView: View {
                     .opacity(showsWord ? 1 : 0)
                     .accessibilityHidden(!showsWord)
 
-                Text("Tap the card to show the word")
+                Text(revealHint)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
@@ -115,6 +121,30 @@ struct PresenterView: View {
         .contentShape(.rect)
     }
 
+    private var revealHint: String {
+        #if targetEnvironment(macCatalyst)
+        "Click the card to show the word"
+        #else
+        "Tap the card to show the word"
+        #endif
+    }
+
+    /// Horizontal swipe to move between cards, with a little rubber-banding.
+    private var swipe: some Gesture {
+        DragGesture(minimumDistance: 20)
+            .onChanged { value in
+                dragOffset = value.translation.width / 3
+            }
+            .onEnded { value in
+                dragOffset = 0
+                if value.translation.width < -60 {
+                    goTo(index + 1)
+                } else if value.translation.width > 60 {
+                    goTo(index - 1)
+                }
+            }
+    }
+
     private var controls: some View {
         HStack {
             Button {
@@ -123,8 +153,10 @@ struct PresenterView: View {
                 Image(systemName: "chevron.left")
                     .font(.title2)
                     .frame(width: 56, height: 56)
+                    .contentShape(.rect)
             }
             .disabled(index == 0)
+            .keyboardShortcut(.leftArrow, modifiers: [])
 
             Spacer()
 
@@ -143,12 +175,24 @@ struct PresenterView: View {
                 Image(systemName: "chevron.right")
                     .font(.title2)
                     .frame(width: 56, height: 56)
+                    .contentShape(.rect)
             }
             .disabled(index >= order.count - 1)
+            .keyboardShortcut(.rightArrow, modifiers: [])
         }
         .padding(.horizontal, 24)
         .padding(.bottom, 8)
         .background(.bar)
+        .overlay {
+            // Space bar reveals, without taking focus from the arrow keys.
+            Button("") {
+                withAnimation(.snappy) { isWordRevealed.toggle() }
+            }
+            .keyboardShortcut(.space, modifiers: [])
+            .opacity(0)
+            .frame(width: 0, height: 0)
+            .accessibilityHidden(true)
+        }
     }
 
     private var showsWord: Bool {
@@ -157,9 +201,14 @@ struct PresenterView: View {
 
     private func goTo(_ target: Int) {
         guard !order.isEmpty else { return }
-        withAnimation(.snappy) {
-            index = min(max(0, target), order.count - 1)
+        let clamped = min(max(0, target), order.count - 1)
+        guard clamped != index || isWordRevealed else {
+            index = clamped
+            return
         }
-        isWordRevealed = false
+        withAnimation(.snappy) {
+            index = clamped
+            isWordRevealed = false
+        }
     }
 }
