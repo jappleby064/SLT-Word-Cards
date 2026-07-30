@@ -451,7 +451,9 @@ function setupPresenter() {
 
     document.getElementById('presenterRight').addEventListener('click', () => markAnswer(true));
     document.getElementById('presenterWrong').addEventListener('click', () => markAnswer(false));
-    document.getElementById('presenterSummaryDone').addEventListener('click', closePresenter);
+    document.getElementById('presenterSummaryDone').addEventListener('click', () => {
+        closePresenter({ confirmIfUnfinished: false });
+    });
     document.getElementById('presenterRetryAll').addEventListener('click', () => {
         startRun(presenter.source);
     });
@@ -459,7 +461,9 @@ function setupPresenter() {
         startRun(presenter.order.filter(card => presenter.marks[card.id] === false));
     });
 
-    document.getElementById('presenterClose').addEventListener('click', closePresenter);
+    // Wrapped rather than passed directly: the handler would hand the click event
+    // in as the options object.
+    document.getElementById('presenterClose').addEventListener('click', () => closePresenter());
     document.getElementById('presenterPrev').addEventListener('click', () => movePresenter(-1));
     document.getElementById('presenterNext').addEventListener('click', () => movePresenter(1));
     document.getElementById('presenterCard').addEventListener('click', toggleReveal);
@@ -583,9 +587,29 @@ function showTestSummary() {
     document.getElementById('presenterSummary').hidden = false;
 }
 
-function closePresenter() {
+// A part-finished score exists only in memory, so closing has to be deliberate —
+// there is nothing to fall back on afterwards.
+function testInProgress() {
+    return presenter.mode === 'test'
+        && Object.keys(presenter.marks).length > 0
+        && document.getElementById('presenterSummary').hidden;
+}
+
+function closePresenter({ confirmIfUnfinished = true } = {}) {
+    if (confirmIfUnfinished && testInProgress()) {
+        const ok = window.confirm(
+            "Discard this test? The score so far isn't saved anywhere, so closing now loses it."
+        );
+        if (!ok) return;
+    }
+
     presenter.root.hidden = true;
     document.body.classList.remove('presenting');
+
+    // The score lasts exactly as long as the test is open.
+    presenter.marks = {};
+    presenter.order = [];
+    presenter.source = [];
 }
 
 function movePresenter(step) {

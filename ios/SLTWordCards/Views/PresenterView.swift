@@ -35,10 +35,12 @@ struct PresenterView: View {
     @State private var isWordRevealed = false
     @State private var alwaysShowWord = false
     @State private var dragOffset: Double = 0
-    /// Marks for this run, keyed by card. Deliberately not saved: a score is
-    /// about the session in front of you, not a record to keep on a client.
+    /// Marks for this run, keyed by card. Held here and nowhere else: the score
+    /// lasts as long as the test is open and is discarded when it closes. Nothing
+    /// is written to disk, so no record is kept against a client.
     @State private var marks: [Card.ID: Bool] = [:]
     @State private var isShowingSummary = false
+    @State private var isConfirmingDiscard = false
 
     private var isTest: Bool { mode == .test }
 
@@ -61,7 +63,13 @@ struct PresenterView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") { dismiss() }
+                    Button("Done") {
+                        if isTestInProgress {
+                            isConfirmingDiscard = true
+                        } else {
+                            dismiss()
+                        }
+                    }
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Menu {
@@ -87,9 +95,28 @@ struct PresenterView: View {
                 }
             }
         }
+        // A part-finished score exists only in memory, so a stray swipe would
+        // destroy it with nothing to fall back on. Closing has to be deliberate.
+        .interactiveDismissDisabled(isTestInProgress)
+        .confirmationDialog(
+            "Discard this test?",
+            isPresented: $isConfirmingDiscard,
+            titleVisibility: .visible
+        ) {
+            Button("Discard", role: .destructive) { dismiss() }
+            Button("Keep Testing", role: .cancel) {}
+        } message: {
+            Text("The score so far isn't saved anywhere, so closing now loses it.")
+        }
         .onAppear {
             if order.isEmpty { order = cards }
         }
+    }
+
+    /// A test that has been started but not yet finished. Once the summary is up
+    /// the score has been seen, so closing needs no warning.
+    private var isTestInProgress: Bool {
+        isTest && !marks.isEmpty && !isShowingSummary
     }
 
     private var current: Card? {
