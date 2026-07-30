@@ -209,83 +209,72 @@
     </div>
 
     <!--
-        Request a card.
-
-        This is a real form in the markup, not one built by script, because a
-        host's form handler has to be able to find it at deploy time. It posts
-        through the host, which holds the destination address in its own settings —
-        so the address is never in this page, and never shown to whoever fills it
-        in. See ios/README.md for the per-host setup.
+        Request a card. The fields are collected and formatted here, then handed
+        to the user's mail app as a ready-made message. The IPA keyboards are the
+        same ones the search fields use, so a sound is picked rather than typed.
     -->
     <div id="requestDialog" class="modal" hidden aria-modal="true" role="dialog" aria-label="Request a card">
         <div class="modal-panel">
             <h2>Request a card</h2>
             <p class="modal-note">
-                Tell us the word and its sounds and we'll look at adding it to the set.
-                Everything except the picture is needed.
+                Fill this in and we'll open an email ready to send. Everything except
+                the picture is needed.
             </p>
 
-            <form id="requestForm" name="card-request" method="POST" data-netlify="true"
-                  data-netlify-honeypot="bot-field" enctype="multipart/form-data" action="/">
-                <input type="hidden" name="form-name" value="card-request">
-                <!-- Honeypot: a bot fills this, a person never sees it. -->
-                <p hidden>
-                    <label>Leave this empty <input name="bot-field"></label>
-                </p>
+            <label class="input-group" for="requestWord">
+                <span>Word <span aria-hidden="true">*</span></span>
+                <input type="text" id="requestWord" autocomplete="off" placeholder="e.g. shell">
+            </label>
 
-                <label class="input-group" for="requestWord">
-                    <span>Word <span aria-hidden="true">*</span></span>
-                    <input type="text" id="requestWord" name="word" required autocomplete="off">
-                </label>
+            <label class="input-group" for="requestType">
+                <span>Card type</span>
+                <select id="requestType">
+                    <option value="word">Word</option>
+                    <option value="number">Number</option>
+                </select>
+            </label>
 
-                <label class="input-group" for="requestType">
-                    <span>Card type</span>
-                    <select id="requestType" name="type">
-                        <option value="word">Word</option>
-                        <option value="number">Number</option>
-                    </select>
-                </label>
-
-                <label class="input-group" for="requestInitial">
-                    <span>Word initial sound <span aria-hidden="true">*</span></span>
-                    <input type="text" id="requestInitial" name="initial_sound" required
-                           placeholder="e.g. dʒ" autocomplete="off">
-                </label>
-
-                <label class="input-group" for="requestFinal">
-                    <span>Word final sound <span aria-hidden="true">*</span></span>
-                    <input type="text" id="requestFinal" name="final_sound" required
-                           placeholder="e.g. ŋ" autocomplete="off">
-                </label>
-
-                <label class="input-group" for="requestStructure">
-                    <span>Structure <span aria-hidden="true">*</span></span>
-                    <input type="text" id="requestStructure" name="structure" required
-                           placeholder="e.g. CVC" autocomplete="off">
-                </label>
-
-                <label class="input-group" for="requestEmail">
-                    <span>Your email (optional, if you'd like a reply)</span>
-                    <input type="email" id="requestEmail" name="reply_to" autocomplete="email">
-                </label>
-
-                <label class="input-group" for="requestNotes">
-                    <span>Anything else</span>
-                    <textarea id="requestNotes" name="notes" rows="3"></textarea>
-                </label>
-
-                <label class="input-group" for="requestImage">
-                    <span>Picture (optional, square works best)</span>
-                    <input type="file" id="requestImage" name="image" accept="image/*">
-                </label>
-
-                <p id="requestStatus" class="modal-note" role="status"></p>
-
-                <div class="button-row">
-                    <button type="submit" id="requestSubmitBtn" class="primary-btn">Send Request</button>
-                    <button type="button" id="requestCloseBtn" class="secondary-btn">Cancel</button>
+            <div class="input-group">
+                <label for="requestInitial">Word initial sound <span aria-hidden="true">*</span></label>
+                <div class="ipa-field">
+                    <input type="text" id="requestInitial" placeholder="Pick a sound" readonly>
+                    <button type="button" id="requestInitialToggle" class="ipa-toggle" aria-label="Open IPA keyboard" aria-expanded="false" title="IPA keyboard">&#9000;</button>
+                    <div id="requestInitialKeyboard" class="ipa-popup" hidden></div>
                 </div>
-            </form>
+            </div>
+
+            <div class="input-group">
+                <label for="requestFinal">Word final sound <span aria-hidden="true">*</span></label>
+                <div class="ipa-field">
+                    <input type="text" id="requestFinal" placeholder="Pick a sound" readonly>
+                    <button type="button" id="requestFinalToggle" class="ipa-toggle" aria-label="Open IPA keyboard" aria-expanded="false" title="IPA keyboard">&#9000;</button>
+                    <div id="requestFinalKeyboard" class="ipa-popup" hidden></div>
+                </div>
+            </div>
+
+            <label class="input-group" for="requestStructure">
+                <span>Structure <span aria-hidden="true">*</span></span>
+                <select id="requestStructure">
+                    <option value="">Choose…</option>
+                </select>
+            </label>
+
+            <label class="input-group" for="requestNotes">
+                <span>Anything else</span>
+                <textarea id="requestNotes" rows="2"></textarea>
+            </label>
+
+            <label class="input-group" for="requestImage">
+                <span>Picture (optional, square works best)</span>
+                <input type="file" id="requestImage" accept="image/*">
+            </label>
+
+            <p id="requestStatus" class="modal-note" role="status"></p>
+
+            <div class="button-row">
+                <button type="button" id="requestSubmitBtn" class="primary-btn">Open Email</button>
+                <button type="button" id="requestCloseBtn" class="secondary-btn">Cancel</button>
+            </div>
         </div>
     </div>
 
@@ -299,40 +288,22 @@
             <h2>Report an issue</h2>
             <p class="modal-note">Tell us what went wrong and we'll take a look.</p>
 
-            <form id="issueForm" name="issue-report" method="POST" data-netlify="true"
-                  data-netlify-honeypot="bot-field" action="/">
-                <input type="hidden" name="form-name" value="issue-report">
-                <p hidden>
-                    <label>Leave this empty <input name="bot-field"></label>
-                </p>
+            <label class="input-group" for="issueDescription">
+                <span>What happened <span aria-hidden="true">*</span></span>
+                <textarea id="issueDescription" rows="3"></textarea>
+            </label>
 
-                <label class="input-group" for="issueDescription">
-                    <span>What happened <span aria-hidden="true">*</span></span>
-                    <textarea id="issueDescription" name="description" rows="3" required></textarea>
-                </label>
+            <label class="input-group" for="issueSteps">
+                <span>What you did just before</span>
+                <textarea id="issueSteps" rows="2"></textarea>
+            </label>
 
-                <label class="input-group" for="issueSteps">
-                    <span>What you did just before</span>
-                    <textarea id="issueSteps" name="steps" rows="2"></textarea>
-                </label>
+            <p id="issueStatus" class="modal-note" role="status"></p>
 
-                <label class="input-group" for="issueDevice">
-                    <span>Browser or device</span>
-                    <input type="text" id="issueDevice" name="device" autocomplete="off">
-                </label>
-
-                <label class="input-group" for="issueEmail">
-                    <span>Your email (optional, if you'd like a reply)</span>
-                    <input type="email" id="issueEmail" name="reply_to" autocomplete="email">
-                </label>
-
-                <p id="issueStatus" class="modal-note" role="status"></p>
-
-                <div class="button-row">
-                    <button type="submit" id="issueSubmitBtn" class="primary-btn">Send Report</button>
-                    <button type="button" id="issueCloseBtn" class="secondary-btn">Cancel</button>
-                </div>
-            </form>
+            <div class="button-row">
+                <button type="button" id="issueSubmitBtn" class="primary-btn">Open Email</button>
+                <button type="button" id="issueCloseBtn" class="secondary-btn">Cancel</button>
+            </div>
         </div>
     </div>
 

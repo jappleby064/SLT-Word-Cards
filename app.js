@@ -866,114 +866,63 @@ function readDeckFile(file) {
 }
 
 // ---------------------------------------------------------------------------
-// Requesting a card
+// Requesting a card, and reporting an issue
 //
-// The form posts to the host, which holds the destination address in its own
-// settings. That is the whole point: the address appears nowhere in this page
-// and is never shown to whoever fills the form in — which a mailto: link could
-// never manage, since it puts the address straight into the compose window.
+// Both collect their fields here, format them, and hand a ready-made message to
+// the user's own mail app. The sounds are chosen from the same IPA keyboard the
+// search fields use, so a phoneme is picked rather than typed — which is what
+// makes the request usable without a round of clarification.
 //
-// Set REQUEST_ENDPOINT to match the host. '/' is Netlify and Cloudflare Pages
-// form handling, which picks the form up from the markup at deploy time.
+// mailto: cannot carry an attachment, so a chosen picture is squared off to
+// 500x500 and downloaded for the user to attach to the message themselves.
 // ---------------------------------------------------------------------------
 
-const REQUEST_ENDPOINT = '/';
+const SUPPORT_ADDRESS = 'james@applebytechnical.com';
 
-/// Posts a form through the host and reports honestly. Shared by the card
-/// request and the issue report so their behaviour can't drift, and so neither
-/// ever falls back to revealing an address.
-async function submitFormThroughHost({ form, status, button, sendingLabel, sentLabel, onSent, transform }) {
-    const originalLabel = button.textContent;
-    button.disabled = true;
-    button.textContent = sendingLabel;
-    status.style.color = '';
-    status.textContent = '';
-
-    try {
-        const body = new FormData(form);
-        if (transform) await transform(body);
-
-        const response = await fetch(REQUEST_ENDPOINT, {
-            method: 'POST',
-            body
-        });
-        if (!response.ok) throw new Error(`Server returned ${response.status}`);
-
-        form.reset();
-        status.style.color = '';
-        status.textContent = sentLabel;
-        setTimeout(onSent, 2200);
-    } catch (err) {
-        // Don't pretend it worked, and don't fall back to exposing an address.
-        status.style.color = '#b91c1c';
-        status.textContent = "That couldn't be sent just now. Please try again later.";
-        console.error('Form submission failed:', err);
-    } finally {
-        button.disabled = false;
-        button.textContent = originalLabel;
-    }
-}
-
-function setupIssueReport() {
-    const dialog = document.getElementById('issueDialog');
-    const form = document.getElementById('issueForm');
-    const status = document.getElementById('issueStatus');
-    const button = document.getElementById('issueSubmitBtn');
-    const description = document.getElementById('issueDescription');
-
-    document.getElementById('issueBtn').addEventListener('click', () => {
-        status.textContent = '';
-        status.style.color = '';
-        // Prefill what we can rather than asking the user to describe their setup.
-        if (!document.getElementById('issueDevice').value) {
-            document.getElementById('issueDevice').value = navigator.userAgent;
-        }
-        dialog.hidden = false;
-        description.focus();
-    });
-
-    document.getElementById('issueCloseBtn').addEventListener('click', () => {
-        dialog.hidden = true;
-    });
-
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && !dialog.hidden) dialog.hidden = true;
-    });
-
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        if (!description.value.trim()) {
-            status.style.color = '#b91c1c';
-            status.textContent = 'Please describe what went wrong.';
-            description.focus();
-            return;
-        }
-        submitFormThroughHost({
-            form,
-            status,
-            button,
-            sendingLabel: 'Sending…',
-            sentLabel: 'Thanks — your report has been sent.',
-            onSent: () => { dialog.hidden = true; }
-        });
-    });
+function openFormattedEmail(subject, body) {
+    const url = `mailto:${SUPPORT_ADDRESS}`
+        + `?subject=${encodeURIComponent(subject)}`
+        + `&body=${encodeURIComponent(body)}`;
+    window.location.href = url;
 }
 
 function setupCardRequest() {
     const dialog = document.getElementById('requestDialog');
-    const form = document.getElementById('requestForm');
     const status = document.getElementById('requestStatus');
-    const submitBtn = document.getElementById('requestSubmitBtn');
+    const structureSelect = document.getElementById('requestStructure');
 
-    const open = () => {
+    // The same IPA keyboards as the search fields.
+    setupIpaField(
+        document.getElementById('requestInitial'),
+        document.getElementById('requestInitialToggle'),
+        document.getElementById('requestInitialKeyboard')
+    );
+    setupIpaField(
+        document.getElementById('requestFinal'),
+        document.getElementById('requestFinalToggle'),
+        document.getElementById('requestFinalKeyboard')
+    );
+
+    // Offer the structures already in use, so requests stay consistent with the set.
+    window.addEventListener('cards-loaded', () => {
+        const structures = [...new Set(allCards.map(card => card.structure))]
+            .filter(Boolean)
+            .sort((a, b) => a.length - b.length || a.localeCompare(b));
+        structures.forEach(structure => {
+            const option = document.createElement('option');
+            option.value = structure;
+            option.textContent = structure.toUpperCase();
+            structureSelect.appendChild(option);
+        });
+    });
+
+    document.getElementById('infoBtn').addEventListener('click', () => {
         status.textContent = '';
         status.style.color = '';
         dialog.hidden = false;
         document.getElementById('requestWord').focus();
-    };
+    });
 
-    // Replaces the old mailto link, which exposed the address.
-    infoBtn.addEventListener('click', open);
     document.getElementById('requestCloseBtn').addEventListener('click', () => {
         dialog.hidden = true;
     });
@@ -982,41 +931,53 @@ function setupCardRequest() {
         if (e.key === 'Escape' && !dialog.hidden) dialog.hidden = true;
     });
 
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
+    document.getElementById('requestSubmitBtn').addEventListener('click', async () => {
+        const word = document.getElementById('requestWord').value.trim();
+        const initial = document.getElementById('requestInitial').value.trim();
+        const final = document.getElementById('requestFinal').value.trim();
+        const structure = structureSelect.value;
+        const notes = document.getElementById('requestNotes').value.trim();
+        const file = document.getElementById('requestImage').files[0];
 
-        // Enforce everything but the picture.
-        const required = ['requestWord', 'requestInitial', 'requestFinal', 'requestStructure'];
-        const missing = required.filter(id => !document.getElementById(id).value.trim());
-        if (missing.length > 0) {
+        // Everything but the picture is required.
+        if (!word || !initial || !final || !structure) {
             status.style.color = '#b91c1c';
             status.textContent = 'Fill in the word, both sounds, and the structure.';
-            document.getElementById(missing[0]).focus();
             return;
         }
 
-        submitFormThroughHost({
-            form,
-            status,
-            button: submitBtn,
-            sendingLabel: 'Sending…',
-            sentLabel: 'Thanks — your request has been sent.',
-            onSent: () => { dialog.hidden = true; },
-            transform: squareAttachedImage
-        });
+        // A picture can't be attached to a mailto, so save it for the user to add.
+        let imageNote = 'no';
+        if (file) {
+            const saved = await downloadSquaredImage(file, word);
+            imageNote = saved
+                ? `yes — "${saved}" has been saved to your downloads, please attach it`
+                : 'yes, to follow separately';
+        }
+
+        const lines = [
+            `Word: ${word}`,
+            `Type: ${document.getElementById('requestType').value}`,
+            `Word initial sound: ${initial}`,
+            `Word final sound: ${final}`,
+            `Structure: ${structure.toUpperCase()}`,
+            `Image: ${imageNote}`
+        ];
+        if (notes) lines.push('', 'Notes:', notes);
+        lines.push('', 'Sent from the SLT Word Cards website.');
+
+        openFormattedEmail(`Card request: ${word}`, lines.join('\n'));
+
+        status.style.color = '';
+        status.textContent = file
+            ? 'Your email is open — remember to attach the saved picture.'
+            : 'Your email is open, ready to send.';
     });
 }
 
-// Squares an attached picture to 500×500 with white padding before it is sent —
-// the same treatment the app applies, and it keeps a multi-megabyte phone photo
-// from being uploaded whole. If anything goes wrong the original is sent as-is.
-async function squareAttachedImage(body) {
-    const file = body.get('image');
-    if (!(file instanceof File) || file.size === 0) {
-        body.delete('image');
-        return;
-    }
-
+// Squares a picture to 500x500 with white padding — matching how the app treats
+// pictures — and saves it so it can be attached. Returns the filename, or null.
+async function downloadSquaredImage(file, word) {
     try {
         const bitmap = await createImageBitmap(file);
         const side = 500;
@@ -1036,12 +997,60 @@ async function squareAttachedImage(body) {
         bitmap.close();
 
         const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
-        if (!blob) return;
+        if (!blob) return null;
 
-        const word = (document.getElementById('requestWord').value.trim() || 'card')
-            .replace(/[^\w-]+/g, '-');
-        body.set('image', blob, `${word}.jpg`);
+        const name = `${(word || 'card').replace(/[^\w-]+/g, '-')}.jpg`;
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = name;
+        link.click();
+        URL.revokeObjectURL(url);
+        return name;
     } catch (err) {
-        console.warn('Could not resize the picture; sending it unchanged.', err);
+        console.warn('Could not prepare the picture.', err);
+        return null;
     }
+}
+
+function setupIssueReport() {
+    const dialog = document.getElementById('issueDialog');
+    const status = document.getElementById('issueStatus');
+    const description = document.getElementById('issueDescription');
+
+    document.getElementById('issueBtn').addEventListener('click', () => {
+        status.textContent = '';
+        status.style.color = '';
+        dialog.hidden = false;
+        description.focus();
+    });
+
+    document.getElementById('issueCloseBtn').addEventListener('click', () => {
+        dialog.hidden = true;
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !dialog.hidden) dialog.hidden = true;
+    });
+
+    document.getElementById('issueSubmitBtn').addEventListener('click', () => {
+        const what = description.value.trim();
+        if (!what) {
+            status.style.color = '#b91c1c';
+            status.textContent = 'Please describe what went wrong.';
+            description.focus();
+            return;
+        }
+        const steps = document.getElementById('issueSteps').value.trim();
+
+        const lines = ['What happened:', what];
+        if (steps) lines.push('', 'What they did just before:', steps);
+        // Filled in rather than asked for.
+        lines.push('', `Browser: ${navigator.userAgent}`, `Page: ${location.href}`);
+
+        openFormattedEmail('SLT Word Cards issue report', lines.join('\n'));
+
+        status.style.color = '';
+        status.textContent = 'Your email is open, ready to send.';
+    });
 }

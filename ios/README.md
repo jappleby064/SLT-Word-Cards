@@ -165,24 +165,19 @@ Both platforms collect the same fields, with the picture optional and the rest
 enforced. The app uses the system mail composer, attaching the picture as a
 squared-off JPEG, and falls back to `mailto:` where no mail account is set up.
 
-The web forms never expose the destination address. They are Netlify Forms:
-`card-request` and `issue-report`, declared in `index.html` so Netlify can detect
-them at deploy time, and submitted with `fetch` to `/`. The address lives in the
-Netlify form notification settings, not in the page — which a `mailto:` could
-never manage, since it puts the address straight into the compose window.
+The web dialogue collects the same fields — with the same IPA keyboards the search
+fields use, so a sound is picked rather than typed and the request arrives
+unambiguous — then formats them and opens the user's own mail app with a
+ready-made message. No server is involved on either platform.
 
-Two steps in the Netlify dashboard, once a deploy containing the forms has gone
-out (detection happens at build time, so this cannot be done before then):
+One consequence worth knowing: `mailto:` shows the recipient in the compose
+window, so the address is visible to whoever is sending. It also cannot carry an
+attachment, so a chosen picture is squared off to 500×500 in the browser and saved
+to the user's downloads for them to attach, with the message noting the filename.
+The app has no such limit and attaches the picture directly.
 
-1. **Forms** → enable form detection, then redeploy once.
-2. Add the destination address under the form's notifications.
-
-Attached pictures are squared off to 500×500 in the browser before upload, both to
-match the app and to keep a multi-megabyte phone photo out of the form store.
-
-`REQUEST_ENDPOINT` in `app.js` is the one thing to change if the host ever moves:
-a form-relay service's endpoint would work in its place without touching anything
-else.
+If the address ever needs hiding again, that means a host-side form or a relay
+service rather than `mailto:` — see the git history for the Netlify Forms version.
 
 ## Print layout
 
