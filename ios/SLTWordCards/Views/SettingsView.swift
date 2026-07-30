@@ -75,12 +75,23 @@ struct SettingsView: View {
                          : "Decks are kept on this device. Sign in to iCloud to have them follow you between your own devices.")
                 }
 
+                Section {
+                    Text("A test score lasts for the run and is not saved anywhere — not on this device, not in iCloud, and never sent to us. Nothing is kept against a client.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                } header: {
+                    Text("Test scores")
+                }
+
                 Section("About") {
                     LabeledContent("Version", value: versionString)
                     Button {
                         isReportingIssue = true
                     } label: {
                         Label("Report an Issue…", systemImage: "exclamationmark.bubble")
+                    }
+                    Link(destination: URL(string: "https://speakeasy-slt.uk/privacy/")!) {
+                        Label("Privacy Policy", systemImage: "hand.raised")
                     }
                     Link("speakeasy-slt.uk", destination: URL(string: "https://speakeasy-slt.uk/")!)
                 }

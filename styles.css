@@ -881,3 +881,69 @@ body.deck-drop-active::after {
 .presenter-summary-actions .presenter-btn[hidden] {
     display: none;
 }
+
+/* Privacy policy page — long-form reading, so wider measure and looser leading. */
+
+/* .main-content is a two-column grid for the search layout; long-form prose
+   wants one comfortable column instead. */
+.main-content:has(.policy) {
+    grid-template-columns: minmax(0, 46rem);
+    justify-content: center;
+}
+
+.policy {
+    text-align: left;
+    line-height: 1.65;
+    color: var(--text-secondary);
+}
+
+.policy-lead {
+    padding: 1rem 1.2rem;
+    margin-bottom: 0.75rem;
+    background: rgba(99, 102, 241, 0.08);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    border-radius: 10px;
+    color: var(--text-primary);
+}
+
+.policy-updated {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.policy h2 {
+    margin: 1.75rem 0 0.6rem;
+    font-size: 1.15rem;
+    color: var(--text-primary);
+}
+
+.policy h3 {
+    margin: 1.25rem 0 0.4rem;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.policy p {
+    margin-bottom: 0.85rem;
+}
+
+.policy ul {
+    margin: 0 0 0.85rem 1.2rem;
+}
+
+.policy li {
+    margin-bottom: 0.5rem;
+}
+
+.policy code {
+    padding: 0.1rem 0.3rem;
+    background: rgba(99, 102, 241, 0.12);
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.policy-footer {
+    text-align: center;
+    padding: 1.5rem 0;
+}
