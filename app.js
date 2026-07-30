@@ -542,6 +542,21 @@ const DECK_PAYLOAD_VERSION = 1;
 const APP_URL_SCHEME = 'sltcards://deck?d=';
 const DECK_LINK_PATH = '/deck/';
 
+// Shared links always name the canonical host, never whatever the user happens to
+// be browsing. iOS matches a universal link's hostname exactly and decides before
+// any redirect runs, so a link built from www.speakeasy-slt.uk would open Safari
+// instead of the app — the redirect to the apex comes too late to help.
+const CANONICAL_ORIGIN = 'https://speakeasy-slt.uk';
+const CANONICAL_HOST_SUFFIX = 'speakeasy-slt.uk';
+
+function shareOrigin() {
+    // Any variant of the live domain shares as the canonical apex. Localhost and
+    // Netlify deploy previews keep their own origin so links work while testing.
+    return location.hostname.endsWith(CANONICAL_HOST_SUFFIX)
+        ? CANONICAL_ORIGIN
+        : location.origin;
+}
+
 // The native app exists on Apple platforms only, so app-specific affordances
 // stay hidden elsewhere rather than offering a link that can't work.
 function isApplePlatform() {
@@ -619,7 +634,7 @@ function setupSharing() {
         // Shared decks live at /deck/ so that Apple's universal links can claim
         // that one path — a device with the app opens it there, one without it
         // lands on the web app.
-        linkField.value = `${location.origin}${DECK_LINK_PATH}#deck=${payload}`;
+        linkField.value = `${shareOrigin()}${DECK_LINK_PATH}#deck=${payload}`;
         lengthNote.textContent =
             `${chosen.length} card${chosen.length === 1 ? '' : 's'} · ${linkField.value.length} characters`;
     };
