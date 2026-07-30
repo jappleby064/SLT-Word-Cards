@@ -419,7 +419,13 @@ const presenter = {
     root: null,
     order: [],
     index: 0,
-    revealed: false
+    revealed: false,
+    // 'present' just shows cards; 'test' marks each answer and keeps a score.
+    mode: 'present',
+    // Marks for this run only, keyed by card id. Deliberately not stored: a score
+    // is about the session in front of you, not a record kept on a client.
+    marks: {},
+    source: []
 };
 
 function setupPresenter() {
@@ -431,7 +437,26 @@ function setupPresenter() {
             alert('Select at least one card to present.');
             return;
         }
-        openPresenter(chosen, 'Selection');
+        openPresenter(chosen, 'Selection', 'present');
+    });
+
+    document.getElementById('testBtn').addEventListener('click', () => {
+        const chosen = selectedCards();
+        if (chosen.length === 0) {
+            alert('Select at least one card to test.');
+            return;
+        }
+        openPresenter(chosen, 'Selection', 'test');
+    });
+
+    document.getElementById('presenterRight').addEventListener('click', () => markAnswer(true));
+    document.getElementById('presenterWrong').addEventListener('click', () => markAnswer(false));
+    document.getElementById('presenterSummaryDone').addEventListener('click', closePresenter);
+    document.getElementById('presenterRetryAll').addEventListener('click', () => {
+        startRun(presenter.source);
+    });
+    document.getElementById('presenterRetryMissed').addEventListener('click', () => {
+        startRun(presenter.order.filter(card => presenter.marks[card.id] === false));
     });
 
     document.getElementById('presenterClose').addEventListener('click', closePresenter);
@@ -453,21 +478,109 @@ function setupPresenter() {
 
     document.addEventListener('keydown', (e) => {
         if (presenter.root.hidden) return;
-        if (e.key === 'ArrowRight') { movePresenter(1); e.preventDefault(); }
-        else if (e.key === 'ArrowLeft') { movePresenter(-1); e.preventDefault(); }
+        const testing = presenter.mode === 'test';
+        const summaryShowing = !document.getElementById('presenterSummary').hidden;
+        if (summaryShowing) {
+            if (e.key === 'Escape') closePresenter();
+            return;
+        }
+        if (e.key === 'ArrowRight') {
+            if (!testing) movePresenter(1);
+            e.preventDefault();
+        } else if (e.key === 'ArrowLeft') { movePresenter(-1); e.preventDefault(); }
         else if (e.key === ' ' || e.key === 'Enter') { toggleReveal(); e.preventDefault(); }
+        else if (testing && showingWord() && (e.key === '1' || e.key === 'x')) { markAnswer(false); e.preventDefault(); }
+        else if (testing && showingWord() && (e.key === '2' || e.key === 'c')) { markAnswer(true); e.preventDefault(); }
         else if (e.key === 'Escape') { closePresenter(); }
     });
 }
 
-function openPresenter(cards, title) {
+function openPresenter(cards, title, mode = 'present') {
+    presenter.mode = mode;
+    presenter.source = cards.slice();
+    document.getElementById('presenterTitle').textContent =
+        mode === 'test' ? `${title} · Test` : title;
+
+    // Always showing the word would defeat a test.
+    document.getElementById('presenterAlwaysShowRow').hidden = mode === 'test';
+    document.getElementById('presenterAlwaysShow').checked = false;
+    document.getElementById('presenterScore').hidden = mode !== 'test';
+
+    presenter.root.hidden = false;
+    document.body.classList.add('presenting');
+    startRun(cards);
+}
+
+// Resets for a fresh run over `cards`, keeping the mode and the original deck.
+function startRun(cards) {
     presenter.order = cards.slice();
     presenter.index = 0;
     presenter.revealed = false;
-    document.getElementById('presenterTitle').textContent = title;
-    presenter.root.hidden = false;
-    document.body.classList.add('presenting');
+    presenter.marks = {};
+    document.getElementById('presenterSummary').hidden = true;
+    document.querySelector('.presenter-stage').hidden = false;
+    document.querySelector('.presenter-controls').hidden = false;
     renderPresenter();
+}
+
+function showingWord() {
+    return presenter.mode === 'test'
+        ? presenter.revealed
+        : presenter.revealed || document.getElementById('presenterAlwaysShow').checked;
+}
+
+// Records the answer and moves on, or finishes the run on the last card.
+function markAnswer(correct) {
+    if (presenter.mode !== 'test' || !showingWord()) return;
+    const card = presenter.order[presenter.index];
+    if (!card) return;
+
+    presenter.marks[card.id] = correct;
+
+    if (presenter.index >= presenter.order.length - 1) {
+        showTestSummary();
+    } else {
+        movePresenter(1);
+    }
+}
+
+function scoreCounts() {
+    const values = Object.values(presenter.marks);
+    return {
+        correct: values.filter(Boolean).length,
+        wrong: values.filter(v => v === false).length,
+        marked: values.length
+    };
+}
+
+function showTestSummary() {
+    const { correct, marked } = scoreCounts();
+    const missed = presenter.order.filter(card => presenter.marks[card.id] === false);
+
+    document.getElementById('presenterSummaryScore').textContent = `${correct} of ${marked}`;
+    const percent = marked ? Math.round(correct / marked * 100) : 0;
+    document.getElementById('presenterSummaryLine').textContent =
+        missed.length === 0 ? `All correct · ${percent}%` : `${percent}% correct`;
+
+    const missedBox = document.getElementById('presenterSummaryMissed');
+    missedBox.innerHTML = '';
+    if (missed.length > 0) {
+        const heading = document.createElement('p');
+        heading.className = 'presenter-summary-heading';
+        heading.textContent = 'Not yet';
+        missedBox.appendChild(heading);
+        missed.forEach(card => {
+            const row = document.createElement('span');
+            row.className = 'presenter-summary-chip';
+            row.textContent = card.label;
+            missedBox.appendChild(row);
+        });
+    }
+    document.getElementById('presenterRetryMissed').hidden = missed.length === 0;
+
+    document.querySelector('.presenter-stage').hidden = true;
+    document.querySelector('.presenter-controls').hidden = true;
+    document.getElementById('presenterSummary').hidden = false;
 }
 
 function closePresenter() {
@@ -478,6 +591,9 @@ function closePresenter() {
 function movePresenter(step) {
     const next = presenter.index + step;
     if (next < 0 || next >= presenter.order.length) return;
+    if (presenter.mode === 'test' && step < 0) {
+        delete presenter.marks[presenter.order[next].id];
+    }
     presenter.index = next;
     presenter.revealed = false;
     renderPresenter();
@@ -510,13 +626,26 @@ function renderPresenter() {
         image.onerror = () => { image.src = 'images/no_image.jpg'; };
     }
 
-    const alwaysShow = document.getElementById('presenterAlwaysShow').checked;
-    const showWord = alwaysShow || presenter.revealed;
+    const testing = presenter.mode === 'test';
+    const showWord = showingWord();
 
     const word = document.getElementById('presenterWord');
     word.textContent = capitalize(card.label);
     word.style.opacity = showWord ? '1' : '0';
-    document.getElementById('presenterHint').style.opacity = showWord ? '0' : '1';
+    const hint = document.getElementById('presenterHint');
+    hint.textContent = testing
+        ? 'Tap the card to check the answer'
+        : 'Tap the card to show the word';
+    hint.style.opacity = showWord ? '0' : '1';
+
+    // Marking appears only after the reveal; the row keeps its height regardless.
+    const markSlot = document.getElementById('presenterMarkSlot');
+    markSlot.hidden = !testing;
+    markSlot.style.visibility = testing && showWord ? 'visible' : 'hidden';
+
+    const { correct, wrong } = scoreCounts();
+    document.getElementById('presenterScore').textContent =
+        `\u2713 ${correct} \u00b7 \u2717 ${wrong}`;
 
     document.getElementById('presenterCount').textContent =
         `${presenter.index + 1} of ${presenter.order.length}`;
@@ -525,8 +654,10 @@ function renderPresenter() {
     progress.value = presenter.index + 1;
 
     document.getElementById('presenterPrev').disabled = presenter.index === 0;
-    document.getElementById('presenterNext').disabled =
-        presenter.index >= presenter.order.length - 1;
+    const next = document.getElementById('presenterNext');
+    // In a test you advance by marking, so the score can't be skipped past.
+    next.disabled = testing || presenter.index >= presenter.order.length - 1;
+    next.style.visibility = testing ? 'hidden' : 'visible';
 }
 
 // ---------------------------------------------------------------------------

@@ -100,6 +100,8 @@ struct SearchView: View {
                 switch destination {
                 case .present:
                     PresenterView(cards: selectedCards, title: "Selection")
+                case .test:
+                    PresenterView(cards: selectedCards, title: "Selection", mode: .test)
                 case .print:
                     PrintSheet(cards: selectedCards, initialCopies: 1, jobName: "word-cards")
                 case .save:
@@ -135,6 +137,7 @@ struct SearchView: View {
 /// What the user wants to do with the current selection.
 enum SelectionDestination: Int, Identifiable {
     case present
+    case test
     case print
     case save
 
@@ -152,30 +155,44 @@ struct SelectionBar: View {
                 .font(.footnote.weight(.medium))
                 .foregroundStyle(.secondary)
 
-            HStack(spacing: 10) {
-                Button {
-                    action(.present)
-                } label: {
-                    Label("Present", systemImage: "play.rectangle")
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
+            // Two rows rather than four across: four labelled buttons don't fit
+            // an iPhone width without truncating.
+            VStack(spacing: 8) {
+                HStack(spacing: 10) {
+                    Button {
+                        action(.present)
+                    } label: {
+                        Label("Present", systemImage: "play.rectangle")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
 
-                Button {
-                    action(.print)
-                } label: {
-                    Label("Print", systemImage: "printer")
-                        .frame(maxWidth: .infinity)
+                    Button {
+                        action(.test)
+                    } label: {
+                        Label("Test", systemImage: "checkmark.circle")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
                 }
-                .buttonStyle(.bordered)
 
-                Button {
-                    action(.save)
-                } label: {
-                    Label("Save", systemImage: "folder.badge.plus")
-                        .frame(maxWidth: .infinity)
+                HStack(spacing: 10) {
+                    Button {
+                        action(.print)
+                    } label: {
+                        Label("Print", systemImage: "printer")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+
+                    Button {
+                        action(.save)
+                    } label: {
+                        Label("Save", systemImage: "folder.badge.plus")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
                 }
-                .buttonStyle(.bordered)
             }
             .labelStyle(.titleAndIcon)
         }

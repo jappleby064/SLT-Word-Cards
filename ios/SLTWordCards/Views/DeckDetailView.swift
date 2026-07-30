@@ -10,6 +10,7 @@ struct DeckDetailView: View {
     @Environment(CardLibrary.self) private var library
 
     @State private var isPresenting = false
+    @State private var isTesting = false
     @State private var isPrinting = false
     @State private var isAddingCards = false
     @State private var isRenaming = false
@@ -78,6 +79,11 @@ struct DeckDetailView: View {
         .sheet(isPresented: $isPresenting) {
             if let deck {
                 PresenterView(cards: library.cards(ids: deck.cardIDs), title: deck.name)
+            }
+        }
+        .sheet(isPresented: $isTesting) {
+            if let deck {
+                PresenterView(cards: library.cards(ids: deck.cardIDs), title: deck.name, mode: .test)
             }
         }
         .sheet(isPresented: $isPrinting) {
@@ -160,14 +166,24 @@ struct DeckDetailView: View {
         }
         .safeAreaInset(edge: .bottom) {
             if !cards.isEmpty {
-                HStack(spacing: 10) {
-                    Button {
-                        isPresenting = true
-                    } label: {
-                        Label("Use on Device", systemImage: "play.rectangle")
-                            .frame(maxWidth: .infinity)
+                VStack(spacing: 8) {
+                    HStack(spacing: 10) {
+                        Button {
+                            isPresenting = true
+                        } label: {
+                            Label("Present", systemImage: "play.rectangle")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderedProminent)
+
+                        Button {
+                            isTesting = true
+                        } label: {
+                            Label("Test", systemImage: "checkmark.circle")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
                     }
-                    .buttonStyle(.borderedProminent)
 
                     Button {
                         isPrinting = true

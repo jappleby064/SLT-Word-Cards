@@ -137,6 +137,22 @@ Apple fetches the association file through their CDN, so a change can take a whi
 to propagate. Append `?mode=developer` to the associated domain and enable
 Developer Mode on the device to bypass the CDN while testing.
 
+## Present and Test
+
+Both work through a deck one card at a time, tap to reveal. **Test** adds marking:
+once the word is showing, Correct / Not yet records the answer and moves on, with a
+running score, and a summary at the end offering to re-run just the missed cards.
+
+Three deliberate constraints in Test mode: marking is impossible before the reveal,
+the forward control is hidden so the score can't be skipped past, and stepping back
+clears that card's mark so a mistap can be answered again rather than being stuck in
+the score. "Always show word" is hidden, since it would defeat the exercise.
+
+Scores are held for the length of the run and never written to disk. A score is
+about the session in front of you, not a record to keep against a client — which
+also keeps this clear of the data-protection questions that storing per-client
+performance would raise.
+
 ## Your own cards
 
 Cards you make yourself are stored beside your decks, in the same private iCloud

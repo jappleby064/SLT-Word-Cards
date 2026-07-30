@@ -139,6 +139,7 @@
                         <input type="number" id="instanceCount" value="1" min="1" max="10">
                     </div>
                     <button id="presentBtn" class="primary-btn bounce-on-hover">Present Deck</button>
+                    <button id="testBtn" class="primary-btn bounce-on-hover">Test Deck</button>
                     <button id="printBtn" class="primary-btn bounce-on-hover">Download PDF</button>
                     <button id="shareBtn" class="secondary-btn">Share Deck</button>
                 </div>
@@ -156,7 +157,8 @@
             <button type="button" id="presenterClose" class="presenter-btn">Close</button>
             <span id="presenterTitle" class="presenter-title">Deck</span>
             <div class="presenter-bar-actions">
-                <label class="presenter-toggle">
+                <span id="presenterScore" class="presenter-score" hidden></span>
+                <label class="presenter-toggle" id="presenterAlwaysShowRow">
                     <input type="checkbox" id="presenterAlwaysShow">
                     Always show word
                 </label>
@@ -172,6 +174,25 @@
             <div class="presenter-label-slot">
                 <span id="presenterWord" class="presenter-word"></span>
                 <span id="presenterHint" class="presenter-hint">Tap the card to show the word</span>
+            </div>
+
+            <!-- Marking only appears once the word is showing: you can't judge an
+                 answer before seeing it. The row keeps its height either way so
+                 revealing the word never shifts the card. -->
+            <div class="presenter-mark-slot" id="presenterMarkSlot" hidden>
+                <button type="button" id="presenterWrong" class="presenter-mark presenter-mark-wrong">&#10007; Not yet</button>
+                <button type="button" id="presenterRight" class="presenter-mark presenter-mark-right">&#10003; Correct</button>
+            </div>
+        </div>
+
+        <div class="presenter-summary" id="presenterSummary" hidden>
+            <p class="presenter-summary-score" id="presenterSummaryScore">0 of 0</p>
+            <p class="presenter-summary-line" id="presenterSummaryLine"></p>
+            <div class="presenter-summary-missed" id="presenterSummaryMissed"></div>
+            <div class="presenter-summary-actions">
+                <button type="button" id="presenterRetryMissed" class="presenter-btn" hidden>Practise the missed cards</button>
+                <button type="button" id="presenterRetryAll" class="presenter-btn">Test the whole deck again</button>
+                <button type="button" id="presenterSummaryDone" class="presenter-btn">Done</button>
             </div>
         </div>
 

@@ -756,3 +756,128 @@ body.deck-drop-active::after {
     border: 3px dashed var(--primary-color);
     pointer-events: none;
 }
+
+/* Test mode: score, marking buttons, and the end-of-run summary. */
+
+.presenter-score {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+/* Fixed height so revealing the word never shifts the card above it. */
+.presenter-mark-slot {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    width: 100%;
+    max-width: 26rem;
+    height: 3rem;
+    flex: 0 0 auto;
+}
+
+.presenter-mark {
+    flex: 1;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.presenter-mark-right {
+    background: #16a34a;
+    color: #fff;
+}
+
+.presenter-mark-right:hover {
+    background: #15803d;
+}
+
+.presenter-mark-wrong {
+    background: rgba(234, 88, 12, 0.12);
+    border-color: rgba(234, 88, 12, 0.45);
+    color: #c2410c;
+}
+
+.presenter-mark-wrong:hover {
+    background: rgba(234, 88, 12, 0.2);
+}
+
+.presenter-summary {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    overflow-y: auto;
+}
+
+.presenter-summary[hidden] {
+    display: none;
+}
+
+.presenter-summary-score {
+    font-size: clamp(2.5rem, 9vw, 4rem);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.presenter-summary-line {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.presenter-summary-missed {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    align-items: center;
+    max-width: 32rem;
+}
+
+.presenter-summary-heading {
+    width: 100%;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.presenter-summary-chip {
+    padding: 0.3rem 0.7rem;
+    background: rgba(234, 88, 12, 0.12);
+    border: 1px solid rgba(234, 88, 12, 0.35);
+    border-radius: 999px;
+    font-size: 0.9rem;
+    color: #c2410c;
+}
+
+.presenter-summary-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    width: min(22rem, 100%);
+}
+
+.presenter-summary-actions .presenter-btn {
+    padding: 0.6rem 1rem;
+    font-size: 1rem;
+}
+
+/* The `hidden` attribute sets display:none in the UA stylesheet, which an author
+   rule like `display: flex` silently overrides. These restore it for the elements
+   test mode toggles, with enough specificity to win without !important. */
+.presenter-toggle[hidden],
+.presenter-mark-slot[hidden],
+.presenter-score[hidden],
+.presenter-summary-actions .presenter-btn[hidden] {
+    display: none;
+}
