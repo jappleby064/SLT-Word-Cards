@@ -9,6 +9,7 @@ struct SettingsView: View {
 
     @State private var pendingMode: AppSettings.Mode?
     @State private var isRequestingCard = false
+    @State private var isReportingIssue = false
 
     var body: some View {
         NavigationStack {
@@ -76,12 +77,20 @@ struct SettingsView: View {
 
                 Section("About") {
                     LabeledContent("Version", value: versionString)
+                    Button {
+                        isReportingIssue = true
+                    } label: {
+                        Label("Report an Issue…", systemImage: "exclamationmark.bubble")
+                    }
                     Link("speakeasy-slt.uk", destination: URL(string: "https://speakeasy-slt.uk/")!)
                 }
             }
             .navigationTitle("Settings")
             .sheet(isPresented: $isRequestingCard) {
                 RequestCardSheet()
+            }
+            .sheet(isPresented: $isReportingIssue) {
+                ReportIssueSheet()
             }
             .alert("Switch to \(pendingMode?.title ?? "") mode?", isPresented: showsModeConfirmation) {
                 Button("Cancel", role: .cancel) { pendingMode = nil }

@@ -63,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupSharing();
     setupDeckFileImport();
     setupCardRequest();
+    setupIssueReport();
 });
 
 // Fill `container` with the grouped phoneme keys; clicking one sets `targetInput`.
@@ -863,6 +864,83 @@ function readDeckFile(file) {
 
 const REQUEST_ENDPOINT = '/';
 
+/// Posts a form through the host and reports honestly. Shared by the card
+/// request and the issue report so their behaviour can't drift, and so neither
+/// ever falls back to revealing an address.
+async function submitFormThroughHost({ form, status, button, sendingLabel, sentLabel, onSent }) {
+    const originalLabel = button.textContent;
+    button.disabled = true;
+    button.textContent = sendingLabel;
+    status.style.color = '';
+    status.textContent = '';
+
+    try {
+        const response = await fetch(REQUEST_ENDPOINT, {
+            method: 'POST',
+            body: new FormData(form)
+        });
+        if (!response.ok) throw new Error(`Server returned ${response.status}`);
+
+        form.reset();
+        status.style.color = '';
+        status.textContent = sentLabel;
+        setTimeout(onSent, 2200);
+    } catch (err) {
+        // Don't pretend it worked, and don't fall back to exposing an address.
+        status.style.color = '#b91c1c';
+        status.textContent = "That couldn't be sent just now. Please try again later.";
+        console.error('Form submission failed:', err);
+    } finally {
+        button.disabled = false;
+        button.textContent = originalLabel;
+    }
+}
+
+function setupIssueReport() {
+    const dialog = document.getElementById('issueDialog');
+    const form = document.getElementById('issueForm');
+    const status = document.getElementById('issueStatus');
+    const button = document.getElementById('issueSubmitBtn');
+    const description = document.getElementById('issueDescription');
+
+    document.getElementById('issueBtn').addEventListener('click', () => {
+        status.textContent = '';
+        status.style.color = '';
+        // Prefill what we can rather than asking the user to describe their setup.
+        if (!document.getElementById('issueDevice').value) {
+            document.getElementById('issueDevice').value = navigator.userAgent;
+        }
+        dialog.hidden = false;
+        description.focus();
+    });
+
+    document.getElementById('issueCloseBtn').addEventListener('click', () => {
+        dialog.hidden = true;
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !dialog.hidden) dialog.hidden = true;
+    });
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (!description.value.trim()) {
+            status.style.color = '#b91c1c';
+            status.textContent = 'Please describe what went wrong.';
+            description.focus();
+            return;
+        }
+        submitFormThroughHost({
+            form,
+            status,
+            button,
+            sendingLabel: 'Sending…',
+            sentLabel: 'Thanks — your report has been sent.',
+            onSent: () => { dialog.hidden = true; }
+        });
+    });
+}
+
 function setupCardRequest() {
     const dialog = document.getElementById('requestDialog');
     const form = document.getElementById('requestForm');
@@ -886,7 +964,7 @@ function setupCardRequest() {
         if (e.key === 'Escape' && !dialog.hidden) dialog.hidden = true;
     });
 
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', (e) => {
         e.preventDefault();
 
         // Enforce everything but the picture.
@@ -899,30 +977,13 @@ function setupCardRequest() {
             return;
         }
 
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Sending…';
-        status.style.color = '';
-        status.textContent = '';
-
-        try {
-            const response = await fetch(REQUEST_ENDPOINT, {
-                method: 'POST',
-                body: new FormData(form)
-            });
-            if (!response.ok) throw new Error(`Server returned ${response.status}`);
-
-            form.reset();
-            status.style.color = '';
-            status.textContent = 'Thanks — your request has been sent.';
-            setTimeout(() => { dialog.hidden = true; }, 2200);
-        } catch (err) {
-            // Don't pretend it worked, and don't fall back to revealing an address.
-            status.style.color = '#b91c1c';
-            status.textContent = "That couldn't be sent just now. Please try again later.";
-            console.error('Card request failed:', err);
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Send Request';
-        }
+        submitFormThroughHost({
+            form,
+            status,
+            button: submitBtn,
+            sendingLabel: 'Sending…',
+            sentLabel: 'Thanks — your request has been sent.',
+            onSent: () => { dialog.hidden = true; }
+        });
     });
 }

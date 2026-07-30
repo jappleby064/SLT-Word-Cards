@@ -65,7 +65,7 @@
         <div style="background:linear-gradient(135deg,rgba(99,102,241,0.12),rgba(139,92,246,0.12));border:1px solid rgba(99,102,241,0.3);border-radius:12px;padding:0.9rem 1.2rem;text-align:center;font-size:0.95rem;color:#475569;line-height:1.5;">
             🚧 <strong style="color:#4f46e5;">Early development:</strong> this tool currently has a limited word set. Help us grow it by using the <strong>Request a Card</strong> button to submit words and structures.
             <div style="margin-top:0.6rem;">
-                <a href="mailto:james@applebytechnical.com?subject=Issue%20Report&body=Describe%20the%20issue%3A%0A%0ABrowser%20%2F%20device%3A%0A%0ASteps%20to%20reproduce%3A" style="display:inline-block;padding:0.35rem 0.9rem;background:rgba(99,102,241,0.15);color:#4f46e5;border:1px solid rgba(99,102,241,0.4);border-radius:6px;font-size:0.85rem;font-weight:600;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.25)'" onmouseout="this.style.background='rgba(99,102,241,0.15)'">🐛 Report an Issue</a>
+                <button type="button" id="issueBtn" style="display:inline-block;padding:0.35rem 0.9rem;background:rgba(99,102,241,0.15);color:#4f46e5;border:1px solid rgba(99,102,241,0.4);border-radius:6px;font-size:0.85rem;font-weight:600;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.25)'" onmouseout="this.style.background='rgba(99,102,241,0.15)'">🐛 Report an Issue</button>
             </div>
         </div>
 
@@ -284,6 +284,52 @@
                 <div class="button-row">
                     <button type="submit" id="requestSubmitBtn" class="primary-btn">Send Request</button>
                     <button type="button" id="requestCloseBtn" class="secondary-btn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!--
+        Report an issue. Goes the same way as a card request: through the host,
+        which holds the destination address in its own settings. This replaced a
+        mailto: link, which put the address in front of everyone who visited.
+    -->
+    <div id="issueDialog" class="modal" hidden aria-modal="true" role="dialog" aria-label="Report an issue">
+        <div class="modal-panel">
+            <h2>Report an issue</h2>
+            <p class="modal-note">Tell us what went wrong and we'll take a look.</p>
+
+            <form id="issueForm" name="issue-report" method="POST" data-netlify="true" action="/">
+                <input type="hidden" name="form-name" value="issue-report">
+                <p hidden>
+                    <label>Leave this empty <input name="bot-field"></label>
+                </p>
+
+                <label class="input-group" for="issueDescription">
+                    <span>What happened <span aria-hidden="true">*</span></span>
+                    <textarea id="issueDescription" name="description" rows="3" required></textarea>
+                </label>
+
+                <label class="input-group" for="issueSteps">
+                    <span>What you did just before</span>
+                    <textarea id="issueSteps" name="steps" rows="2"></textarea>
+                </label>
+
+                <label class="input-group" for="issueDevice">
+                    <span>Browser or device</span>
+                    <input type="text" id="issueDevice" name="device" autocomplete="off">
+                </label>
+
+                <label class="input-group" for="issueEmail">
+                    <span>Your email (optional, if you'd like a reply)</span>
+                    <input type="email" id="issueEmail" name="reply_to" autocomplete="email">
+                </label>
+
+                <p id="issueStatus" class="modal-note" role="status"></p>
+
+                <div class="button-row">
+                    <button type="submit" id="issueSubmitBtn" class="primary-btn">Send Report</button>
+                    <button type="button" id="issueCloseBtn" class="secondary-btn">Cancel</button>
                 </div>
             </form>
         </div>

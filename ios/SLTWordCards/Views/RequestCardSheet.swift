@@ -231,8 +231,9 @@ struct CardRequest {
     }
 }
 
-/// Minimal wrapper around the system mail composer.
-private struct MailComposer: UIViewControllerRepresentable {
+/// Minimal wrapper around the system mail composer. Shared by the card request
+/// and the issue report.
+struct MailComposer: UIViewControllerRepresentable {
     let recipient: String
     let subject: String
     let body: String
