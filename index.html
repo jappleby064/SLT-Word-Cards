@@ -226,7 +226,7 @@
             </p>
 
             <form id="requestForm" name="card-request" method="POST" data-netlify="true"
-                  enctype="multipart/form-data" action="/">
+                  data-netlify-honeypot="bot-field" enctype="multipart/form-data" action="/">
                 <input type="hidden" name="form-name" value="card-request">
                 <!-- Honeypot: a bot fills this, a person never sees it. -->
                 <p hidden>
@@ -299,7 +299,8 @@
             <h2>Report an issue</h2>
             <p class="modal-note">Tell us what went wrong and we'll take a look.</p>
 
-            <form id="issueForm" name="issue-report" method="POST" data-netlify="true" action="/">
+            <form id="issueForm" name="issue-report" method="POST" data-netlify="true"
+                  data-netlify-honeypot="bot-field" action="/">
                 <input type="hidden" name="form-name" value="issue-report">
                 <p hidden>
                     <label>Leave this empty <input name="bot-field"></label>

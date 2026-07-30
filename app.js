@@ -867,7 +867,7 @@ const REQUEST_ENDPOINT = '/';
 /// Posts a form through the host and reports honestly. Shared by the card
 /// request and the issue report so their behaviour can't drift, and so neither
 /// ever falls back to revealing an address.
-async function submitFormThroughHost({ form, status, button, sendingLabel, sentLabel, onSent }) {
+async function submitFormThroughHost({ form, status, button, sendingLabel, sentLabel, onSent, transform }) {
     const originalLabel = button.textContent;
     button.disabled = true;
     button.textContent = sendingLabel;
@@ -875,9 +875,12 @@ async function submitFormThroughHost({ form, status, button, sendingLabel, sentL
     status.textContent = '';
 
     try {
+        const body = new FormData(form);
+        if (transform) await transform(body);
+
         const response = await fetch(REQUEST_ENDPOINT, {
             method: 'POST',
-            body: new FormData(form)
+            body
         });
         if (!response.ok) throw new Error(`Server returned ${response.status}`);
 
@@ -983,7 +986,47 @@ function setupCardRequest() {
             button: submitBtn,
             sendingLabel: 'Sending…',
             sentLabel: 'Thanks — your request has been sent.',
-            onSent: () => { dialog.hidden = true; }
+            onSent: () => { dialog.hidden = true; },
+            transform: squareAttachedImage
         });
     });
+}
+
+// Squares an attached picture to 500×500 with white padding before it is sent —
+// the same treatment the app applies, and it keeps a multi-megabyte phone photo
+// from being uploaded whole. If anything goes wrong the original is sent as-is.
+async function squareAttachedImage(body) {
+    const file = body.get('image');
+    if (!(file instanceof File) || file.size === 0) {
+        body.delete('image');
+        return;
+    }
+
+    try {
+        const bitmap = await createImageBitmap(file);
+        const side = 500;
+        const canvas = document.createElement('canvas');
+        canvas.width = side;
+        canvas.height = side;
+
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, side, side);
+
+        // Aspect fit, centred — never crop, never warp.
+        const scale = Math.min(side / bitmap.width, side / bitmap.height);
+        const width = bitmap.width * scale;
+        const height = bitmap.height * scale;
+        ctx.drawImage(bitmap, (side - width) / 2, (side - height) / 2, width, height);
+        bitmap.close();
+
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+        if (!blob) return;
+
+        const word = (document.getElementById('requestWord').value.trim() || 'card')
+            .replace(/[^\w-]+/g, '-');
+        body.set('image', blob, `${word}.jpg`);
+    } catch (err) {
+        console.warn('Could not resize the picture; sending it unchanged.', err);
+    }
 }

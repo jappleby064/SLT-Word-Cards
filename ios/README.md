@@ -165,7 +165,24 @@ Both platforms collect the same fields, with the picture optional and the rest
 enforced. The app uses the system mail composer, attaching the picture as a
 squared-off JPEG, and falls back to `mailto:` where no mail account is set up.
 
-The web form never exposes the destination address — see the note in `app.js`.
+The web forms never expose the destination address. They are Netlify Forms:
+`card-request` and `issue-report`, declared in `index.html` so Netlify can detect
+them at deploy time, and submitted with `fetch` to `/`. The address lives in the
+Netlify form notification settings, not in the page — which a `mailto:` could
+never manage, since it puts the address straight into the compose window.
+
+Two steps in the Netlify dashboard, once a deploy containing the forms has gone
+out (detection happens at build time, so this cannot be done before then):
+
+1. **Forms** → enable form detection, then redeploy once.
+2. Add the destination address under the form's notifications.
+
+Attached pictures are squared off to 500×500 in the browser before upload, both to
+match the app and to keep a multi-megabyte phone photo out of the form store.
+
+`REQUEST_ENDPOINT` in `app.js` is the one thing to change if the host ever moves:
+a form-relay service's endpoint would work in its place without touching anything
+else.
 
 ## Print layout
 
