@@ -45,7 +45,7 @@ struct CardFaceView: View {
     }
 
     private var image: UIImage? {
-        card.imageName.flatMap { ImageLoader.shared.image(named: $0) }
+        ImageLoader.shared.image(for: card)
     }
 }
 

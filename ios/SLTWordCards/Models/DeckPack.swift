@@ -24,9 +24,17 @@ struct DeckPack: Codable, Sendable {
         self.format = Self.formatIdentifier
         self.version = Self.currentVersion
         self.name = deck.name
-        self.cardIDs = deck.cardIDs
+        // A recipient has no copy of the sender's own cards, so sending their ids
+        // would only produce cards that can't resolve. `SendDeckSheet` tells the
+        // user which ones were left behind.
+        self.cardIDs = deck.cardIDs.filter { !Self.isCustomID($0) }
         self.printCopies = deck.printCopies
         self.createdAt = Date()
+    }
+
+    /// Custom cards live in their own id namespace — see `Card.id`.
+    static func isCustomID(_ id: Card.ID) -> Bool {
+        id.hasPrefix("custom|")
     }
 
     // MARK: Encoding
@@ -110,9 +118,27 @@ struct DeckPack: Codable, Sendable {
     }
 
     func encodedPayload() -> String? {
-        let payload = Payload(v: version, n: name, c: cardIDs, p: printCopies)
+        let payload = Payload(v: version, n: name, c: cardIDs.map(Self.shorten), p: printCopies)
         guard let data = try? JSONEncoder().encode(payload) else { return nil }
         return data.base64URLEncodedString()
+    }
+
+    /// Word-card ids all end in the same `|word|`, which is pure repetition in a
+    /// link. Send the bare word instead and let `expand` put it back. Number
+    /// cards keep their full id because their variant matters.
+    ///
+    /// Nothing needs a version bump: an entry containing "|" is a full id, so
+    /// links made before this change still open.
+    static func shorten(_ id: Card.ID) -> String {
+        let parts = id.split(separator: "|", omittingEmptySubsequences: false)
+        guard parts.count == 3, parts[1] == Card.Kind.word.rawValue, parts[2].isEmpty else {
+            return id
+        }
+        return String(parts[0])
+    }
+
+    static func expand(_ token: String) -> Card.ID {
+        token.contains("|") ? token : "\(token)|\(Card.Kind.word.rawValue)|"
     }
 
     /// Reads a pack out of a web link's `#deck=` fragment or a `sltcards://`
@@ -130,7 +156,11 @@ struct DeckPack: Codable, Sendable {
             return nil
         }
 
-        var pack = DeckPack(deck: Deck(name: payload.n, cardIDs: payload.c, printCopies: max(1, payload.p)))
+        var pack = DeckPack(deck: Deck(
+            name: payload.n,
+            cardIDs: payload.c.map(expand),
+            printCopies: max(1, payload.p)
+        ))
         pack.version = payload.v
         return pack
     }

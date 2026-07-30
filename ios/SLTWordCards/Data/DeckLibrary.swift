@@ -210,6 +210,10 @@ enum DeckStorage {
     private static let decksDirectoryName = "Decks"
     private static let clientFileName = "client.json"
 
+    /// The root last resolved by `resolveRoot`, so other stores and the image
+    /// loader can find the same container without resolving it again.
+    private(set) nonisolated(unsafe) static var currentRoot: URL = localRoot
+
     static let localRoot: URL = {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         let url = base.appending(path: "DeckLibrary", directoryHint: .isDirectory)
@@ -220,7 +224,7 @@ enum DeckStorage {
     /// Ubiquity container if the user has iCloud Drive available, else local.
     /// Runs off the main actor because `url(forUbiquityContainerIdentifier:)` can block.
     static func resolveRoot() async -> (url: URL, location: DeckLibrary.Location) {
-        await Task.detached(priority: .userInitiated) { () -> (URL, DeckLibrary.Location) in
+        let resolved = await Task.detached(priority: .userInitiated) { () -> (URL, DeckLibrary.Location) in
             guard let container = FileManager.default.url(forUbiquityContainerIdentifier: nil) else {
                 return (localRoot, .localOnly)
             }
@@ -232,6 +236,9 @@ enum DeckStorage {
                 return (localRoot, .localOnly)
             }
         }.value
+
+        currentRoot = resolved.0
+        return resolved
     }
 
     /// Moves decks created before iCloud became available into the container, once.

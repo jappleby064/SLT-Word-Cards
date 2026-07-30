@@ -7,6 +7,13 @@ struct Card: Identifiable, Hashable, Codable, Sendable {
         case number
     }
 
+    /// Where a card came from. The shared catalogue is the same everywhere; a
+    /// custom card exists only on its owner's devices.
+    enum Origin: String, Codable, Sendable {
+        case catalogue
+        case custom
+    }
+
     let word: String
     let initialSound: String
     let finalSound: String
@@ -16,9 +23,21 @@ struct Card: Identifiable, Hashable, Codable, Sendable {
     let numeral: String
     /// Number cards come in two variants: "symbol" ("7") and "word" ("Seven").
     let variant: String
+    var origin: Origin = .catalogue
+    /// Set for custom cards, and what their picture is filed under.
+    var customID: UUID?
 
-    /// Stable across CSV edits, so a saved deck survives content updates.
-    var id: String { "\(word)|\(kind.rawValue)|\(variant)" }
+    /// Stable across CSV edits, so a saved deck survives content updates. Custom
+    /// cards use a separate namespace so they can never collide with the
+    /// catalogue, and so a pack can tell the two apart.
+    var id: String {
+        if let customID {
+            return "custom|\(customID.uuidString)"
+        }
+        return "\(word)|\(kind.rawValue)|\(variant)"
+    }
+
+    var isCustom: Bool { origin == .custom }
 
     /// Disambiguates the two number variants in result lists.
     var label: String {
@@ -31,9 +50,12 @@ struct Card: Identifiable, Hashable, Codable, Sendable {
         return variant == "symbol" ? numeral : word.capitalizedFirst
     }
 
-    /// Base name of the image file in `images/`, for word cards only.
+    /// Base name of the image file in `images/`, for catalogue word cards only.
+    /// Nil for number cards, which draw text, and for custom cards, whose picture
+    /// is the user's own and must never be looked for in the shared image set.
     var imageName: String? {
-        kind == .number ? nil : word
+        guard origin == .catalogue, kind != .number else { return nil }
+        return word
     }
 
     /// Free-text match: words match as a substring, numerals match exactly so

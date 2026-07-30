@@ -208,6 +208,87 @@
         </div>
     </div>
 
+    <!--
+        Request a card.
+
+        This is a real form in the markup, not one built by script, because a
+        host's form handler has to be able to find it at deploy time. It posts
+        through the host, which holds the destination address in its own settings —
+        so the address is never in this page, and never shown to whoever fills it
+        in. See ios/README.md for the per-host setup.
+    -->
+    <div id="requestDialog" class="modal" hidden aria-modal="true" role="dialog" aria-label="Request a card">
+        <div class="modal-panel">
+            <h2>Request a card</h2>
+            <p class="modal-note">
+                Tell us the word and its sounds and we'll look at adding it to the set.
+                Everything except the picture is needed.
+            </p>
+
+            <form id="requestForm" name="card-request" method="POST" data-netlify="true"
+                  enctype="multipart/form-data" action="/">
+                <input type="hidden" name="form-name" value="card-request">
+                <!-- Honeypot: a bot fills this, a person never sees it. -->
+                <p hidden>
+                    <label>Leave this empty <input name="bot-field"></label>
+                </p>
+
+                <label class="input-group" for="requestWord">
+                    <span>Word <span aria-hidden="true">*</span></span>
+                    <input type="text" id="requestWord" name="word" required autocomplete="off">
+                </label>
+
+                <label class="input-group" for="requestType">
+                    <span>Card type</span>
+                    <select id="requestType" name="type">
+                        <option value="word">Word</option>
+                        <option value="number">Number</option>
+                    </select>
+                </label>
+
+                <label class="input-group" for="requestInitial">
+                    <span>Word initial sound <span aria-hidden="true">*</span></span>
+                    <input type="text" id="requestInitial" name="initial_sound" required
+                           placeholder="e.g. dʒ" autocomplete="off">
+                </label>
+
+                <label class="input-group" for="requestFinal">
+                    <span>Word final sound <span aria-hidden="true">*</span></span>
+                    <input type="text" id="requestFinal" name="final_sound" required
+                           placeholder="e.g. ŋ" autocomplete="off">
+                </label>
+
+                <label class="input-group" for="requestStructure">
+                    <span>Structure <span aria-hidden="true">*</span></span>
+                    <input type="text" id="requestStructure" name="structure" required
+                           placeholder="e.g. CVC" autocomplete="off">
+                </label>
+
+                <label class="input-group" for="requestEmail">
+                    <span>Your email (optional, if you'd like a reply)</span>
+                    <input type="email" id="requestEmail" name="reply_to" autocomplete="email">
+                </label>
+
+                <label class="input-group" for="requestNotes">
+                    <span>Anything else</span>
+                    <textarea id="requestNotes" name="notes" rows="3"></textarea>
+                </label>
+
+                <label class="input-group" for="requestImage">
+                    <span>Picture (optional, square works best)</span>
+                    <input type="file" id="requestImage" name="image" accept="image/*">
+                </label>
+
+                <p id="requestStatus" class="modal-note" role="status"></p>
+
+                <div class="button-row">
+                    <button type="submit" id="requestSubmitBtn" class="primary-btn">Send Request</button>
+                    <button type="button" id="requestCloseBtn" class="secondary-btn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Offered when the page is opened with a shared deck in the address. -->
     <div id="incomingDialog" class="modal" hidden aria-modal="true" role="dialog" aria-label="Shared deck">
         <div class="modal-panel">
@@ -218,8 +299,13 @@
                 <button type="button" id="incomingSelectBtn" class="secondary-btn">Select the Cards</button>
                 <button type="button" id="incomingDismissBtn" class="secondary-btn">Dismiss</button>
             </div>
-            <p class="modal-note">
-                Got the app? <a id="incomingAppLink" href="#">Open this deck in the app</a>.
+            <!--
+                Only shown on Apple platforms, and only as a fallback. Once
+                universal links verify, anyone who reaches this page does not
+                have the app — so for most people this link would do nothing.
+            -->
+            <p class="modal-note" id="incomingAppRow" hidden>
+                Already have the app? <a id="incomingAppLink" href="#">Open this deck there instead</a>.
             </p>
         </div>
     </div>

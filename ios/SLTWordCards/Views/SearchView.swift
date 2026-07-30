@@ -11,6 +11,8 @@ struct SearchView: View {
 
     @State private var criteria = SearchCriteria()
     @State private var destination: SelectionDestination?
+    @State private var isCreatingCard = false
+    @State private var isRequestingCard = false
 
     private var results: [Card] {
         library.search(criteria)
@@ -71,6 +73,28 @@ struct SearchView: View {
                     }
                     .disabled(criteria.isEmpty && selection.isEmpty)
                 }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Button {
+                            isCreatingCard = true
+                        } label: {
+                            Label("New Card of My Own", systemImage: "rectangle.badge.plus")
+                        }
+                        Button {
+                            isRequestingCard = true
+                        } label: {
+                            Label("Request a Card…", systemImage: "envelope")
+                        }
+                    } label: {
+                        Label("Add", systemImage: "plus")
+                    }
+                }
+            }
+            .sheet(isPresented: $isCreatingCard) {
+                CustomCardEditor(existing: nil)
+            }
+            .sheet(isPresented: $isRequestingCard) {
+                RequestCardSheet()
             }
             .sheet(item: $destination) { destination in
                 switch destination {

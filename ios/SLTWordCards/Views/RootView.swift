@@ -5,6 +5,7 @@ struct RootView: View {
     @Environment(DeckLibrary.self) private var decks
     @Environment(ContentSync.self) private var sync
     @Environment(AppSettings.self) private var settings
+    @Environment(CustomCardStore.self) private var customCards
     @Environment(\.scenePhase) private var scenePhase
 
     /// The working selection built up in Search, shared with the save/print bar.
@@ -12,6 +13,10 @@ struct RootView: View {
     @State private var tab = Tab.search
     /// A pack that arrived from a file or link and is waiting for confirmation.
     @State private var incomingPack: DeckPack?
+    /// A pack that arrived before storage finished starting up. Saving then would
+    /// write to the pre-bootstrap local folder, and the deck would be invisible
+    /// once the iCloud container took over — so it waits here instead.
+    @State private var packAwaitingStorage: DeckPack?
 
     private enum Tab {
         case search, decks, settings
@@ -22,12 +27,20 @@ struct RootView: View {
             .task {
                 // Poll for new cards on open; bundled content already works offline.
                 await decks.bootstrap()
+                await customCards.bootstrap()
+                ImageLoader.shared.setCustomCardRoot(DeckStorage.currentRoot)
+                library.setCustomCards(customCards.searchableCards)
                 await sync.syncIfStale(library: library)
+            }
+            .onChange(of: customCards.cards) { _, _ in
+                // Covers edits arriving from another device via iCloud.
+                library.setCustomCards(customCards.searchableCards)
             }
             .onChange(of: scenePhase) { _, phase in
                 guard phase == .active else { return }
                 Task {
                     decks.reload()          // pick up edits from another device
+                    customCards.reload()
                     await sync.syncIfStale(library: library)
                 }
             }
@@ -43,6 +56,11 @@ struct RootView: View {
             }
             .sheet(item: $incomingPack) { pack in
                 ReceivedPackSheet(pack: pack)
+            }
+            .onChange(of: decks.isReady) { _, ready in
+                guard ready, let waiting = packAwaitingStorage else { return }
+                packAwaitingStorage = nil
+                incomingPack = waiting
             }
             .fullScreenCover(isPresented: .init(
                 get: { !settings.hasChosenMode },
@@ -96,14 +114,15 @@ struct RootView: View {
     }
 
     private func handleIncoming(_ url: URL) {
-        // A deck link, from the web app or a message.
-        if let pack = DeckPack.fromLink(url) {
+        // A deck link, from the web app or a message; or a .sltdeck file opened
+        // from Files, Mail, or AirDrop.
+        guard let pack = DeckPack.fromLink(url) ?? (try? DeckPack.load(from: url)) else { return }
+
+        // A link can launch the app cold, ahead of storage being ready.
+        if decks.isReady {
             incomingPack = pack
-            return
-        }
-        // A .sltdeck file opened from Files, Mail, or AirDrop.
-        if let pack = try? DeckPack.load(from: url) {
-            incomingPack = pack
+        } else {
+            packAwaitingStorage = pack
         }
     }
 }

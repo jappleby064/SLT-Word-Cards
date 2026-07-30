@@ -42,9 +42,19 @@ struct CardSelectRow: View {
                 CardThumbnail(card: card)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(card.label)
-                        .font(.body.weight(.medium))
-                        .foregroundStyle(.primary)
+                    HStack(spacing: 6) {
+                        Text(card.label)
+                            .font(.body.weight(.medium))
+                            .foregroundStyle(.primary)
+                        if card.isCustom {
+                            Text("Mine")
+                                .font(.caption2.weight(.semibold))
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Capsule().fill(Color.accentColor.opacity(0.15)))
+                                .foregroundStyle(Color.accentColor)
+                        }
+                    }
                     CardDetailLine(card: card)
                 }
                 Spacer()

@@ -4,9 +4,12 @@ import Foundation
 @Observable
 @MainActor
 final class CardLibrary {
+    /// Everything searchable: the shared catalogue plus the user's own cards.
     private(set) var cards: [Card] = []
     private(set) var loadError: String?
 
+    private var catalogue: [Card] = []
+    private var custom: [Card] = []
     private var index: [Card.ID: Card] = [:]
 
     init() {
@@ -23,9 +26,23 @@ final class CardLibrary {
             loadError = "cards.csv contained no cards."
             return
         }
-        cards = parsed
-        index = Dictionary(uniqueKeysWithValues: parsed.map { ($0.id, $0) })
+        catalogue = parsed
         loadError = nil
+        rebuild()
+    }
+
+    /// Merges in the user's own cards. Called whenever they change, including
+    /// when iCloud brings across an edit from another device.
+    func setCustomCards(_ cards: [Card]) {
+        custom = cards
+        rebuild()
+    }
+
+    private func rebuild() {
+        // Custom cards sort after the catalogue; their ids are in a separate
+        // namespace so there is nothing to collide.
+        cards = catalogue + custom
+        index = Dictionary(uniqueKeysWithValues: cards.map { ($0.id, $0) })
     }
 
     /// Parses CSV text into cards, dropping exact duplicates — `cards.csv` lists

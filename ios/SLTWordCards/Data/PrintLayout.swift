@@ -63,7 +63,7 @@ enum PrintLayout {
 
                 if let faceText = card.faceText {
                     draw(numberText: faceText, in: frame)
-                } else if let name = card.imageName, let image = ImageLoader.shared.image(named: name) {
+                } else if let image = ImageLoader.shared.image(for: card) {
                     image.draw(in: frame)
                 }
 

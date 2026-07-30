@@ -20,6 +20,11 @@ struct SendDeckSheet: View {
     private var pack: DeckPack { DeckPack(deck: deck) }
     private var cards: [Card] { library.cards(ids: deck.cardIDs) }
 
+    /// The sender's own cards, which a pack deliberately leaves out.
+    private var excludedCount: Int {
+        deck.cardIDs.filter(DeckPack.isCustomID).count
+    }
+
     var body: some View {
         NavigationStack {
             List {
@@ -38,6 +43,20 @@ struct SendDeckSheet: View {
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
+                    }
+                }
+
+                if excludedCount > 0 {
+                    Section {
+                        Label(
+                            excludedCount == 1
+                                ? "1 of your own cards won't be included."
+                                : "\(excludedCount) of your own cards won't be included.",
+                            systemImage: "exclamationmark.triangle"
+                        )
+                        .foregroundStyle(.orange)
+                    } footer: {
+                        Text("Cards you made yourself live only on your devices, so nobody else can open them. Everything else in the deck sends normally.")
                     }
                 }
 

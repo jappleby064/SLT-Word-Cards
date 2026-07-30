@@ -62,6 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupPresenter();
     setupSharing();
     setupDeckFileImport();
+    setupCardRequest();
 });
 
 // Fill `container` with the grouped phoneme keys; clicking one sets `targetInput`.
@@ -214,13 +215,8 @@ function setupEventListeners() {
     // Print Action
     printBtn.addEventListener('click', generatePrintSelection);
 
-    // Request Card Email
-    infoBtn.addEventListener('click', () => {
-        const email = 'james@applebytechnical.com';
-        const subject = encodeURIComponent('Card Request');
-        const body = encodeURIComponent('Name:\n\nWord Initial Sound:\n\nWord Final Sound:\n\nStructure (eg.cvc):\n\n500x500 Image:');
-        window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
-    });
+    // "Request a Card" opens the form — see setupCardRequest. It used to build a
+    // mailto:, which put the destination address in front of the user.
 }
 
 function onSearch() {
@@ -545,6 +541,13 @@ const DECK_PAYLOAD_VERSION = 1;
 const APP_URL_SCHEME = 'sltcards://deck?d=';
 const DECK_LINK_PATH = '/deck/';
 
+// The native app exists on Apple platforms only, so app-specific affordances
+// stay hidden elsewhere rather than offering a link that can't work.
+function isApplePlatform() {
+    const ua = navigator.userAgent || '';
+    return /iPhone|iPad|iPod|Macintosh|Mac OS X/i.test(ua);
+}
+
 function base64UrlEncode(text) {
     const bytes = new TextEncoder().encode(text);
     let binary = '';
@@ -560,11 +563,25 @@ function base64UrlDecode(encoded) {
     return new TextDecoder().decode(bytes);
 }
 
+// Word-card ids all end in the same `|word|`, which is pure repetition in a
+// link. Send the bare word instead and expand it on the way back in. Number
+// cards keep their full id because their variant matters. No version bump is
+// needed: an entry containing "|" is a full id, so older links still open.
+function shortenCardId(id) {
+    const parts = id.split('|');
+    if (parts.length === 3 && parts[1] === 'word' && parts[2] === '') return parts[0];
+    return id;
+}
+
+function expandCardId(token) {
+    return token.includes('|') ? token : `${token}|word|`;
+}
+
 function encodeDeckPayload(name, cards, copies) {
     return base64UrlEncode(JSON.stringify({
         v: DECK_PAYLOAD_VERSION,
         n: name,
-        c: cards.map(card => card.id),
+        c: cards.map(card => shortenCardId(card.id)),
         p: copies
     }));
 }
@@ -578,7 +595,7 @@ function decodeDeckPayload(encoded) {
         return {
             version: Number(payload.v) || 1,
             name: typeof payload.n === 'string' ? payload.n : 'Shared deck',
-            cardIds: payload.c.filter(id => typeof id === 'string'),
+            cardIds: payload.c.filter(id => typeof id === 'string').map(expandCardId),
             copies: Number(payload.p) > 0 ? Number(payload.p) : 1
         };
     } catch (err) {
@@ -686,8 +703,18 @@ function offerDeck(payload, source) {
         `${cards.length} card${cards.length === 1 ? '' : 's'} ready` +
         (missing > 0 ? ` · ${missing} not in this card set yet` : '') +
         `. Nothing was uploaded — the deck came from ${source}.`;
-    document.getElementById('incomingAppLink').href =
-        APP_URL_SCHEME + encodeDeckPayload(payload.name, cards, payload.copies);
+    // The app only exists on Apple platforms, so don't dangle a dead link
+    // elsewhere. On those platforms a verified universal link means people with
+    // the app never see this page anyway — this covers the ones where it didn't
+    // resolve.
+    const appRow = document.getElementById('incomingAppRow');
+    if (isApplePlatform()) {
+        document.getElementById('incomingAppLink').href =
+            APP_URL_SCHEME + encodeDeckPayload(payload.name, cards, payload.copies);
+        appRow.hidden = false;
+    } else {
+        appRow.hidden = true;
+    }
 
     document.getElementById('incomingPresentBtn').onclick = () => {
         dialog.hidden = true;
@@ -754,7 +781,7 @@ function decodeDeckFile(text) {
         throw new Error('That deck was made with a newer version. Refresh the page and try again.');
     }
     const cardIds = Array.isArray(parsed.cardIDs)
-        ? parsed.cardIDs.filter(id => typeof id === 'string')
+        ? parsed.cardIDs.filter(id => typeof id === 'string').map(expandCardId)
         : [];
     if (cardIds.length === 0) {
         throw new Error('That deck is empty.');
@@ -820,4 +847,82 @@ function readDeckFile(file) {
     };
     reader.onerror = () => alert("That file couldn't be read.");
     reader.readAsText(file);
+}
+
+// ---------------------------------------------------------------------------
+// Requesting a card
+//
+// The form posts to the host, which holds the destination address in its own
+// settings. That is the whole point: the address appears nowhere in this page
+// and is never shown to whoever fills the form in — which a mailto: link could
+// never manage, since it puts the address straight into the compose window.
+//
+// Set REQUEST_ENDPOINT to match the host. '/' is Netlify and Cloudflare Pages
+// form handling, which picks the form up from the markup at deploy time.
+// ---------------------------------------------------------------------------
+
+const REQUEST_ENDPOINT = '/';
+
+function setupCardRequest() {
+    const dialog = document.getElementById('requestDialog');
+    const form = document.getElementById('requestForm');
+    const status = document.getElementById('requestStatus');
+    const submitBtn = document.getElementById('requestSubmitBtn');
+
+    const open = () => {
+        status.textContent = '';
+        status.style.color = '';
+        dialog.hidden = false;
+        document.getElementById('requestWord').focus();
+    };
+
+    // Replaces the old mailto link, which exposed the address.
+    infoBtn.addEventListener('click', open);
+    document.getElementById('requestCloseBtn').addEventListener('click', () => {
+        dialog.hidden = true;
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !dialog.hidden) dialog.hidden = true;
+    });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        // Enforce everything but the picture.
+        const required = ['requestWord', 'requestInitial', 'requestFinal', 'requestStructure'];
+        const missing = required.filter(id => !document.getElementById(id).value.trim());
+        if (missing.length > 0) {
+            status.style.color = '#b91c1c';
+            status.textContent = 'Fill in the word, both sounds, and the structure.';
+            document.getElementById(missing[0]).focus();
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending…';
+        status.style.color = '';
+        status.textContent = '';
+
+        try {
+            const response = await fetch(REQUEST_ENDPOINT, {
+                method: 'POST',
+                body: new FormData(form)
+            });
+            if (!response.ok) throw new Error(`Server returned ${response.status}`);
+
+            form.reset();
+            status.style.color = '';
+            status.textContent = 'Thanks — your request has been sent.';
+            setTimeout(() => { dialog.hidden = true; }, 2200);
+        } catch (err) {
+            // Don't pretend it worked, and don't fall back to revealing an address.
+            status.style.color = '#b91c1c';
+            status.textContent = "That couldn't be sent just now. Please try again later.";
+            console.error('Card request failed:', err);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Send Request';
+        }
+    });
 }

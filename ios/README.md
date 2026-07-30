@@ -137,6 +137,36 @@ Apple fetches the association file through their CDN, so a change can take a whi
 to propagate. Append `?mode=developer` to the associated domain and enable
 Developer Mode on the device to bypass the CDN while testing.
 
+## Your own cards
+
+Cards you make yourself are stored beside your decks, in the same private iCloud
+container, so they follow you between your devices and go nowhere else:
+
+```
+<root>/CustomCards/<uuid>.json
+<root>/CustomCards/Images/<uuid>.jpg
+```
+
+Word, both sounds and structure are required, so a custom card is findable on the
+same criteria as every other card. The picture is optional; without one the card
+shows a placeholder. Pictures are squared off to 500×500 and padded with white
+rather than cropped or stretched, matching the shared image set so printed sheets
+stay consistent.
+
+They use a separate id namespace (`custom|<uuid>`), which does three jobs: it can
+never collide with the catalogue, it keeps them out of the GitHub image backfill,
+and it lets a pack recognise and exclude them — a recipient has no copy, so
+sending their ids would only produce cards that can't resolve. `SendDeckSheet`
+says how many were left behind.
+
+## Requesting a card
+
+Both platforms collect the same fields, with the picture optional and the rest
+enforced. The app uses the system mail composer, attaching the picture as a
+squared-off JPEG, and falls back to `mailto:` where no mail account is set up.
+
+The web form never exposes the destination address — see the note in `app.js`.
+
 ## Print layout
 
 `PrintLayout.swift` is a direct port of `generatePDF` in `app.js`, which itself

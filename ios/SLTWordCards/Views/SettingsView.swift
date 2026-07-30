@@ -5,8 +5,10 @@ struct SettingsView: View {
     @Environment(CardLibrary.self) private var library
     @Environment(DeckLibrary.self) private var decks
     @Environment(ContentSync.self) private var sync
+    @Environment(CustomCardStore.self) private var customCards
 
     @State private var pendingMode: AppSettings.Mode?
+    @State private var isRequestingCard = false
 
     var body: some View {
         NavigationStack {
@@ -30,6 +32,18 @@ struct SettingsView: View {
 
                 Section("Cards") {
                     LabeledContent("Cards available", value: "\(library.cards.count)")
+
+                    NavigationLink {
+                        MyCardsView()
+                    } label: {
+                        LabeledContent("My cards", value: "\(customCards.cards.count)")
+                    }
+
+                    Button {
+                        isRequestingCard = true
+                    } label: {
+                        Label("Request a Card…", systemImage: "envelope")
+                    }
 
                     Button {
                         Task { await sync.sync(library: library) }
@@ -66,6 +80,9 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
+            .sheet(isPresented: $isRequestingCard) {
+                RequestCardSheet()
+            }
             .alert("Switch to \(pendingMode?.title ?? "") mode?", isPresented: showsModeConfirmation) {
                 Button("Cancel", role: .cancel) { pendingMode = nil }
                 Button("Switch") {
