@@ -889,7 +889,12 @@ function offerDeck(payload, source) {
 
     document.getElementById('incomingPresentBtn').onclick = () => {
         dialog.hidden = true;
-        openPresenter(cards, payload.name);
+        openPresenter(cards, payload.name, 'present');
+    };
+
+    document.getElementById('incomingTestBtn').onclick = () => {
+        dialog.hidden = true;
+        openPresenter(cards, payload.name, 'test');
     };
 
     document.getElementById('incomingSelectBtn').onclick = () => {

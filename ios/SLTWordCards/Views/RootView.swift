@@ -138,6 +138,8 @@ struct ReceivedPackSheet: View {
 
     @State private var clientID: Client.ID?
     @State private var savedDeck: (client: Client, deck: Deck)?
+    /// Which way to open the deck once it's saved.
+    @State private var launchMode: PresenterMode = .present
 
     private var resolved: [Card] { library.cards(ids: pack.cardIDs) }
     private var missingCount: Int { pack.cardIDs.count - resolved.count }
@@ -146,7 +148,11 @@ struct ReceivedPackSheet: View {
         NavigationStack {
             Group {
                 if let savedDeck {
-                    PresenterView(cards: library.cards(ids: savedDeck.deck.cardIDs), title: savedDeck.deck.name)
+                    PresenterView(
+                        cards: library.cards(ids: savedDeck.deck.cardIDs),
+                        title: savedDeck.deck.name,
+                        mode: launchMode
+                    )
                 } else {
                     form
                 }
@@ -193,13 +199,27 @@ struct ReceivedPackSheet: View {
 
             Section {
                 Button {
-                    save()
+                    save(then: .present)
                 } label: {
-                    Label("Save to My Decks", systemImage: "square.and.arrow.down")
+                    Label("Save and Present", systemImage: "play.rectangle")
                 }
-                .disabled(resolved.isEmpty && missingCount == 0)
+                .disabled(!canSave)
+
+                Button {
+                    save(then: .test)
+                } label: {
+                    Label("Save and Test", systemImage: "checkmark.circle")
+                }
+                .disabled(!canSave)
+
+                Button {
+                    save(then: nil)
+                } label: {
+                    Label("Just Save It", systemImage: "square.and.arrow.down")
+                }
+                .disabled(!canSave)
             } footer: {
-                Text("Nothing was uploaded — this deck was read straight from the file or link.")
+                Text("Either way the deck is kept, so you can come back to it. Nothing was uploaded — this deck was read straight from the file or link.")
             }
         }
         .navigationTitle("Open Deck")
@@ -216,7 +236,12 @@ struct ReceivedPackSheet: View {
         }
     }
 
-    private func save() {
+    private var canSave: Bool {
+        !resolved.isEmpty || missingCount > 0
+    }
+
+    /// Saves the deck, then either opens it straight away or closes.
+    private func save(then mode: PresenterMode?) {
         let target: Client
         if settings.effectiveMode == .therapist, let clientID,
            let client = decks.clients.first(where: { $0.id == clientID }) {
@@ -225,6 +250,12 @@ struct ReceivedPackSheet: View {
             target = decks.personalCollection()
         }
         let deck = decks.importPack(pack, for: target)
+
+        guard let mode else {
+            dismiss()
+            return
+        }
+        launchMode = mode
         savedDeck = (target, deck)
     }
 }
