@@ -1,0 +1,19 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["3PJCNVU63X.com.applebytechnical.SLTWordCards"],
+        "components": [
+          {
+            "/": "/deck",
+            "comment": "A shared deck. Only this path hands off to the app, so ordinary links to the site still open the website."
+          },
+          {
+            "/": "/deck/",
+            "comment": "Same path with a trailing slash."
+          }
+        ]
+      }
+    ]
+  }
+}

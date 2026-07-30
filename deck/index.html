@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opening deck… | SLT Word Cards</title>
+    <meta name="robots" content="noindex">
+    <link rel="canonical" href="https://speakeasy-slt.uk/">
+    <link rel="icon" href="../logo.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="../styles.css">
+</head>
+
+<body>
+    <!--
+        Shared decks are addressed as /deck/#deck=<payload> for one reason: it
+        gives Apple's universal links a single path to claim, so tapping a
+        shared deck opens the app while every other link to the site still
+        opens the website.
+
+        On a device without the app the browser lands here instead, and this
+        page hands the deck to the main app. The payload is in the fragment, so
+        it never left the device to begin with — including on this hop.
+    -->
+    <div class="app-container">
+        <header class="app-header">
+            <h1>Opening your deck…</h1>
+            <p id="deckFallbackMessage">One moment.</p>
+        </header>
+        <p style="text-align:center;">
+            <a id="deckFallbackLink" class="nav-link" href="../">Open SLT Word Cards</a>
+        </p>
+    </div>
+
+    <script>
+        (function () {
+            var fragment = location.hash || '';
+            var target = '../' + fragment;
+
+            document.getElementById('deckFallbackLink').setAttribute('href', target);
+
+            if (fragment.indexOf('deck=') !== -1) {
+                location.replace(target);
+            } else {
+                document.getElementById('deckFallbackMessage').textContent =
+                    'This link had no deck attached. Open the card tool to build one.';
+            }
+        })();
+    </script>
+</body>
+
+</html>

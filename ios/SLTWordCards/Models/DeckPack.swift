@@ -86,8 +86,12 @@ struct DeckPack: Codable, Sendable {
     // decks. The payload is base64url-encoded JSON in the URL *fragment*, so it
     // is never sent to a server — the card list stays on the two devices.
     //
-    //   https://speakeasy-slt.uk/#deck=<payload>
-    //   sltcards://deck?d=<payload>
+    //   https://speakeasy-slt.uk/deck/#deck=<payload>   (universal link)
+    //   sltcards://deck?d=<payload>                     (older fallback)
+    //
+    // The https form is the one to share: a device with the app opens it there
+    // directly, and one without it lands on the web app instead. `/deck/` is its
+    // own path so that claiming it does not hijack every link to the site.
     //
     // Compact keys keep a twelve-card link short enough to paste into a message.
 
@@ -98,9 +102,9 @@ struct DeckPack: Codable, Sendable {
         var p: Int
     }
 
-    /// The shareable link for this pack, pointing at the web app so a recipient
-    /// without the app installed can still open it.
-    func shareURL(webBase: String = "https://speakeasy-slt.uk/") -> URL? {
+    /// The shareable link for this pack. Opens the app where it is installed and
+    /// the web app where it isn't.
+    func shareURL(webBase: String = "https://speakeasy-slt.uk/deck/") -> URL? {
         guard let encoded = encodedPayload() else { return nil }
         return URL(string: "\(webBase)#deck=\(encoded)")
     }

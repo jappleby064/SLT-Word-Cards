@@ -17,6 +17,14 @@
 		<string>iCloud.com.applebytechnical.SLTWordCards</string>
 	</array>
 
+	<!-- Lets an https deck link open the app directly, verified against the
+	     domain. Only /deck is claimed — see .well-known/apple-app-site-association
+	     at the repo root — so ordinary links to the site still open the website. -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:speakeasy-slt.uk</string>
+	</array>
+
 	<!-- Mac Catalyst runs sandboxed. Read-only access to files the user picks is
 	     all that's needed to open a shared .sltdeck; ignored on iOS. -->
 	<key>com.apple.security.app-sandbox</key>

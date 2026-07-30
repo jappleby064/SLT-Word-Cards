@@ -1,0 +1,6 @@
+# Apple requires the app-site-association file to be served as JSON. It has no
+# file extension, so most static hosts would guess application/octet-stream and
+# universal links would silently fail to verify.
+# This is Netlify/Cloudflare Pages syntax — see ios/README.md for other hosts.
+/.well-known/apple-app-site-association
+  Content-Type: application/json

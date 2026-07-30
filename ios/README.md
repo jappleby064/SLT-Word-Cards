@@ -98,24 +98,44 @@ and, deliberately, no client identity.
 
 One payload, three carriers:
 
-| Carrier | Form | Used by |
+| Carrier | Form | Opens in |
 |---|---|---|
-| File | `Name.sltdeck` (pretty JSON) | AirDrop, Mail, Messages, Files |
-| Web link | `https://speakeasy-slt.uk/#deck=<base64url>` | the web app |
-| App link | `sltcards://deck?d=<base64url>` | the web page's "Open in the app" |
+| **Link** (primary) | `https://speakeasy-slt.uk/deck/#deck=<base64url>` | the app where installed, the web app otherwise |
+| File | `Name.sltdeck` (pretty JSON) | the app, or the web app's "Open a Deck File" |
+| App link | `sltcards://deck?d=<base64url>` | fallback for the web page's "Open in the app" |
 
 The link payload lives in the URL **fragment**, so it is never sent to a server.
 The base64url transform and compact JSON keys (`v`, `n`, `c`, `p`) are identical
-in `DeckPack.swift` and `app.js`, verified round-tripping in both directions.
+in `DeckPack.swift` and `app.js`, verified round-tripping in both directions —
+including the web app opening a `.sltdeck` written by the Swift encoder.
 
 Incoming packs are always confirmed before saving, are never allowed to overwrite
 an existing deck (a second import becomes "Name 2"), and report how many cards
 aren't in the local card set yet — those resolve on their own after a content sync.
 
-Universal links would let a web link open the app directly without the custom
-scheme. That needs an `apple-app-site-association` file served from the domain
-plus the associated-domains capability, so it is left as a follow-up rather than
-half-configured here.
+### Universal links: what the host must do
+
+Shared decks are addressed as `/deck/` rather than `/` so that claiming the path
+does not hijack every link to the site. `deck/index.html` forwards to the web app,
+keeping the fragment, for devices without the app.
+
+Three things have to line up, and only the first is outside this repo:
+
+1. `/.well-known/apple-app-site-association` must be served **as
+   `application/json`**, over HTTPS, with no redirect. The file has no extension,
+   so most static hosts guess `application/octet-stream` and verification fails
+   silently. `_headers` at the repo root covers Netlify and Cloudflare Pages. For
+   Vercel use a `headers` entry in `vercel.json`; for GitHub Pages you cannot set
+   headers at all, so universal links will not verify there. A `.nojekyll` file is
+   also present, because Jekyll otherwise drops the `.well-known` directory.
+2. `com.apple.developer.associated-domains` — `applinks:speakeasy-slt.uk`. Present
+   in the entitlements and verified in the signed build.
+3. The Associated Domains capability on the App ID, which automatic signing
+   registers on first build.
+
+Apple fetches the association file through their CDN, so a change can take a while
+to propagate. Append `?mode=developer` to the associated domain and enable
+Developer Mode on the device to bypass the CDN while testing.
 
 ## Print layout
 

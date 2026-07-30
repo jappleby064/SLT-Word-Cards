@@ -61,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
     setupPresenter();
     setupSharing();
+    setupDeckFileImport();
 });
 
 // Fill `container` with the grouped phoneme keys; clicking one sets `targetInput`.
@@ -542,6 +543,7 @@ function renderPresenter() {
 
 const DECK_PAYLOAD_VERSION = 1;
 const APP_URL_SCHEME = 'sltcards://deck?d=';
+const DECK_LINK_PATH = '/deck/';
 
 function base64UrlEncode(text) {
     const bytes = new TextEncoder().encode(text);
@@ -596,8 +598,10 @@ function setupSharing() {
         const copies = Math.max(1, parseInt(instanceCountInput.value, 10) || 1);
         const name = nameInput.value.trim() || 'Shared deck';
         const payload = encodeDeckPayload(name, chosen, copies);
-        const base = `${location.origin}${location.pathname}`;
-        linkField.value = `${base}#deck=${payload}`;
+        // Shared decks live at /deck/ so that Apple's universal links can claim
+        // that one path — a device with the app opens it there, one without it
+        // lands on the web app.
+        linkField.value = `${location.origin}${DECK_LINK_PATH}#deck=${payload}`;
         lengthNote.textContent =
             `${chosen.length} card${chosen.length === 1 ? '' : 's'} · ${linkField.value.length} characters`;
     };
@@ -648,10 +652,8 @@ function setupSharing() {
 
 // A link opened with #deck=… offers to present it or tick the cards.
 function setupIncomingDeck() {
-    const dialog = document.getElementById('incomingDialog');
-
     document.getElementById('incomingDismissBtn').addEventListener('click', () => {
-        dialog.hidden = true;
+        document.getElementById('incomingDialog').hidden = true;
     });
 
     // On first load, and again if a new deck link is pasted into the address bar
@@ -660,46 +662,52 @@ function setupIncomingDeck() {
     window.addEventListener('hashchange', () => {
         if (allCards.length > 0) offerIncomingDeck();
     });
+}
 
-    function offerIncomingDeck() {
-        const payload = readDeckFromLocation();
-        if (!payload) return;
+function offerIncomingDeck() {
+    const payload = readDeckFromLocation();
+    if (payload) offerDeck(payload, 'the link');
+}
 
-        const cards = payload.cardIds.map(cardById).filter(Boolean);
-        const missing = payload.cardIds.length - cards.length;
-        if (cards.length === 0) {
-            statusLabel.textContent = 'That shared deck has no cards this version knows about.';
-            return;
-        }
+// Presents a decoded deck for confirmation, however it arrived — a link, or a
+// file dropped onto the page.
+function offerDeck(payload, source) {
+    const dialog = document.getElementById('incomingDialog');
+    const cards = payload.cardIds.map(cardById).filter(Boolean);
+    const missing = payload.cardIds.length - cards.length;
 
-        document.getElementById('incomingTitle').textContent = payload.name;
-        document.getElementById('incomingSummary').textContent =
-            `${cards.length} card${cards.length === 1 ? '' : 's'} ready` +
-            (missing > 0 ? ` · ${missing} not in this card set yet` : '') +
-            '. Nothing was uploaded — the deck came from the link itself.';
-        document.getElementById('incomingAppLink').href =
-            APP_URL_SCHEME + encodeDeckPayload(payload.name, cards, payload.copies);
-
-        document.getElementById('incomingPresentBtn').onclick = () => {
-            dialog.hidden = true;
-            openPresenter(cards, payload.name);
-        };
-
-        document.getElementById('incomingSelectBtn').onclick = () => {
-            dialog.hidden = true;
-            selectedIds = cards.map(card => card.id);
-            instanceCountInput.value = payload.copies;
-            wordSearchInput.value = '';
-            initialSoundInput.value = '';
-            finalSoundInput.value = '';
-            structureInput.value = '';
-            typeFilterSelect.value = 'all';
-            renderResults(cards);
-            statusLabel.textContent = `${cards.length} cards from "${payload.name}" selected.`;
-        };
-
-        dialog.hidden = false;
+    if (cards.length === 0) {
+        alert('That deck has no cards this version of the card set knows about.');
+        return;
     }
+
+    document.getElementById('incomingTitle').textContent = payload.name;
+    document.getElementById('incomingSummary').textContent =
+        `${cards.length} card${cards.length === 1 ? '' : 's'} ready` +
+        (missing > 0 ? ` · ${missing} not in this card set yet` : '') +
+        `. Nothing was uploaded — the deck came from ${source}.`;
+    document.getElementById('incomingAppLink').href =
+        APP_URL_SCHEME + encodeDeckPayload(payload.name, cards, payload.copies);
+
+    document.getElementById('incomingPresentBtn').onclick = () => {
+        dialog.hidden = true;
+        openPresenter(cards, payload.name);
+    };
+
+    document.getElementById('incomingSelectBtn').onclick = () => {
+        dialog.hidden = true;
+        selectedIds = cards.map(card => card.id);
+        instanceCountInput.value = payload.copies;
+        wordSearchInput.value = '';
+        initialSoundInput.value = '';
+        finalSoundInput.value = '';
+        structureInput.value = '';
+        typeFilterSelect.value = 'all';
+        renderResults(cards);
+        statusLabel.textContent = `${cards.length} cards from "${payload.name}" selected.`;
+    };
+
+    dialog.hidden = false;
 }
 
 function readDeckFromLocation() {
@@ -707,4 +715,109 @@ function readDeckFromLocation() {
     const params = new URLSearchParams(fragment);
     const encoded = params.get('deck');
     return encoded ? decodeDeckPayload(encoded) : null;
+}
+
+// ---------------------------------------------------------------------------
+// Opening a deck file
+//
+// A link is the main way decks travel, but a .sltdeck file still arrives by
+// AirDrop or email — and works with no connection at all. Reading one here means
+// a deck can be opened on any platform, not only where the app runs.
+//
+// Two shapes are accepted: the file's full-key JSON, and the compact payload
+// used in links, in case someone saved a link's contents to a file.
+// ---------------------------------------------------------------------------
+
+const DECK_FILE_FORMAT = 'slt-word-cards.deck';
+
+function decodeDeckFile(text) {
+    let parsed;
+    try {
+        parsed = JSON.parse(text);
+    } catch (err) {
+        throw new Error("That file isn't a deck — it couldn't be read as JSON.");
+    }
+    if (!parsed || typeof parsed !== 'object') {
+        throw new Error("That file isn't a deck.");
+    }
+
+    // The compact link payload, saved to a file.
+    if (Array.isArray(parsed.c)) {
+        const compact = decodeDeckPayload(base64UrlEncode(text));
+        if (compact) return compact;
+    }
+
+    if (parsed.format !== DECK_FILE_FORMAT) {
+        throw new Error("That file isn't an SLT card deck.");
+    }
+    if (Number(parsed.version) > DECK_PAYLOAD_VERSION) {
+        throw new Error('That deck was made with a newer version. Refresh the page and try again.');
+    }
+    const cardIds = Array.isArray(parsed.cardIDs)
+        ? parsed.cardIDs.filter(id => typeof id === 'string')
+        : [];
+    if (cardIds.length === 0) {
+        throw new Error('That deck is empty.');
+    }
+
+    return {
+        version: Number(parsed.version) || 1,
+        name: typeof parsed.name === 'string' && parsed.name.trim() ? parsed.name : 'Shared deck',
+        cardIds,
+        copies: Number(parsed.printCopies) > 0 ? Number(parsed.printCopies) : 1
+    };
+}
+
+function setupDeckFileImport() {
+    const openBtn = document.getElementById('openDeckBtn');
+    const fileInput = document.getElementById('deckFileInput');
+
+    openBtn.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', () => {
+        const file = fileInput.files && fileInput.files[0];
+        if (file) readDeckFile(file);
+        // Clear it so choosing the same file twice still fires a change.
+        fileInput.value = '';
+    });
+
+    // Drag a deck anywhere onto the page.
+    ['dragenter', 'dragover'].forEach(name => {
+        document.addEventListener(name, (e) => {
+            if (!eventHasFiles(e)) return;
+            e.preventDefault();
+            document.body.classList.add('deck-drop-active');
+        });
+    });
+
+    ['dragleave', 'dragend'].forEach(name => {
+        document.addEventListener(name, (e) => {
+            if (e.relatedTarget === null) document.body.classList.remove('deck-drop-active');
+        });
+    });
+
+    document.addEventListener('drop', (e) => {
+        if (!eventHasFiles(e)) return;
+        e.preventDefault();
+        document.body.classList.remove('deck-drop-active');
+        const file = e.dataTransfer.files && e.dataTransfer.files[0];
+        if (file) readDeckFile(file);
+    });
+}
+
+function eventHasFiles(event) {
+    return event.dataTransfer && Array.from(event.dataTransfer.types || []).includes('Files');
+}
+
+function readDeckFile(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+        try {
+            offerDeck(decodeDeckFile(String(reader.result)), `"${file.name}"`);
+        } catch (err) {
+            alert(err.message);
+        }
+    };
+    reader.onerror = () => alert("That file couldn't be read.");
+    reader.readAsText(file);
 }

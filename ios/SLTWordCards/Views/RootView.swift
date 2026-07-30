@@ -34,6 +34,13 @@ struct RootView: View {
             .onOpenURL { url in
                 handleIncoming(url)
             }
+            // Universal links arrive as a browsing activity. `onOpenURL` covers
+            // this on current systems, but handling both keeps the path certain.
+            .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { activity in
+                if let url = activity.webpageURL {
+                    handleIncoming(url)
+                }
+            }
             .sheet(item: $incomingPack) { pack in
                 ReceivedPackSheet(pack: pack)
             }

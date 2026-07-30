@@ -42,11 +42,6 @@ struct SendDeckSheet: View {
                 }
 
                 Section {
-                    if let fileURL {
-                        ShareLink(item: fileURL) {
-                            Label("Send Deck File", systemImage: "doc")
-                        }
-                    }
                     if let shareURL {
                         ShareLink(item: shareURL) {
                             Label("Send Link", systemImage: "link")
@@ -61,7 +56,19 @@ struct SendDeckSheet: View {
                 } header: {
                     Text("Send")
                 } footer: {
-                    Text("The deck file opens straight into the app. The link opens in the web app, and offers to open the app if it's installed. Either way only the list of cards travels — no pictures and no client name.")
+                    Text("A link is the simplest thing to send: it opens this app on a device that has it, and the web app on one that doesn't. Only the list of cards travels — no pictures and no client name — and it rides in the part of the address that never reaches a server.")
+                }
+
+                Section {
+                    if let fileURL {
+                        ShareLink(item: fileURL) {
+                            Label("Send Deck File", systemImage: "doc")
+                        }
+                    }
+                } header: {
+                    Text("Or send a file")
+                } footer: {
+                    Text("Useful over AirDrop, or anywhere without a connection. It opens in the app, and the web app can open one too.")
                 }
 
                 if let errorMessage {
