@@ -331,6 +331,37 @@ button {
     font-weight: 600;
 }
 
+/* A long list of matches used to stretch the results panel to any length, which
+   pushed Present / Test / Download thousands of pixels down the page. The panel
+   is capped to the screen instead, and the list scrolls inside it. */
+@media (min-width: 769px) {
+    #results-section {
+        max-height: calc(100vh - 2rem);
+    }
+
+    /* Until the panel is scrolled into full view its foot sits below the
+       screen, so the buttons ride the bottom of the window and stay reachable.
+       They settle back into place once the whole panel is showing. */
+    #results-section .print-controls {
+        position: sticky;
+        bottom: 0;
+        /* Runs the full width of the panel, out into its padding, so it reads
+           as the panel's own foot rather than a box floating over the list. */
+        margin: auto -2rem -2rem;
+        padding: 1rem 2rem;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border-radius: 0 0 16px 16px;
+    }
+
+    /* The lift on hover shifts the sticky row a couple of pixels every time the
+       pointer crosses the panel, so the results panel sits still. */
+    #results-section:hover {
+        transform: none;
+    }
+}
+
 .results-container {
     flex-grow: 1;
     min-height: 200px;
