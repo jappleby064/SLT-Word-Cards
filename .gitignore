@@ -4,3 +4,9 @@ __pycache__/
 
 # Local machine settings; .claude/launch.json is shared
 .claude/settings.local.json
+
+# The card pictures as they were before re-sourcing, kept so any of them can be
+# restored. Deliberately not published: several carry a stock agency watermark,
+# and the point of replacing them was to stop distributing them. They remain in
+# git history at 9a54146 if this working copy is ever lost.
+backup/

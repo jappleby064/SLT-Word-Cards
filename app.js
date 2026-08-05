@@ -115,6 +115,14 @@ function setupIpaField(input, toggle, popup) {
     });
 }
 
+// A row is live unless `Status` says otherwise. New words are added as "review"
+// so they can be checked in the CSV before anyone sees them; a blank or missing
+// Status means live, which keeps older copies of cards.csv working unchanged.
+function isLive(row) {
+    const status = (row['Status'] || '').trim().toLowerCase();
+    return status === '' || status === 'live';
+}
+
 // Load and parse CSV
 function loadCards() {
     statusLabel.textContent = "Loading cards...";
@@ -124,7 +132,7 @@ function loadCards() {
         header: true,
         skipEmptyLines: true,
         complete: function (results) {
-            allCards = results.data.map(row => {
+            allCards = results.data.filter(isLive).map(row => {
                 const word = (row['Word'] || '').trim();
                 const type = ((row['Type'] || 'word').trim().toLowerCase()) || 'word';
                 const numeral = (row['Numeral'] || '').trim();
@@ -423,7 +431,7 @@ const presenter = {
     // 'present' just shows cards; 'test' marks each answer and keeps a score.
     mode: 'present',
     // Marks for this run only, keyed by card id. Deliberately not stored: a score
-    // is about the session in front of you, not a record kept on a client.
+    // is about the session in front of you, not a record kept on a learner.
     marks: {},
     source: []
 };
