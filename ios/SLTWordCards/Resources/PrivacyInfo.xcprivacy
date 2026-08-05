@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- No tracking of any kind: no advertising identifier, no analytics SDK, no
+	     third-party libraries at all. Nothing is linked to a user or a device. -->
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+
+	<!-- The app collects nothing. Decks, learner names, cards you make and test
+	     scores are written only to the device and to the user's own private
+	     iCloud container; none of it reaches us. Card content is downloaded from
+	     a public repository, which is one-way: it never uploads. -->
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+
+	<!-- Required-reason APIs. UserDefaults is the only one the app touches: it
+	     stores the chosen mode, the card list's ETag, and the last sync time —
+	     all of it this app's own data, which is reason CA92.1. -->
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

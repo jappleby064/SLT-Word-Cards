@@ -3,7 +3,7 @@ import SwiftUI
 /// An editable deck: reorder, remove, add more cards, then present it on the
 /// device or export it for print.
 struct DeckDetailView: View {
-    let client: Client
+    let learner: Learner
     let deckID: Deck.ID
 
     @Environment(DeckLibrary.self) private var decks
@@ -19,7 +19,7 @@ struct DeckDetailView: View {
     @State private var isSharing = false
 
     private var deck: Deck? {
-        decks.deck(id: deckID, in: client)
+        decks.deck(id: deckID, in: learner)
     }
 
     var body: some View {
@@ -91,18 +91,18 @@ struct DeckDetailView: View {
                 PrintSheet(
                     cards: library.cards(ids: deck.cardIDs),
                     initialCopies: deck.printCopies,
-                    jobName: "\(client.name) - \(deck.name)"
+                    jobName: "\(learner.name) - \(deck.name)"
                 ) { copies in
                     var updated = deck
                     updated.printCopies = copies
-                    decks.save(updated, for: client)
+                    decks.save(updated, for: learner)
                 }
             }
         }
         .sheet(isPresented: $isAddingCards) {
             if let deck {
                 AddCardsSheet(existing: Set(deck.cardIDs)) { picked in
-                    decks.add(cardIDs: picked, to: deck, for: client)
+                    decks.add(cardIDs: picked, to: deck, for: learner)
                 }
             }
         }
@@ -112,7 +112,7 @@ struct DeckDetailView: View {
             Button("Save") {
                 guard var updated = deck, !renameText.trimmed.isEmpty else { return }
                 updated.name = renameText.trimmed
-                decks.save(updated, for: client)
+                decks.save(updated, for: learner)
             }
         }
     }
@@ -148,12 +148,12 @@ struct DeckDetailView: View {
                         for index in offsets.sorted(by: >) where index < cards.count {
                             updated.remove(cards[index].id)
                         }
-                        decks.save(updated, for: client)
+                        decks.save(updated, for: learner)
                     }
                     .onMove { source, destination in
                         var updated = deck
                         updated.cardIDs.move(fromOffsets: source, toOffset: destination)
-                        decks.save(updated, for: client)
+                        decks.save(updated, for: learner)
                     }
                 }
             } header: {
@@ -202,7 +202,7 @@ struct DeckDetailView: View {
     private func shuffleSaved(_ deck: Deck) {
         var updated = deck
         updated.cardIDs.shuffle()
-        decks.save(updated, for: client)
+        decks.save(updated, for: learner)
     }
 }
 

@@ -1,52 +1,52 @@
 import SwiftUI
 
-/// Tier one of saved decks: the client list.
-struct ClientsView: View {
+/// Tier one of saved decks: the learner list.
+struct LearnersView: View {
     @Environment(DeckLibrary.self) private var decks
 
-    @State private var isAddingClient = false
-    @State private var newClientName = ""
-    @State private var renaming: Client?
+    @State private var isAddingLearner = false
+    @State private var newLearnerName = ""
+    @State private var renaming: Learner?
     @State private var renameText = ""
 
     var body: some View {
         NavigationStack {
             List {
-                if decks.therapistClients.isEmpty {
+                if decks.teacherLearners.isEmpty {
                     Section {
                         ContentUnavailableView {
-                            Label("No clients yet", systemImage: "folder.badge.plus")
+                            Label("No learners yet", systemImage: "folder.badge.plus")
                         } description: {
-                            Text("Add a client, then save decks of cards under their name.")
+                            Text("Add a learner, then save decks of cards under their name.")
                         } actions: {
-                            Button("Add Client") { startAddingClient() }
+                            Button("Add Learner") { startAddingLearner() }
                                 .buttonStyle(.borderedProminent)
                         }
                         .listRowSeparator(.hidden)
                     }
                 } else {
                     Section {
-                        ForEach(decks.therapistClients) { client in
-                            NavigationLink(value: client) {
-                                row(for: client)
+                        ForEach(decks.teacherLearners) { learner in
+                            NavigationLink(value: learner) {
+                                row(for: learner)
                             }
                             .contextMenu {
                                 Button {
-                                    renaming = client
-                                    renameText = client.name
+                                    renaming = learner
+                                    renameText = learner.name
                                 } label: {
                                     Label("Rename", systemImage: "pencil")
                                 }
                                 Button(role: .destructive) {
-                                    decks.delete(client)
+                                    decks.delete(learner)
                                 } label: {
-                                    Label("Delete Client", systemImage: "trash")
+                                    Label("Delete Learner", systemImage: "trash")
                                 }
                             }
                         }
                         .onDelete { offsets in
                             for index in offsets {
-                                decks.delete(decks.therapistClients[index])
+                                decks.delete(decks.teacherLearners[index])
                             }
                         }
                     } footer: {
@@ -56,39 +56,39 @@ struct ClientsView: View {
                     }
                 }
             }
-            .navigationTitle("Clients")
-            .navigationDestination(for: Client.self) { client in
-                ClientDecksView(client: client)
+            .navigationTitle("Learners")
+            .navigationDestination(for: Learner.self) { learner in
+                LearnerDecksView(learner: learner)
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        startAddingClient()
+                        startAddingLearner()
                     } label: {
-                        Label("Add Client", systemImage: "plus")
+                        Label("Add Learner", systemImage: "plus")
                     }
                 }
             }
-            .alert("New Client", isPresented: $isAddingClient) {
-                TextField("Name", text: $newClientName)
+            .alert("New Learner", isPresented: $isAddingLearner) {
+                TextField("Name", text: $newLearnerName)
                 Button("Cancel", role: .cancel) {}
                 Button("Add") {
-                    let name = newClientName.trimmed
+                    let name = newLearnerName.trimmed
                     guard !name.isEmpty else { return }
-                    decks.addClient(named: name)
+                    decks.addLearner(named: name)
                 }
             } message: {
                 Text("Decks you save will be filed under this name.")
             }
-            .alert("Rename Client", isPresented: .init(
+            .alert("Rename Learner", isPresented: .init(
                 get: { renaming != nil },
                 set: { if !$0 { renaming = nil } }
             )) {
                 TextField("Name", text: $renameText)
                 Button("Cancel", role: .cancel) { renaming = nil }
                 Button("Save") {
-                    if let client = renaming, !renameText.trimmed.isEmpty {
-                        decks.rename(client, to: renameText)
+                    if let learner = renaming, !renameText.trimmed.isEmpty {
+                        decks.rename(learner, to: renameText)
                     }
                     renaming = nil
                 }
@@ -96,13 +96,13 @@ struct ClientsView: View {
         }
     }
 
-    private func row(for client: Client) -> some View {
-        let count = decks.decks(for: client).count
+    private func row(for learner: Learner) -> some View {
+        let count = decks.decks(for: learner).count
         return HStack {
             Image(systemName: "folder.fill")
                 .foregroundStyle(Color.accentColor)
             VStack(alignment: .leading, spacing: 2) {
-                Text(client.name)
+                Text(learner.name)
                 Text(count == 1 ? "1 deck" : "\(count) decks")
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -110,8 +110,8 @@ struct ClientsView: View {
         }
     }
 
-    private func startAddingClient() {
-        newClientName = ""
-        isAddingClient = true
+    private func startAddingLearner() {
+        newLearnerName = ""
+        isAddingLearner = true
     }
 }

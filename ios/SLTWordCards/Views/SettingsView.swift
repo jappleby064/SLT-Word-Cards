@@ -9,6 +9,7 @@ struct SettingsView: View {
 
     @State private var pendingMode: AppSettings.Mode?
     @State private var isRequestingCard = false
+    @State private var isReportingCardMistake = false
     @State private var isReportingIssue = false
 
     var body: some View {
@@ -28,7 +29,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Mode")
                 } footer: {
-                    Text("Switching modes never deletes anything. Decks filed under a client stay saved and reappear in Therapist mode.")
+                    Text("Switching modes never deletes anything. Decks filed under a learner stay saved and reappear in Teacher mode.")
                 }
 
                 Section("Cards") {
@@ -44,6 +45,12 @@ struct SettingsView: View {
                         isRequestingCard = true
                     } label: {
                         Label("Request a Card…", systemImage: "envelope")
+                    }
+
+                    Button {
+                        isReportingCardMistake = true
+                    } label: {
+                        Label("Report a Mistake…", systemImage: "exclamationmark.triangle")
                     }
 
                     Button {
@@ -76,7 +83,7 @@ struct SettingsView: View {
                 }
 
                 Section {
-                    Text("A test score lasts for the run and is not saved anywhere — not on this device, not in iCloud, and never sent to us. Nothing is kept against a client.")
+                    Text("A test score lasts for the run and is not saved anywhere — not on this device, not in iCloud, and never sent to us. Nothing is kept against a learner.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 } header: {
@@ -100,6 +107,9 @@ struct SettingsView: View {
             .sheet(isPresented: $isRequestingCard) {
                 RequestCardSheet()
             }
+            .sheet(isPresented: $isReportingCardMistake) {
+                ReportCardMistakeSheet()
+            }
             .sheet(isPresented: $isReportingIssue) {
                 ReportIssueSheet()
             }
@@ -116,7 +126,7 @@ struct SettingsView: View {
     }
 
     /// Routes changes through a confirmation rather than switching instantly, so
-    /// a mistap doesn't hide someone's whole client list mid-session.
+    /// a mistap doesn't hide someone's whole learner list mid-session.
     private var modeSelection: Binding<AppSettings.Mode> {
         Binding(
             get: { settings.effectiveMode },
@@ -159,10 +169,10 @@ struct SettingsView: View {
 private extension AppSettings.Mode {
     var switchWarning: String {
         switch self {
-        case .therapist:
-            "Client mode's decks stay where they are, and your client folders become visible again."
-        case .client:
-            "Your client folders stay saved but are hidden. You'll see only your own decks and the ones sent to you."
+        case .teacher:
+            "The decks you made in Learner mode stay where they are, and your folders become visible again."
+        case .learner:
+            "Your folders stay saved but are hidden. You'll see only your own decks and the ones sent to you."
         }
     }
 }

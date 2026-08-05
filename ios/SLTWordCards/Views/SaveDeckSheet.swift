@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Saves the current selection as a named deck, filed under a client — either a
+/// Saves the current selection as a named deck, filed under a learner — either a
 /// brand new deck or appended to one that already exists.
 struct SaveDeckSheet: View {
     let cardIDs: [Card.ID]
@@ -13,10 +13,10 @@ struct SaveDeckSheet: View {
         case existingDeck = "Add to Deck"
     }
 
-    /// `nil` tag means "create a new client".
+    /// `nil` tag means "create a new learner".
     @State private var mode: Mode = .newDeck
-    @State private var clientID: Client.ID?
-    @State private var newClientName = ""
+    @State private var learnerID: Learner.ID?
+    @State private var newLearnerName = ""
     @State private var deckName = ""
     @State private var deckID: Deck.ID?
 
@@ -30,16 +30,16 @@ struct SaveDeckSheet: View {
                     Text("Saving")
                 }
 
-                Section("Client") {
-                    Picker("Client", selection: $clientID) {
-                        ForEach(decks.therapistClients) { client in
-                            Text(client.name).tag(Client.ID?.some(client.id))
+                Section("Learner") {
+                    Picker("Learner", selection: $learnerID) {
+                        ForEach(decks.teacherLearners) { learner in
+                            Text(learner.name).tag(Learner.ID?.some(learner.id))
                         }
-                        Text("New client…").tag(Client.ID?.none)
+                        Text("New learner…").tag(Learner.ID?.none)
                     }
 
-                    if clientID == nil {
-                        TextField("Client name", text: $newClientName)
+                    if learnerID == nil {
+                        TextField("Learner name", text: $newLearnerName)
                             .textInputAutocapitalization(.words)
                     }
                 }
@@ -80,45 +80,45 @@ struct SaveDeckSheet: View {
                 }
             }
             .onAppear {
-                clientID = decks.therapistClients.first?.id
+                learnerID = decks.teacherLearners.first?.id
                 if deckName.isEmpty {
                     deckName = Self.suggestedName()
                 }
             }
-            .onChange(of: clientID) { _, _ in
+            .onChange(of: learnerID) { _, _ in
                 deckID = availableDecks.first?.id
                 if availableDecks.isEmpty { mode = .newDeck }
             }
         }
     }
 
-    private var selectedClient: Client? {
-        decks.therapistClients.first { $0.id == clientID }
+    private var selectedLearner: Learner? {
+        decks.teacherLearners.first { $0.id == learnerID }
     }
 
     private var availableDecks: [Deck] {
-        selectedClient.map { decks.decks(for: $0) } ?? []
+        selectedLearner.map { decks.decks(for: $0) } ?? []
     }
 
     private var canSave: Bool {
         guard !cardIDs.isEmpty else { return false }
-        let clientOK = clientID != nil || !newClientName.trimmed.isEmpty
+        let learnerOK = learnerID != nil || !newLearnerName.trimmed.isEmpty
         let deckOK = mode == .existingDeck ? deckID != nil : !deckName.trimmed.isEmpty
-        return clientOK && deckOK
+        return learnerOK && deckOK
     }
 
     private func save() {
-        let client: Client
-        if let existing = selectedClient {
-            client = existing
+        let learner: Learner
+        if let existing = selectedLearner {
+            learner = existing
         } else {
-            client = decks.addClient(named: newClientName)
+            learner = decks.addLearner(named: newLearnerName)
         }
 
-        if mode == .existingDeck, let deckID, let deck = decks.deck(id: deckID, in: client) {
-            decks.add(cardIDs: cardIDs, to: deck, for: client)
+        if mode == .existingDeck, let deckID, let deck = decks.deck(id: deckID, in: learner) {
+            decks.add(cardIDs: cardIDs, to: deck, for: learner)
         } else {
-            decks.createDeck(named: deckName, for: client, cardIDs: cardIDs)
+            decks.createDeck(named: deckName, for: learner, cardIDs: cardIDs)
         }
         dismiss()
     }

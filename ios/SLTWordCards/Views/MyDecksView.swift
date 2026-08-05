@@ -1,13 +1,13 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// Client mode's deck list: one flat list, no clients and no grouping. Decks can
-/// be made here, and packs sent by a therapist can be opened into it.
+/// Learner mode's deck list: one flat list, no learners and no grouping. Decks can
+/// be made here, and packs sent by a teacher can be opened into it.
 struct MyDecksView: View {
     @Environment(DeckLibrary.self) private var decks
     @Environment(CardLibrary.self) private var library
 
-    @State private var collection: Client?
+    @State private var collection: Learner?
     @State private var isAddingDeck = false
     @State private var newDeckName = ""
     @State private var isShowingFileImporter = false
@@ -26,7 +26,7 @@ struct MyDecksView: View {
                         ContentUnavailableView {
                             Label("No decks yet", systemImage: "rectangle.stack")
                         } description: {
-                            Text("Make a deck from the Search tab, or open a deck your therapist sent you.")
+                            Text("Make a deck from the Search tab, or open a deck your teacher sent you.")
                         } actions: {
                             VStack(spacing: 10) {
                                 Button("New Deck") { startAddingDeck() }
@@ -59,7 +59,7 @@ struct MyDecksView: View {
             .navigationTitle("My Decks")
             .navigationDestination(for: Deck.self) { deck in
                 if let collection {
-                    DeckDetailView(client: collection, deckID: deck.id)
+                    DeckDetailView(learner: collection, deckID: deck.id)
                 }
             }
             .toolbar {
@@ -86,7 +86,7 @@ struct MyDecksView: View {
                 }
             }
             .task {
-                // Created lazily so a therapist-only install never grows an
+                // Created lazily so a teacher-only install never grows an
                 // empty "My Decks" folder.
                 if collection == nil, decks.isReady {
                     collection = decks.personalCollection()
@@ -204,7 +204,7 @@ struct ImportLinkSheet: View {
                 } header: {
                     Text("Deck link")
                 } footer: {
-                    Text("Paste the link your therapist sent you. The deck is read straight from the link — nothing is uploaded.")
+                    Text("Paste the link your teacher sent you. The deck is read straight from the link — nothing is uploaded.")
                 }
 
                 if let errorMessage {

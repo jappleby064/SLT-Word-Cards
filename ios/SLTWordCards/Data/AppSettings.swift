@@ -6,33 +6,44 @@ import Foundation
 @MainActor
 final class AppSettings {
     enum Mode: String, CaseIterable, Identifiable, Sendable {
-        /// Full library: clients, decks grouped under them, packs to send out.
-        case therapist
-        /// Personal decks only — no clients, no grouping — plus imported packs.
-        case client
+        /// Full library: learners, decks grouped under them, packs to send out.
+        case teacher
+        /// Personal decks only — no learners, no grouping — plus imported packs.
+        case learner
 
         var id: String { rawValue }
 
+        /// Reads a stored value, including the "therapist"/"client" raw values
+        /// written before the rename, so an install that already chose keeps its
+        /// choice instead of being sent back to the first-run chooser.
+        static func stored(_ raw: String) -> Mode? {
+            switch raw {
+            case "therapist": .teacher
+            case "client": .learner
+            default: Mode(rawValue: raw)
+            }
+        }
+
         var title: String {
             switch self {
-            case .therapist: "Therapist"
-            case .client: "Client"
+            case .teacher: "Teacher"
+            case .learner: "Learner"
             }
         }
 
         var summary: String {
             switch self {
-            case .therapist:
-                "Organise decks under each client, and send decks to them to practise with."
-            case .client:
-                "Make your own decks and open the ones your therapist sends you."
+            case .teacher:
+                "Organise decks under each learner, and send decks to them to practise with."
+            case .learner:
+                "Make your own decks and open the ones your teacher sends you."
             }
         }
 
         var symbol: String {
             switch self {
-            case .therapist: "folder.badge.person.crop"
-            case .client: "person.crop.circle"
+            case .teacher: "folder.badge.person.crop"
+            case .learner: "person.crop.circle"
             }
         }
     }
@@ -49,9 +60,9 @@ final class AppSettings {
     var hasChosenMode: Bool { mode != nil }
 
     /// The effective mode for views that need one before a choice is made.
-    var effectiveMode: Mode { mode ?? .therapist }
+    var effectiveMode: Mode { mode ?? .teacher }
 
     init() {
-        mode = defaults.string(forKey: Self.modeKey).flatMap(Mode.init(rawValue:))
+        mode = defaults.string(forKey: Self.modeKey).flatMap(Mode.stored)
     }
 }

@@ -40,9 +40,18 @@ final class CardLibrary {
 
     private func rebuild() {
         // Custom cards sort after the catalogue; their ids are in a separate
-        // namespace so there is nothing to collide.
-        cards = catalogue + custom
-        index = Dictionary(uniqueKeysWithValues: cards.map { ($0.id, $0) })
+        // namespace, so a card of your own named "cat" is a second card rather
+        // than a replacement for the catalogue's.
+        //
+        // Deduplicated anyway. iCloud resolves a sync clash by leaving a second
+        // file beside the first — "card 2.json", carrying the same id — and two
+        // cards sharing an id would otherwise appear twice in every list, and
+        // trap in `Dictionary(uniqueKeysWithValues:)`: a crash on launch that
+        // repeats until the file is deleted by hand. The last one wins, matching
+        // how the rest of the store treats a rewritten card.
+        var seen = Set<Card.ID>()
+        cards = (catalogue + custom).filter { seen.insert($0.id).inserted }
+        index = Dictionary(cards.map { ($0.id, $0) }, uniquingKeysWith: { _, latest in latest })
     }
 
     /// Parses CSV text into cards, dropping exact duplicates — `cards.csv` lists
@@ -50,8 +59,18 @@ final class CardLibrary {
     static func parse(_ text: String) -> [Card] {
         var seen = Set<Card.ID>()
         return CSV.parse(text)
+            .filter(isLive)
             .compactMap(Card.init(row:))
             .filter { seen.insert($0.id).inserted }
+    }
+
+    /// A row is live unless `Status` says otherwise. New words are added as
+    /// "review" so they can be checked before anyone sees them. A blank or
+    /// missing Status means live, so a `cards.csv` written before the column
+    /// existed still loads in full.
+    private static func isLive(_ row: [String: String]) -> Bool {
+        let status = row["Status"]?.trimmed.lowercased() ?? ""
+        return status.isEmpty || status == "live"
     }
 
     /// Distinct structures present in the data, for the filter menu.

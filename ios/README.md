@@ -56,12 +56,16 @@ response.
 
 ## Saved decks
 
-Two tiers, **Client → Deck**, one JSON file per deck:
+Two tiers, **Learner → Deck**, one JSON file per deck:
 
 ```
-<root>/Clients/<clientID>/client.json
-<root>/Clients/<clientID>/Decks/<deckID>.json
+<root>/Clients/<learnerID>/client.json
+<root>/Clients/<learnerID>/Decks/<deckID>.json
 ```
+
+The two `client` names on disk predate the rename of this tier from "client" to
+"learner" and are kept verbatim, so a library saved by an earlier build still
+loads. Only the vocabulary changed; nothing migrates.
 
 `<root>` is the app's private iCloud Drive container
 (`iCloud.com.applebytechnical.SLTWordCards`, Documents only) so decks follow the
@@ -79,14 +83,14 @@ expected, not a failure.
 
 Chosen on first launch, changeable in Settings, and never destructive either way:
 
-- **Therapist** — the full library: clients, decks grouped under them, and packs
+- **Teacher** — the full library: learners, decks grouped under them, and packs
   to send out.
-- **Client** — one flat list of their own decks plus the ones a therapist sent.
-  No client creation and no grouping.
+- **Learner** — one flat list of their own decks plus the ones a teacher sent.
+  No learner creation and no grouping.
 
-Client mode is backed by a reserved client record (a fixed UUID named "My Decks")
-so both modes share exactly one storage and sync path; the therapist-facing lists
-simply filter it out. Switching to Client mode hides client folders rather than
+Learner mode is backed by a reserved learner record (a fixed UUID named "My Decks")
+so both modes share exactly one storage and sync path; the teacher-facing lists
+simply filter it out. Switching to Learner mode hides learner folders rather than
 touching them.
 
 ## Deck packs
@@ -94,7 +98,7 @@ touching them.
 A pack is a deck's **name and card ids** — nothing else. Every install resolves
 pictures from the same `cards.csv` and `images/`, so naming the cards is enough.
 That keeps a twelve-card pack around a kilobyte, and means it carries no images
-and, deliberately, no client identity.
+and, deliberately, no learner identity.
 
 One payload, three carriers:
 
@@ -149,8 +153,8 @@ clears that card's mark so a mistap can be answered again rather than being stuc
 the score. "Always show word" is hidden, since it would defeat the exercise.
 
 Scores are held for the length of the run and never written to disk. A score is
-about the session in front of you, not a record to keep against a client — which
-also keeps this clear of the data-protection questions that storing per-client
+about the session in front of you, not a record to keep against a learner — which
+also keeps this clear of the data-protection questions that storing per-learner
 performance would raise.
 
 ## Your own cards

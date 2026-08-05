@@ -3,11 +3,11 @@ import UniformTypeIdentifiers
 
 /// A shareable deck: just a name and a list of card ids.
 ///
-/// Packs carry no images and no client identity. Every install resolves cards
+/// Packs carry no images and no learner identity. Every install resolves cards
 /// from the same shared source (`cards.csv` + `images/`), so naming the cards is
 /// enough — which keeps a pack around a kilobyte and means it can travel by
-/// AirDrop, message, or email. Leaving out the client's name is deliberate: a
-/// pack sent to a client's own device should not contain their identity.
+/// AirDrop, message, or email. Leaving out the learner's name is deliberate: a
+/// pack sent to a learner's own device should not contain their identity.
 struct DeckPack: Codable, Sendable {
     static let formatIdentifier = "slt-word-cards.deck"
     static let currentVersion = 1

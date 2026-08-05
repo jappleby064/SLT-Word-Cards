@@ -37,7 +37,7 @@ struct PresenterView: View {
     @State private var dragOffset: Double = 0
     /// Marks for this run, keyed by card. Held here and nowhere else: the score
     /// lasts as long as the test is open and is discarded when it closes. Nothing
-    /// is written to disk, so no record is kept against a client.
+    /// is written to disk, so no record is kept against a learner.
     @State private var marks: [Card.ID: Bool] = [:]
     @State private var isShowingSummary = false
     @State private var isConfirmingDiscard = false

@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// Tier two: the decks saved under one client.
-struct ClientDecksView: View {
-    let client: Client
+/// Tier two: the decks saved under one learner.
+struct LearnerDecksView: View {
+    let learner: Learner
 
     @Environment(DeckLibrary.self) private var decks
     @Environment(CardLibrary.self) private var library
@@ -10,36 +10,36 @@ struct ClientDecksView: View {
     @State private var isAddingDeck = false
     @State private var newDeckName = ""
 
-    private var clientDecks: [Deck] { decks.decks(for: client) }
+    private var learnerDecks: [Deck] { decks.decks(for: learner) }
 
     var body: some View {
         List {
-            if clientDecks.isEmpty {
+            if learnerDecks.isEmpty {
                 ContentUnavailableView {
                     Label("No decks", systemImage: "rectangle.stack.badge.plus")
                 } description: {
-                    Text("Create a deck here, or build one from the Search tab and save it to \(client.name).")
+                    Text("Create a deck here, or build one from the Search tab and save it to \(learner.name).")
                 } actions: {
                     Button("New Deck") { startAddingDeck() }
                         .buttonStyle(.borderedProminent)
                 }
                 .listRowSeparator(.hidden)
             } else {
-                ForEach(clientDecks) { deck in
+                ForEach(learnerDecks) { deck in
                     NavigationLink(value: deck) {
                         row(for: deck)
                     }
                 }
                 .onDelete { offsets in
                     for index in offsets {
-                        decks.delete(clientDecks[index], from: client)
+                        decks.delete(learnerDecks[index], from: learner)
                     }
                 }
             }
         }
-        .navigationTitle(client.name)
+        .navigationTitle(learner.name)
         .navigationDestination(for: Deck.self) { deck in
-            DeckDetailView(client: client, deckID: deck.id)
+            DeckDetailView(learner: learner, deckID: deck.id)
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -56,7 +56,7 @@ struct ClientDecksView: View {
             Button("Create") {
                 let name = newDeckName.trimmed
                 guard !name.isEmpty else { return }
-                decks.createDeck(named: name, for: client, cardIDs: [])
+                decks.createDeck(named: name, for: learner, cardIDs: [])
             }
         }
     }

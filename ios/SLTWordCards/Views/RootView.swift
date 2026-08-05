@@ -80,8 +80,8 @@ struct RootView: View {
                 .tag(Tab.decks)
                 .tabItem {
                     Label(
-                        settings.effectiveMode == .client ? "My Decks" : "Decks",
-                        systemImage: settings.effectiveMode == .client ? "rectangle.stack" : "folder"
+                        settings.effectiveMode == .learner ? "My Decks" : "Decks",
+                        systemImage: settings.effectiveMode == .learner ? "rectangle.stack" : "folder"
                     )
                 }
                 .badge(deckBadge)
@@ -95,18 +95,18 @@ struct RootView: View {
     @ViewBuilder
     private var deckTab: some View {
         switch settings.effectiveMode {
-        case .therapist: ClientsView()
-        case .client: MyDecksView()
+        case .teacher: LearnersView()
+        case .learner: MyDecksView()
         }
     }
 
-    /// In client mode the badge counts their own decks, not every stored deck.
+    /// In learner mode the badge counts their own decks, not every stored deck.
     private var deckBadge: Int {
         switch settings.effectiveMode {
-        case .therapist:
-            return decks.therapistClients.reduce(0) { $0 + decks.decks(for: $1).count }
-        case .client:
-            guard let personal = decks.clients.first(where: { $0.id == DeckLibrary.personalClientID }) else {
+        case .teacher:
+            return decks.teacherLearners.reduce(0) { $0 + decks.decks(for: $1).count }
+        case .learner:
+            guard let personal = decks.learners.first(where: { $0.id == DeckLibrary.personalLearnerID }) else {
                 return 0
             }
             return decks.decks(for: personal).count
@@ -136,8 +136,8 @@ struct ReceivedPackSheet: View {
     @Environment(AppSettings.self) private var settings
     @Environment(\.dismiss) private var dismiss
 
-    @State private var clientID: Client.ID?
-    @State private var savedDeck: (client: Client, deck: Deck)?
+    @State private var learnerID: Learner.ID?
+    @State private var savedDeck: (learner: Learner, deck: Deck)?
     /// Which way to open the deck once it's saved.
     @State private var launchMode: PresenterMode = .present
 
@@ -186,13 +186,13 @@ struct ReceivedPackSheet: View {
                 }
             }
 
-            if settings.effectiveMode == .therapist {
+            if settings.effectiveMode == .teacher {
                 Section("Save under") {
-                    Picker("Client", selection: $clientID) {
-                        ForEach(decks.therapistClients) { client in
-                            Text(client.name).tag(Client.ID?.some(client.id))
+                    Picker("Learner", selection: $learnerID) {
+                        ForEach(decks.teacherLearners) { learner in
+                            Text(learner.name).tag(Learner.ID?.some(learner.id))
                         }
-                        Text("My Decks").tag(Client.ID?.none)
+                        Text("My Decks").tag(Learner.ID?.none)
                     }
                 }
             }
@@ -230,8 +230,8 @@ struct ReceivedPackSheet: View {
             }
         }
         .onAppear {
-            if settings.effectiveMode == .therapist {
-                clientID = decks.therapistClients.first?.id
+            if settings.effectiveMode == .teacher {
+                learnerID = decks.teacherLearners.first?.id
             }
         }
     }
@@ -242,10 +242,10 @@ struct ReceivedPackSheet: View {
 
     /// Saves the deck, then either opens it straight away or closes.
     private func save(then mode: PresenterMode?) {
-        let target: Client
-        if settings.effectiveMode == .therapist, let clientID,
-           let client = decks.clients.first(where: { $0.id == clientID }) {
-            target = client
+        let target: Learner
+        if settings.effectiveMode == .teacher, let learnerID,
+           let learner = decks.learners.first(where: { $0.id == learnerID }) {
+            target = learner
         } else {
             target = decks.personalCollection()
         }

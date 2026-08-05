@@ -5,7 +5,7 @@ import SwiftUI
 /// Two carriers for one payload: a small `.sltdeck` file (AirDrop, Mail,
 /// Messages, Files) or a link that opens in the web app. Neither contains
 /// images — every install resolves the pictures from the shared card source —
-/// and neither contains the client's name.
+/// and neither contains the learner's name.
 struct SendDeckSheet: View {
     let deck: Deck
 
@@ -75,7 +75,7 @@ struct SendDeckSheet: View {
                 } header: {
                     Text("Send")
                 } footer: {
-                    Text("A link is the simplest thing to send: it opens this app on a device that has it, and the web app on one that doesn't. Only the list of cards travels — no pictures and no client name — and it rides in the part of the address that never reaches a server.")
+                    Text("A link is the simplest thing to send: it opens this app on a device that has it, and the web app on one that doesn't. Only the list of cards travels — no pictures and no learner name — and it rides in the part of the address that never reaches a server.")
                 }
 
                 Section {

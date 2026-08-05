@@ -1,6 +1,6 @@
 import Foundation
 
-/// A named set of cards belonging to a client. Stored as one JSON file so that
+/// A named set of cards belonging to a learner. Stored as one JSON file so that
 /// iCloud syncs decks independently and conflicts stay contained.
 struct Deck: Identifiable, Codable, Hashable, Sendable {
     var id: UUID
@@ -51,8 +51,8 @@ struct Deck: Identifiable, Codable, Hashable, Sendable {
     }
 }
 
-/// The client a set of decks belongs to — the first of the two storage tiers.
-struct Client: Identifiable, Codable, Hashable, Sendable {
+/// The learner a set of decks belongs to — the first of the two storage tiers.
+struct Learner: Identifiable, Codable, Hashable, Sendable {
     var id: UUID
     var name: String
     var createdAt: Date

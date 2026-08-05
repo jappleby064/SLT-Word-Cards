@@ -1,6 +1,6 @@
 import Foundation
 
-/// Watches the iCloud container for deck and client files changing underneath us,
+/// Watches the iCloud container for deck and learner files changing underneath us,
 /// so edits made on another device appear while the app is open rather than only
 /// after it is backgrounded and reopened.
 ///
