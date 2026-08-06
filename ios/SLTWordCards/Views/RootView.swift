@@ -55,7 +55,7 @@ struct RootView: View {
                 }
             }
             .sheet(item: $incomingPack) { pack in
-                ReceivedPackSheet(pack: pack)
+                sharingEnvironment(ReceivedPackSheet(pack: pack))
             }
             .onChange(of: decks.isReady) { _, ready in
                 guard ready, let waiting = packAwaitingStorage else { return }
@@ -66,8 +66,25 @@ struct RootView: View {
                 get: { !settings.hasChosenMode },
                 set: { _ in }
             )) {
-                ModeChooserView()
+                sharingEnvironment(ModeChooserView())
             }
+    }
+
+    /// Hands the shared stores to something presented modally.
+    ///
+    /// A sheet or cover inherits the environment on iOS, but on Mac Catalyst it
+    /// is presented through a different path and the inheritance is not reliable
+    /// — the mode chooser, which comes up on first launch before anything else,
+    /// died there with "No Observable object of type AppSettings found".
+    /// Re-applying costs nothing where inheritance already works.
+    @ViewBuilder
+    private func sharingEnvironment(_ content: some View) -> some View {
+        content
+            .environment(library)
+            .environment(decks)
+            .environment(sync)
+            .environment(settings)
+            .environment(customCards)
     }
 
     private var tabs: some View {

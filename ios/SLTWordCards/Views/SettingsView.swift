@@ -104,11 +104,13 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
+            // Re-applied for the same reason as in RootView: modal content does
+            // not reliably inherit the environment on Mac Catalyst.
             .sheet(isPresented: $isRequestingCard) {
-                RequestCardSheet()
+                RequestCardSheet().environment(library)
             }
             .sheet(isPresented: $isReportingCardMistake) {
-                ReportCardMistakeSheet()
+                ReportCardMistakeSheet().environment(library)
             }
             .sheet(isPresented: $isReportingIssue) {
                 ReportIssueSheet()
