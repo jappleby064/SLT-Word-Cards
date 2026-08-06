@@ -52,13 +52,16 @@ enum CSV {
             case ",":
                 fields.append(field)
                 field = ""
-            case "\n":
+            // Swift counts "\r\n" as one Character — a grapheme cluster — so a
+            // CRLF file matches neither "\n" nor "\r" on its own. Missing that
+            // swallowed every line break into one enormous row, leaving a header
+            // and no data. All three forms end a row; `parse` drops the blank
+            // rows a stray terminator can leave behind.
+            case "\n", "\r\n", "\r":
                 fields.append(field)
                 rows.append(fields)
                 fields = []
                 field = ""
-            case "\r":
-                break   // CRLF: the \n closes the row
             default:
                 field.append(character)
             }

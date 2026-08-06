@@ -18,7 +18,9 @@ final class ContentSync {
     }
 
     private static let rawBase = URL(string: "https://raw.githubusercontent.com/jappleby064/SLT-Word-Cards/main/")!
-    private static let etagKey = "cardsCSVETag"
+    /// Owned by `ContentStore`, which clears it whenever it clears the files the
+    /// tag describes.
+    private static let etagKey = ContentStore.etagKey
     private static let lastCheckKey = "lastSyncCheck"
     /// Don't re-poll on every foreground; the content changes rarely.
     private static let minimumInterval: TimeInterval = 15 * 60
@@ -52,6 +54,9 @@ final class ContentSync {
             let imagesAdded = await backfillImages(for: library.cards)
             let now = Date()
             defaults.set(now, forKey: Self.lastCheckKey)
+            // The downloaded layer is now this build's own, so it can be trusted
+            // over the bundle until the next update replaces it.
+            ContentStore.markDownloadsCurrent()
 
             if cardsChanged || imagesAdded > 0 {
                 status = .updated(cards: library.cards.count, images: imagesAdded, at: now)
