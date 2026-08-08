@@ -62,6 +62,11 @@ targets:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
         ITSAppUsesNonExemptEncryption: false
+        # Required for the Mac build — the App Store rejects a Mac product
+        # archive without it (error 90242). Education rather than Medical: the
+        # app prints flashcards, and claiming a clinical category invites the
+        # scrutiny that goes with medical software.
+        LSApplicationCategoryType: public.app-category.education
         # Shared decks: a .sltdeck file opens straight into the app. In-place
         # access is declared because the pack is read from the original file
         # (security scoped) and copied into a deck; macOS requires YES.
