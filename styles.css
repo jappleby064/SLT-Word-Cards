@@ -448,6 +448,9 @@ button {
 
 .print-controls {
     display: flex;
+    /* The buttons are flex: 1, so they swallow any free space and
+       space-between alone never separates them. */
+    gap: 0.75rem;
     justify-content: space-between;
     align-items: center;
     margin-top: auto; /* Pushes to bottom */
