@@ -1,85 +1,176 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-GB">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SLT Word Cards | Speech &amp; Language Therapy Flashcard Tool</title>
-    <meta name="description" content="Free tool for speech and language therapists to search and print word cards by initial sound, final sound, and word structure (e.g. CVC). Filter by phoneme and print custom flashcard sets instantly.">
-    <meta name="keywords" content="SLT word cards, speech and language therapy, flashcards, phoneme cards, CVC words, articulation therapy, word initial sounds, word final sounds, printable word cards">
+    <title>Free Printable Speech Therapy Word Cards | Speakeasy SLT</title>
+    <meta name="description" content="Free printable speech therapy flashcards. Filter picture cards by initial sound, final sound and syllable structure, then print, present or share a deck.">
 
     <!-- Canonical -->
     <link rel="canonical" href="https://speakeasy-slt.uk/">
+    <meta name="theme-color" content="#135e5c">
 
     <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://speakeasy-slt.uk/">
-    <meta property="og:title" content="SLT Word Cards | Speech &amp; Language Therapy Flashcard Tool">
-    <meta property="og:description" content="Search and print speech and language therapy word cards by initial sound, final sound, and word structure. Free tool for SLTs and therapists.">
-    <meta property="og:site_name" content="SLT Word Cards">
+    <meta property="og:title" content="Free Printable Speech Therapy Word Cards">
+    <meta property="og:description" content="Filter a picture-card library by initial sound, final sound and syllable structure, then print, present or share the deck. Free, no sign-up.">
+    <meta property="og:site_name" content="Speakeasy SLT">
     <meta property="og:locale" content="en_GB">
+    <meta property="og:image" content="https://speakeasy-slt.uk/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Speakeasy SLT — free speech and language therapy tools">
 
     <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="SLT Word Cards | Speech &amp; Language Therapy Flashcard Tool">
-    <meta name="twitter:description" content="Search and print speech and language therapy word cards by initial sound, final sound, and word structure. Free tool for SLTs and therapists.">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Free Printable Speech Therapy Word Cards">
+    <meta name="twitter:description" content="Filter a picture-card library by initial sound, final sound and syllable structure, then print, present or share the deck. Free, no sign-up.">
+    <meta name="twitter:image" content="https://speakeasy-slt.uk/og-image.png">
 
     <!-- Structured Data -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "SLT Word Cards",
-      "url": "https://speakeasy-slt.uk",
-      "description": "Search and print speech and language therapy word cards by initial sound, final sound, and word structure.",
-      "applicationCategory": "HealthApplication",
-      "operatingSystem": "Web Browser",
-      "isAccessibleForFree": true,
-      "audience": {
-        "@type": "Audience",
-        "audienceType": "Speech and Language Therapists"
-      }
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://speakeasy-slt.uk/#website",
+          "url": "https://speakeasy-slt.uk/",
+          "name": "Speakeasy SLT",
+          "alternateName": "SLT Word Cards",
+          "description": "Free speech and language therapy tools: a printable word card builder and an interactive IPA chart.",
+          "inLanguage": "en-GB",
+          "publisher": { "@id": "https://speakeasy-slt.uk/#publisher" }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://speakeasy-slt.uk/#publisher",
+          "name": "Appleby Technical",
+          "url": "https://speakeasy-slt.uk/",
+          "logo": "https://speakeasy-slt.uk/apple-touch-icon.png"
+        },
+        {
+          "@type": "WebApplication",
+          "@id": "https://speakeasy-slt.uk/#app",
+          "name": "SLT Word Cards",
+          "url": "https://speakeasy-slt.uk/",
+          "description": "Search a picture-card library by word initial sound, word final sound and syllable structure, then print, present or share the resulting deck of speech therapy flashcards.",
+          "applicationCategory": "HealthApplication",
+          "operatingSystem": "Any modern web browser",
+          "browserRequirements": "Requires JavaScript",
+          "inLanguage": "en-GB",
+          "isAccessibleForFree": true,
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "GBP" },
+          "featureList": [
+            "Built-in IPA keyboard on every sound field",
+            "Filter cards by word initial sound in IPA",
+            "Filter cards by word final sound in IPA",
+            "Filter cards by syllable structure such as CVC and CCVC",
+            "Print a PDF of picture flashcards, 12 to an A4 page",
+            "Present cards one at a time on screen",
+            "Test mode with scoring",
+            "Share a deck as a link"
+          ],
+          "audience": {
+            "@type": "Audience",
+            "audienceType": "Speech and language therapists, teaching assistants, SENCos, accent coaches and parents"
+          },
+          "publisher": { "@id": "https://speakeasy-slt.uk/#publisher" }
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://speakeasy-slt.uk/#faq",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "How do I search speech therapy word cards by sound?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Put the phoneme in Word initial sound or Word final sound, or press the button beside the box to open the built-in IPA keyboard and pick the symbol. Matching is on sound, not spelling — so ʃ returns words beginning like 'shoe' whatever their letters."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What does CVC mean on a speech therapy word card?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "The shape of the syllable: consonant, vowel, consonant. 'Cat' is CVC, 'stop' is CCVC, 'baby' is CVCV. Type the pattern into Structure to filter by shape rather than by sound."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "What do the four deck buttons do?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Download PDF builds an A4 file, twelve square picture cards to a page. Present deck runs them full screen, one at a time, with the word hidden until you tap. Test deck adds scoring and ends with the ones to revisit. Share deck puts the card list in a link."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Does anything about my clients leave the device?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "No. The card list downloads once; every search, selection and PDF after that happens in your browser. No accounts, no analytics. A shared deck keeps its contents after the # in the address, which browsers never send to a server."
+              }
+            }
+          ]
+        }
+      ]
     }
     </script>
 
     <!-- Favicon -->
-    <link rel="icon" href="logo.svg" type="image/svg+xml">
-    <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
-    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="icon" href="/logo.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
     <!-- Main Stylesheet -->
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="/styles.css">
 </head>
 
 <body>
+    <a class="skip-link" href="#search-section">Skip to the card search</a>
+
     <div id="no-print-area" class="app-container">
-        <nav class="top-nav">
-            <a href="index.html" class="nav-link active">Word Cards</a>
-            <a href="ipa-chart.html" class="nav-link">IPA Chart</a>
-            <a href="privacy/" class="nav-link">Privacy</a>
-        </nav>
-        <header class="app-header">
-            <h1>SLT Word Cards</h1>
-            <p>Search and print your speech and language therapy cards.</p>
+        <header class="site-head">
+            <a class="wordmark" href="/">
+                <img src="/logo.svg" alt="" width="26" height="26">
+                <b>Speakeasy</b>&nbsp;<span>SLT</span>
+            </a>
+            <nav class="site-nav" aria-label="Main">
+                <a href="/" class="nav-link" aria-current="page">Word cards</a>
+                <a href="/ipa-chart.html" class="nav-link">IPA keyboard</a>
+            </nav>
         </header>
 
-        <div style="background:linear-gradient(135deg,rgba(99,102,241,0.12),rgba(139,92,246,0.12));border:1px solid rgba(99,102,241,0.3);border-radius:12px;padding:0.9rem 1.2rem;text-align:center;font-size:0.95rem;color:#475569;line-height:1.5;">
-            🚧 <strong style="color:#4f46e5;">Early development:</strong> this tool currently has a limited word set. Help us grow it by using the <strong>Request a Card</strong> button to submit words and structures.
-            <div style="margin-top:0.6rem;">
-                <button type="button" id="issueBtn" style="display:inline-block;padding:0.35rem 0.9rem;background:rgba(99,102,241,0.15);color:#4f46e5;border:1px solid rgba(99,102,241,0.4);border-radius:6px;font-size:0.85rem;font-weight:600;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='rgba(99,102,241,0.25)'" onmouseout="this.style.background='rgba(99,102,241,0.15)'">🐛 Report an Issue</button>
-            </div>
+        <div class="page-head">
+            <h1>Speech therapy word cards</h1>
+            <p class="lead">
+                Filter picture flashcards by initial sound, final sound or syllable
+                structure. Print the deck, run it on screen, or share it as a link.
+            </p>
+        </div>
+
+        <div class="notice">
+            <p>
+                <strong>Early days.</strong> The library is still small. If a word you
+                need is missing, <strong>Request a card</strong> sends it to us.
+            </p>
+            <button type="button" id="issueBtn" class="secondary-btn" style="flex:0 0 auto;">Report an issue</button>
         </div>
 
         <main class="main-content">
             <!-- Search Section -->
             <section class="glass-panel" id="search-section">
-                <h2>Search Criteria</h2>
+                <h2>Search criteria</h2>
                 <div class="input-group">
                     <label for="wordSearch">Word</label>
                     <input type="text" id="wordSearch" placeholder="e.g. 2 or cat">
                 </div>
                 <div class="input-group">
-                    <label for="typeFilter">Card Type</label>
+                    <label for="typeFilter">Card type</label>
                     <select id="typeFilter">
                         <option value="all">All cards</option>
                         <option value="word">Words only</option>
@@ -87,7 +178,7 @@
                     </select>
                 </div>
                 <div class="input-group">
-                    <label for="initialSound">Word Initial Sound</label>
+                    <label for="initialSound">Word initial sound</label>
                     <div class="ipa-field">
                         <input type="text" id="initialSound" placeholder="e.g. dʒ">
                         <button type="button" id="ipaToggle" class="ipa-toggle" aria-label="Open IPA keyboard" aria-expanded="false" title="IPA keyboard">⌨</button>
@@ -95,7 +186,7 @@
                     </div>
                 </div>
                 <div class="input-group">
-                    <label for="finalSound">Word Final Sound</label>
+                    <label for="finalSound">Word final sound</label>
                     <div class="ipa-field">
                         <input type="text" id="finalSound" placeholder="e.g. ŋ">
                         <button type="button" id="ipaToggleFinal" class="ipa-toggle" aria-label="Open IPA keyboard" aria-expanded="false" title="IPA keyboard">⌨</button>
@@ -108,9 +199,9 @@
                 </div>
 
                 <div class="button-row">
-                    <button id="searchBtn" class="primary-btn pulse-on-hover">Search Cards</button>
-                    <button id="infoBtn" class="secondary-btn">Request a Card</button>
-                    <button id="openDeckBtn" class="secondary-btn">Open a Deck File</button>
+                    <button id="searchBtn" class="primary-btn">Search cards</button>
+                    <button id="infoBtn" class="secondary-btn">Request a card</button>
+                    <button id="openDeckBtn" class="secondary-btn">Open a deck file</button>
                     <input type="file" id="deckFileInput" accept=".sltdeck,.json,application/json" hidden>
                 </div>
             </section>
@@ -118,7 +209,7 @@
             <!-- Results Section -->
             <section class="glass-panel" id="results-section">
                 <div class="results-header">
-                    <h2>Matching Words</h2>
+                    <h2>Matching words</h2>
                     <span id="statusLabel" class="status-badge">Ready to search</span>
                 </div>
 
@@ -126,29 +217,81 @@
                     <label class="custom-checkbox select-all-btn">
                         <input type="checkbox" id="selectAllCheckbox">
                         <span class="checkmark"></span>
-                        Select All
+                        Select all
                     </label>
                 </div>
 
-                <div id="resultsList" class="results-container">
-                    <!-- Checkboxes will be injected here via JS -->
-                </div>
+                <!-- Checkboxes are injected here by app.js. Left genuinely empty so
+                     the :empty placeholder rule in styles.css can fire. -->
+                <div id="resultsList" class="results-container"></div>
 
                 <div class="print-controls">
                     <div class="input-group row-align">
-                        <label for="instanceCount">Instance Count:</label>
+                        <label for="instanceCount">Copies of each</label>
                         <input type="number" id="instanceCount" value="1" min="1" max="10">
                     </div>
-                    <button id="presentBtn" class="primary-btn bounce-on-hover">Present Deck</button>
-                    <button id="testBtn" class="primary-btn bounce-on-hover">Test Deck</button>
-                    <button id="printBtn" class="primary-btn bounce-on-hover">Download PDF</button>
-                    <button id="shareBtn" class="secondary-btn">Share Deck</button>
+                    <button id="presentBtn" class="primary-btn">Present deck</button>
+                    <button id="testBtn" class="primary-btn">Test deck</button>
+                    <button id="printBtn" class="primary-btn">Download PDF</button>
+                    <button id="shareBtn" class="secondary-btn">Share deck</button>
                 </div>
             </section>
         </main>
 
-        <footer style="text-align: center; color: var(--text-secondary); font-size: 0.9rem; padding-top: 1rem;">
-            made with love · <span id="appVersion">v1.3.0</span> · <a href="privacy/" style="color:inherit;">Privacy Policy</a>
+        <!--
+            Collapsed by default, so it costs six thin lines of the page. The
+            answers still ship in the HTML, which is what the FAQPage block in
+            the head is describing — change one, change the other.
+        -->
+        <section class="faq" aria-label="Common questions">
+            <details>
+                <summary>How do I search by sound?</summary>
+                <p>
+                    Put the phoneme in <em>Word initial sound</em> or <em>Word final
+                    sound</em>, or press the button beside the box to open the built-in
+                    IPA keyboard and pick the symbol. Matching is on sound, not
+                    spelling — so <span class="ipa">ʃ</span> returns words beginning
+                    like <em>shoe</em> whatever their letters. For the full set of
+                    symbols and their sounds, use the
+                    <a href="/ipa-chart.html">IPA keyboard and chart</a>.
+                </p>
+            </details>
+            <details>
+                <summary>What does CVC mean?</summary>
+                <p>
+                    The shape of the syllable: consonant, vowel, consonant.
+                    <em>Cat</em> is CVC, <em>stop</em> is CCVC, <em>baby</em> is CVCV.
+                    Type the pattern into <em>Structure</em> to filter by shape rather
+                    than by sound.
+                </p>
+            </details>
+            <details>
+                <summary>What do the four deck buttons do?</summary>
+                <p>
+                    <em>Download PDF</em> builds an A4 file, twelve square picture cards
+                    to a page. <em>Present deck</em> runs them full screen, one at a
+                    time, with the word hidden until you tap. <em>Test deck</em> adds
+                    scoring and ends with the ones to revisit. <em>Share deck</em> puts
+                    the card list in a link.
+                </p>
+            </details>
+            <details>
+                <summary>Does anything about my clients leave the device?</summary>
+                <p>
+                    No. The card list downloads once; every search, selection and PDF
+                    after that happens in your browser. No accounts, no analytics. A
+                    shared deck keeps its contents after the <code>#</code>, which
+                    browsers never send to a server. Full detail in the
+                    <a href="/privacy/">privacy policy</a>.
+                </p>
+            </details>
+        </section>
+
+        <footer class="site-foot">
+            <p class="foot-legal">
+                <span>Speakeasy SLT — free tools from Appleby Technical.</span>
+                <span><a href="/privacy/">Privacy</a> · <span id="appVersion">v1.3.0</span></span>
+            </p>
         </footer>
     </div>
 
@@ -353,10 +496,10 @@
 
     <!-- Scripts -->
     <!-- PapaParse for parsing the CSV file locally (self-hosted for firewall compatibility) -->
-    <script src="vendor/papaparse.min.js"></script>
+    <script src="/vendor/papaparse.min.js"></script>
     <!-- jsPDF for client-side PDF generation (bypasses browser print dialog entirely) -->
-    <script src="vendor/jspdf.umd.min.js"></script>
-    <script src="app.js"></script>
+    <script src="/vendor/jspdf.umd.min.js"></script>
+    <script src="/app.js"></script>
 </body>
 
 </html>

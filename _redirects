@@ -1,0 +1,10 @@
+# Netlify / Cloudflare Pages syntax.
+#
+# Memorable aliases for the chart. They 301 to the one real page rather than
+# duplicating it: two near-identical pages would compete with each other in
+# search and neither would rank.
+/ipa-keyboard      /ipa-chart.html   301
+/ipa-keyboard/     /ipa-chart.html   301
+/ipa-chart         /ipa-chart.html   301
+/ipa-chart/        /ipa-chart.html   301
+/ipa               /ipa-chart.html   301

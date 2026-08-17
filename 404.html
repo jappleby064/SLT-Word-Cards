@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page not found | Speakeasy SLT</title>
+    <!--
+        A 404 must never be indexed, or the miss competes in search with the
+        page it should have been.
+    -->
+    <meta name="robots" content="noindex, follow">
+    <meta name="theme-color" content="#135e5c">
+
+    <link rel="icon" href="/logo.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+    <!--
+        Served from whatever address was missed, so every path here is
+        root-relative. A relative one would resolve against the bad URL.
+    -->
+    <div class="app-container">
+        <header class="site-head">
+            <a class="wordmark" href="/">
+                <img src="/logo.svg" alt="" width="26" height="26">
+                <b>Speakeasy</b>&nbsp;<span>SLT</span>
+            </a>
+            <nav class="site-nav" aria-label="Main">
+                <a href="/" class="nav-link">Word cards</a>
+                <a href="/ipa-chart.html" class="nav-link">IPA keyboard</a>
+            </nav>
+        </header>
+
+        <div class="page-head">
+            <p class="error-code">Error 404</p>
+            <h1>That page isn't here</h1>
+            <p class="lead">
+                The address may have changed, or there may be a typo in it. Nothing is
+                broken on your end.
+            </p>
+        </div>
+
+        <div class="card-grid" style="margin-top:0;">
+            <a class="tool-card" href="/">
+                <h3>Word cards</h3>
+                <p>Search picture flashcards by sound or syllable structure, then print or present the deck.</p>
+            </a>
+            <a class="tool-card" href="/ipa-chart.html">
+                <h3>IPA keyboard</h3>
+                <p>The full phonetic alphabet. Click a symbol to copy it, or to hear the IPA sound.</p>
+            </a>
+            <a class="tool-card" href="/privacy/">
+                <h3>Privacy</h3>
+                <p>What the site and the app do and do not keep. In short: nothing about your learners.</p>
+            </a>
+        </div>
+
+        <div class="prose" id="lost-deck">
+            <p>
+                <strong>Chasing a shared deck?</strong> Deck links carry their cards
+                after the <code>#</code> in the address. If yours was shortened,
+                forwarded or copied by hand, that part is often the bit that gets lost —
+                ask whoever sent it for the full link.
+            </p>
+        </div>
+
+        <footer class="site-foot">
+            <p class="foot-legal">
+                <span>Speakeasy SLT — free tools from Appleby Technical.</span>
+                <span><a href="/privacy/">Privacy</a></span>
+            </p>
+        </footer>
+    </div>
+</body>
+
+</html>

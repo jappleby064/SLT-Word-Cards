@@ -1,69 +1,176 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-GB">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IPA Chart | SLT Word Cards</title>
-    <meta name="description" content="International Phonetic Alphabet (IPA) chart of consonants and vowels laid out in the standard arrangement. Click any symbol to copy it to your clipboard.">
+    <title>IPA Keyboard &amp; Chart with Sounds — Click to Copy or Hear</title>
+    <meta name="description" content="A free IPA keyboard and interactive IPA chart with sounds. Click any phonetic symbol to copy it, or to hear the IPA sound. No install, works on phones.">
     <link rel="canonical" href="https://speakeasy-slt.uk/ipa-chart.html">
+    <meta name="theme-color" content="#135e5c">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://speakeasy-slt.uk/ipa-chart.html">
+    <meta property="og:title" content="IPA Keyboard &amp; Chart with Sounds">
+    <meta property="og:description" content="Click any phonetic symbol to copy it, or to hear the IPA sound. Full consonant table, vowel chart, diacritics. Free, and it works on a phone.">
+    <meta property="og:site_name" content="Speakeasy SLT">
+    <meta property="og:locale" content="en_GB">
+    <meta property="og:image" content="https://speakeasy-slt.uk/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="IPA Keyboard &amp; Chart with Sounds">
+    <meta name="twitter:description" content="Click any phonetic symbol to copy it, or to hear the IPA sound. Free, and it works on a phone.">
+    <meta name="twitter:image" content="https://speakeasy-slt.uk/og-image.png">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "@id": "https://speakeasy-slt.uk/ipa-chart.html#app",
+          "name": "IPA Keyboard and Chart",
+          "alternateName": ["IPA keyboard", "Interactive IPA chart", "IPA sound keyboard", "Phonetic keyboard"],
+          "url": "https://speakeasy-slt.uk/ipa-chart.html",
+          "description": "A free online IPA keyboard and interactive International Phonetic Alphabet chart with sounds. Click any phonetic symbol to copy it to the clipboard or to hear the IPA sound. Consonants, vowels, diacritics and suprasegmentals in the standard IPA arrangement, plus a practice mode.",
+          "applicationCategory": "EducationalApplication",
+          "operatingSystem": "Any modern web browser",
+          "inLanguage": "en-GB",
+          "isAccessibleForFree": true,
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "GBP" },
+          "keywords": "IPA keyboard, IPA chart, IPA sounds, IPA sound keyboard, phonetic keyboard, International Phonetic Alphabet, IPA symbols, phonetic transcription, accent coaching, accent softening, pronunciation practice",
+          "featureList": [
+            "IPA keyboard: click a phonetic symbol to copy it to the clipboard",
+            "IPA sounds: click an underlined symbol to hear it",
+            "Full pulmonic consonant table",
+            "Vowel quadrilateral",
+            "Non-pulmonic consonants: clicks, implosives and ejectives",
+            "Diacritics and suprasegmentals",
+            "Visual and aural practice mode",
+            "Works on phones without installing a phonetic keyboard layout"
+          ],
+          "audience": {
+            "@type": "Audience",
+            "audienceType": "Speech and language therapists, linguistics and phonetics students, accent coaches, language teachers"
+          }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Speakeasy SLT", "item": "https://speakeasy-slt.uk/" },
+            { "@type": "ListItem", "position": 2, "name": "IPA keyboard and chart", "item": "https://speakeasy-slt.uk/ipa-chart.html" }
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Is this an IPA keyboard?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. Every symbol on the chart is a key: click it and the IPA character is copied to your clipboard, ready to paste into a report, a transcription, a document or a search box. There is no phonetic keyboard layout to install and it behaves the same on a phone as on a desktop."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I hear the IPA sounds?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Many symbols have a recording attached and are shown underlined; clicking one plays the IPA sound as well as copying the symbol. The speaker button at the top of the page turns audio off. The practice mode can also play a sound and ask you to identify the symbol."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How do I read the IPA tables?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Consonant columns run front to back through the mouth, bilabial to glottal; rows run down the manners of articulation. Where two symbols share a cell, the right-hand one is voiced, and shaded cells mark articulations judged impossible. The vowel figure is a side view of the mouth with the lips at the left: height is tongue height, left to right is how far forward the tongue sits, and paired symbols differ in lip rounding, unrounded first."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Why do slashes and square brackets mean different things?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Slashes mark a broad, phonemic transcription: only the contrasts that matter in the language, as in /kat/. Square brackets mark a narrow, phonetic one, with diacritics recording how the sound was actually produced, as in [kʰat]."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Where do the IPA recordings come from?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Wikimedia Commons contributors, under CC BY-SA 3.0; the credits file lists each one. Not every symbol has one yet. Nothing on this page is fetched from a third party, so it loads behind school and NHS filtering."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
 
     <!-- Favicon -->
-    <link rel="icon" href="logo.svg" type="image/svg+xml">
-    <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
-    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="icon" href="/logo.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="/styles.css">
     <style>
         /* Widen the container for the wide consonant table */
         .app-container { max-width: 1140px; }
 
         .chart { display: flex; flex-direction: column; gap: 1.5rem; }
+        /* The chart is JS-rendered into #chart; the written part follows it. */
+        #using-the-chart { margin-top: 2.75rem; }
         .chart-section { gap: 1rem; }
         .chart-sub { color: var(--text-secondary); font-size: 0.9rem; margin-top: -0.5rem; }
 
         .table-scroll { overflow-x: auto; }
         .ipa-table { border-collapse: collapse; width: 100%; }
         .ipa-table th,
-        .ipa-table td { border: 1px solid rgba(203, 213, 225, 0.7); text-align: center; padding: 2px; }
+        .ipa-table td { border: 1px solid var(--rule); text-align: center; padding: 2px; }
         .ipa-table thead th {
             font-size: 0.68rem; font-weight: 600; color: var(--text-secondary);
-            padding: 5px 3px; background: rgba(99, 102, 241, 0.06); line-height: 1.15;
+            padding: 5px 3px; background: var(--paper-sunk); line-height: 1.15;
         }
         .ipa-table .rowhead {
             font-size: 0.72rem; font-weight: 600; color: var(--text-secondary);
-            text-align: left; white-space: nowrap; padding: 0 8px; background: rgba(99, 102, 241, 0.06);
+            text-align: left; white-space: nowrap; padding: 0 8px; background: var(--paper-sunk);
         }
         .ipa-table td.shaded {
             background: repeating-linear-gradient(45deg,
-                rgba(148, 163, 184, 0.28), rgba(148, 163, 184, 0.28) 4px,
-                rgba(148, 163, 184, 0.12) 4px, rgba(148, 163, 184, 0.12) 8px);
+                rgba(139, 149, 155, 0.30), rgba(139, 149, 155, 0.30) 4px,
+                rgba(139, 149, 155, 0.13) 4px, rgba(139, 149, 155, 0.13) 8px);
         }
 
         .ipa-chip {
             min-width: 2rem; height: 2rem; padding: 0 0.35rem; margin: 1px;
-            border: 1px solid rgba(203, 213, 225, 0.8); border-radius: 6px;
-            background: rgba(255, 255, 255, 0.9); font-family: 'Inter', sans-serif;
+            border: 1px solid var(--rule); border-radius: var(--r-xs);
+            background: #fff; font-family: var(--font-ipa);
             font-size: 1.15rem; line-height: 1; color: var(--text-primary);
             cursor: pointer; transition: all 0.12s ease;
         }
-        .ipa-chip:hover { background: var(--primary-color); color: #fff; border-color: var(--primary-color); transform: translateY(-1px); }
-        .ipa-chip.copied { background: #22c55e; color: #fff; border-color: #22c55e; }
+        .ipa-chip:hover { background: var(--brand); color: #fff; border-color: var(--brand); }
+        .ipa-chip.copied { background: var(--ok); color: #fff; border-color: var(--ok); }
         /* Underline marks symbols that can be played aloud */
-        .ipa-chip.has-audio { text-decoration: underline; text-decoration-color: rgba(99, 102, 241, 0.55); text-decoration-thickness: 2px; text-underline-offset: 2px; }
+        .ipa-chip.has-audio { text-decoration: underline; text-decoration-color: var(--brand); text-decoration-thickness: 2px; text-underline-offset: 2px; }
 
         .sound-bar { display: flex; justify-content: center; }
         .sound-toggle {
             display: inline-flex; align-items: center; gap: 0.5rem;
-            padding: 0.55rem 1.4rem; border-radius: 9999px; font-weight: 600; font-size: 0.9rem;
+            padding: 0.5rem 1.1rem; border-radius: var(--r-sm); font-weight: 600; font-size: 0.9rem;
             cursor: pointer; color: #fff; background: var(--primary-color);
             border: none; transition: all 0.2s ease;
-            box-shadow: 0 2px 10px rgba(99,102,241,0.3);
+            box-shadow: none;
         }
-        .sound-toggle:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(99,102,241,0.35); }
+        .sound-toggle:hover { background: var(--brand-dark); }
         .sound-toggle.off {
-            background: rgba(255,255,255,0.85); color: var(--text-secondary);
-            box-shadow: 0 1px 4px rgba(0,0,0,0.08); border: 1px solid rgba(203,213,225,0.9);
+            background: transparent; color: var(--text-secondary);
+            box-shadow: none; border: 1px solid var(--rule-strong);
         }
         .sound-toggle svg { flex-shrink: 0; }
 
@@ -74,22 +181,22 @@
         /* Vowel trapezium — scrollable on mobile, full-size on wide screens */
         .vowel-scroll { overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
         .vowel-wrap { width: 820px; }
-        .vowel-svg { width: 820px; height: auto; font-family: 'Inter', sans-serif; }
-        .vowel-svg .v-outline { fill: none; stroke: #94a3b8; stroke-width: 1.5; }
-        .vowel-svg .v-line { fill: none; stroke: #94a3b8; stroke-width: 1; }
-        .vowel-svg .v-guide { fill: none; stroke: #cbd5e1; stroke-width: 0.8; stroke-dasharray: 5 4; }
-        .vowel-svg .v-bullet { fill: #64748b; }
+        .vowel-svg { width: 820px; height: auto; font-family: var(--font-ipa); }
+        .vowel-svg .v-outline { fill: none; stroke: var(--rule-strong); stroke-width: 1.5; }
+        .vowel-svg .v-line { fill: none; stroke: var(--rule-strong); stroke-width: 1; }
+        .vowel-svg .v-guide { fill: none; stroke: var(--rule); stroke-width: 0.8; stroke-dasharray: 5 4; }
+        .vowel-svg .v-bullet { fill: var(--ink-soft); }
         .vowel-svg .v-label { fill: var(--text-secondary); font-size: 14px; font-weight: 600; }
         /* Chip boxes behind each vowel symbol */
         .vowel-chip { cursor: pointer; }
         .vowel-chip .v-chip-bg {
-            fill: rgba(255,255,255,0.92); stroke: rgba(203,213,225,0.9);
+            fill: var(--paper-raised); stroke: var(--rule-strong);
             stroke-width: 1; transition: fill 0.12s ease, stroke 0.12s ease;
         }
-        .vowel-chip.has-audio .v-chip-bg { stroke: rgba(99,102,241,0.5); stroke-width: 1.5; }
+        .vowel-chip.has-audio .v-chip-bg { stroke: var(--brand); stroke-width: 1.5; }
         .vowel-chip:hover .v-chip-bg { fill: var(--primary-color); stroke: var(--primary-color); }
         .vowel-chip:hover .vowel-sym { fill: #fff; }
-        .vowel-chip.copied .v-chip-bg { fill: #22c55e; stroke: #22c55e; }
+        .vowel-chip.copied .v-chip-bg { fill: var(--ok); stroke: var(--ok); }
         .vowel-chip.copied .vowel-sym { fill: #fff; }
         .vowel-svg .vowel-sym { fill: var(--text-primary); font-size: 22px; transition: fill 0.12s ease; pointer-events: none; }
 
@@ -98,7 +205,7 @@
             display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
         }
         .mode-tabs {
-            display: flex; background: rgba(99,102,241,0.1);
+            display: flex; background: var(--brand-tint);
             border-radius: 9999px; padding: 3px; gap: 2px;
         }
         .mode-tab {
@@ -110,10 +217,10 @@
         .new-set-btn {
             padding: 0.38rem 1.1rem; border-radius: 9999px; font-size: 0.88rem; font-weight: 600;
             cursor: pointer; background: transparent;
-            border: 1.5px solid rgba(99,102,241,0.3); color: var(--primary-hover);
+            border: 1.5px solid var(--rule-strong); color: var(--primary-hover);
             transition: all 0.15s ease;
         }
-        .new-set-btn:hover { border-color: var(--primary-color); background: rgba(99,102,241,0.07); }
+        .new-set-btn:hover { border-color: var(--primary-color); background: var(--brand-tint); }
         .practice-progress { margin-left: auto; font-size: 0.82rem; color: var(--text-secondary); font-weight: 500; }
 
         .test-grid {
@@ -130,17 +237,17 @@
         .test-card.flipped .test-card-inner { transform: rotateY(180deg); }
         .test-card-front, .test-card-back {
             position: absolute; inset: 0; backface-visibility: hidden;
-            -webkit-backface-visibility: hidden; border-radius: 12px;
+            -webkit-backface-visibility: hidden; border-radius: var(--r-md);
             display: flex; flex-direction: column; align-items: center;
             justify-content: center; gap: 0.5rem; padding: 0.65rem 0.5rem 0.5rem;
-            border: 1.5px solid rgba(203,213,225,0.85);
-            background: rgba(255,255,255,0.92); text-align: center;
+            border: 1px solid var(--rule-strong);
+            background: var(--paper-raised); text-align: center;
             user-select: none; overflow: hidden;
         }
         .test-card-back {
             transform: rotateY(180deg);
-            background: rgba(99,102,241,0.05);
-            border-color: rgba(99,102,241,0.25);
+            background: var(--brand-tint);
+            border-color: var(--brand-line);
         }
         .card-sym-lg { font-size: clamp(2rem,4vw,3rem); line-height: 1; color: var(--text-primary); }
         .card-sym-sm { font-size: clamp(1.4rem,2.8vw,2rem); line-height: 1; color: var(--primary-color); font-weight: 600; }
@@ -150,33 +257,33 @@
             width: 3rem; height: 3rem; padding: 0; border-radius: 50%; border: none; cursor: pointer;
             background: var(--primary-color); color: #fff;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 2px 10px rgba(99,102,241,0.35); transition: all 0.15s ease;
+            box-shadow: none; transition: all 0.15s ease;
             pointer-events: all; flex-shrink: 0;
         }
-        .card-play-btn:hover { transform: scale(1.1); box-shadow: 0 4px 14px rgba(99,102,241,0.45); }
+        .card-play-btn:hover { background: var(--brand-dark); }
         .card-play-btn:active { transform: scale(0.94); }
         /* Reveal button — subtle pill at bottom of card */
         .card-reveal-btn {
             margin-top: auto; padding: 0.22rem 0.8rem; border-radius: 9999px;
-            border: 1.5px solid rgba(99,102,241,0.3); background: transparent;
+            border: 1.5px solid var(--rule-strong); background: transparent;
             color: var(--primary-hover); font-size: 0.65rem; font-weight: 600;
             cursor: pointer; transition: all 0.15s ease; pointer-events: all;
         }
-        .card-reveal-btn:hover { background: rgba(99,102,241,0.08); border-color: var(--primary-color); }
+        .card-reveal-btn:hover { background: var(--brand-tint); border-color: var(--primary-color); }
         /* Replay button on the back face */
         .card-replay-btn {
             display: inline-flex; align-items: center; gap: 0.25rem;
             padding: 0.22rem 0.7rem; border-radius: 9999px; border: none;
-            background: rgba(99,102,241,0.1); color: var(--primary-hover);
+            background: var(--brand-tint); color: var(--primary-hover);
             font-size: 0.65rem; font-weight: 600; cursor: pointer;
             transition: background 0.15s; pointer-events: all;
         }
-        .card-replay-btn:hover { background: rgba(99,102,241,0.2); }
+        .card-replay-btn:hover { background: var(--brand-tint); }
 
         .ipa-toast {
             position: fixed; left: 50%; bottom: 2rem; transform: translateX(-50%) translateY(1rem);
-            background: rgba(30, 41, 59, 0.95); color: #fff; padding: 0.6rem 1.1rem;
-            border-radius: 9999px; font-size: 0.9rem; font-weight: 500;
+            background: rgba(29, 42, 44, 0.95); color: #fff; padding: 0.6rem 1.1rem;
+            border-radius: var(--r-sm); font-size: 0.9rem; font-weight: 500;
             box-shadow: var(--shadow-md); opacity: 0; transition: all 0.2s ease;
             pointer-events: none; z-index: 100;
         }
@@ -185,27 +292,98 @@
 </head>
 
 <body>
+    <a class="skip-link" href="#chart">Skip to the chart</a>
+
     <div class="app-container">
-        <nav class="top-nav">
-            <a href="index.html" class="nav-link">Word Cards</a>
-            <a href="ipa-chart.html" class="nav-link active">IPA Chart</a>
-            <a href="privacy/" class="nav-link">Privacy</a>
-        </nav>
-        <header class="app-header">
-            <h1>IPA Chart</h1>
-            <p>Consonants and vowels in the standard arrangement. Click a symbol to copy it — <u>underlined</u> symbols also play a sound.</p>
+        <header class="site-head">
+            <a class="wordmark" href="/">
+                <img src="/logo.svg" alt="" width="26" height="26">
+                <b>Speakeasy</b>&nbsp;<span>SLT</span>
+            </a>
+            <nav class="site-nav" aria-label="Main">
+                <a href="/" class="nav-link">Word cards</a>
+                <a href="/ipa-chart.html" class="nav-link" aria-current="page">IPA keyboard</a>
+            </nav>
         </header>
+
+        <div class="page-head">
+            <h1>IPA keyboard and chart</h1>
+            <p class="lead">
+                The full International Phonetic Alphabet, and a keyboard for it. Click
+                a symbol to copy it; <u>underlined</u> symbols play the IPA sound.
+            </p>
+        </div>
 
         <div class="sound-bar">
             <button type="button" id="soundToggle" class="sound-toggle" aria-pressed="true"></button>
         </div>
 
-        <main id="chart" class="chart"></main>
+        <main>
+            <div id="chart" class="chart"></div>
 
-        <footer style="text-align: center; color: var(--text-secondary); font-size: 0.9rem; padding-top: 1rem;">
-            made with love · <a href="index.html" style="color: var(--primary-hover);">Word Cards</a>
-            <br>
-            <span style="font-size: 0.8rem;">Audio: <a href="https://commons.wikimedia.org/" style="color: var(--primary-hover);">Wikimedia Commons</a> contributors, CC BY-SA 3.0 (<a href="audio/CREDITS.md" style="color: var(--primary-hover);">credits</a>)</span>
+            <!--
+                Outside #chart — the script replaces that element's contents
+                wholesale on load, so anything written inside it would vanish
+                before a reader or a crawler saw it. Collapsed by default.
+            -->
+            <section class="faq" id="using-the-chart" aria-label="Common questions">
+                <details>
+                    <summary>Is this an IPA keyboard?</summary>
+                    <p>
+                        Yes — every symbol is a key. Click it and the character is copied
+                        to your clipboard, ready to paste into a report, a transcription
+                        or a search box. Nothing to install, no phonetic keyboard layout
+                        to set up, and it behaves the same on a phone as on a desktop.
+                    </p>
+                </details>
+                <details>
+                    <summary>Can I hear the IPA sounds?</summary>
+                    <p>
+                        Many symbols have a recording and are shown underlined; clicking
+                        one plays the sound as well as copying the symbol. The speaker
+                        button at the top turns audio off. <em>Practice</em> further down
+                        can play a sound and ask you to name the symbol.
+                    </p>
+                </details>
+                <details>
+                    <summary>How do I read the tables?</summary>
+                    <p>
+                        Consonant columns run front to back through the mouth, bilabial
+                        to glottal; rows run down the manners of articulation. Where two
+                        symbols share a cell, the right-hand one is voiced, and shaded
+                        cells mark articulations judged impossible. The vowel figure is
+                        a side view of the mouth with the lips at the left: height is
+                        tongue height, left to right is how far forward the tongue sits,
+                        and paired symbols differ in lip rounding, unrounded first.
+                    </p>
+                </details>
+                <details>
+                    <summary>Why do slashes and square brackets mean different things?</summary>
+                    <p>
+                        Slashes mark a broad, phonemic transcription: only the contrasts
+                        that matter in the language, as in <span class="ipa">/kat/</span>.
+                        Square brackets mark a narrow, phonetic one, with diacritics
+                        recording how the sound was actually produced, as in
+                        <span class="ipa">[kʰat]</span>.
+                    </p>
+                </details>
+                <details>
+                    <summary>Where do the recordings come from?</summary>
+                    <p>
+                        Wikimedia Commons contributors, under CC BY-SA 3.0; the
+                        <a href="/audio/CREDITS.md">credits file</a> lists each one. Not
+                        every symbol has one yet. Nothing on this page is fetched from a
+                        third party, so it loads behind school and NHS filtering.
+                    </p>
+                </details>
+            </section>
+        </main>
+
+        <footer class="site-foot">
+            <p class="foot-legal">
+                <span>Speakeasy SLT — free tools from Appleby Technical.</span>
+                <span>Audio: <a href="https://commons.wikimedia.org/">Wikimedia Commons</a>, CC BY-SA 3.0 · <a href="/privacy/">Privacy</a></span>
+            </p>
         </footer>
     </div>
 
@@ -698,7 +876,7 @@
             if (played) playSound(slug);
             copy(ch).then(() => {
                 const display = el.dataset.char || el.textContent;
-                showToast((played ? '🔊 ' : '') + 'Copied  ' + display);
+                showToast('Copied  ' + display + (played ? '  ·  played' : ''));
                 el.classList.add('copied');
                 setTimeout(() => el.classList.remove('copied'), 450);
             });

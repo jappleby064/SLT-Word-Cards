@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
 
+# Landing pad for shared deck links. The deck itself lives in the URL fragment,
+# so there is nothing here for a crawler to read, and every visit redirects.
+Disallow: /deck/
+
 Sitemap: https://speakeasy-slt.uk/sitemap.xml

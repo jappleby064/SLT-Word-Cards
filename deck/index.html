@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-GB">
 
 <head>
     <meta charset="UTF-8">
@@ -7,8 +7,9 @@
     <title>A practice deck | SLT Word Cards</title>
     <meta name="robots" content="noindex">
     <link rel="canonical" href="https://speakeasy-slt.uk/">
-    <link rel="icon" href="../logo.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="../styles.css">
+    <meta name="theme-color" content="#135e5c">
+    <link rel="icon" href="/logo.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/styles.css">
 
     <!--
         Its own preview, so a deck sent by message doesn't come up looking like
@@ -38,19 +39,19 @@
         it never left the device to begin with — including on this hop.
     -->
     <div class="app-container">
-        <header class="app-header">
+        <div class="page-head" style="padding-top:3rem;">
             <h1>Opening your deck…</h1>
-            <p id="deckFallbackMessage">One moment.</p>
-        </header>
-        <p style="text-align:center;">
-            <a id="deckFallbackLink" class="nav-link" href="../">Open SLT Word Cards</a>
-        </p>
+            <p class="lead" id="deckFallbackMessage">One moment.</p>
+            <p style="margin-top:1.25rem;">
+                <a id="deckFallbackLink" class="nav-link" href="/">Open SLT Word Cards</a>
+            </p>
+        </div>
     </div>
 
     <script>
         (function () {
             var fragment = location.hash || '';
-            var target = '../' + fragment;
+            var target = '/' + fragment;
 
             document.getElementById('deckFallbackLink').setAttribute('href', target);
 
