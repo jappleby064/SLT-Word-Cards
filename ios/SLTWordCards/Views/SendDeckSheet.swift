@@ -33,7 +33,7 @@ struct SendDeckSheet: View {
                         HStack(spacing: -14) {
                             ForEach(Array(cards.prefix(4).enumerated()), id: \.offset) { _, card in
                                 CardThumbnail(card: card, side: 44)
-                                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(.systemBackground), lineWidth: 2))
+                                    .thumbnailRing()
                             }
                         }
                         VStack(alignment: .leading, spacing: 2) {
@@ -41,7 +41,7 @@ struct SendDeckSheet: View {
                                 .font(.headline)
                             Text(deck.cardCount == 1 ? "1 card" : "\(deck.cardCount) cards")
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Theme.inkSoft)
                         }
                     }
                 }
@@ -54,7 +54,7 @@ struct SendDeckSheet: View {
                                 : "\(excludedCount) of your own cards won't be included.",
                             systemImage: "exclamationmark.triangle"
                         )
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(Theme.terracotta)
                     } footer: {
                         Text("Cards you made yourself live only on your devices, so nobody else can open them. Everything else in the deck sends normally.")
                     }

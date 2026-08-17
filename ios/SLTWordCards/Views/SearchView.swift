@@ -56,6 +56,7 @@ struct SearchView: View {
                     SyncStatusLabel()
                 }
             }
+            .paperBackground()
             .listStyle(.insetGrouped)
             .navigationTitle("Word Cards")
             .searchable(text: $criteria.rawQuery, prompt: "Word or number")
@@ -153,7 +154,7 @@ struct SelectionBar: View {
         VStack(spacing: 10) {
             Text(selection.count == 1 ? "1 card selected" : "\(selection.count) cards selected")
                 .font(.footnote.weight(.medium))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Theme.inkSoft)
 
             // Two rows rather than four across: four labelled buttons don't fit
             // an iPhone width without truncating.
@@ -198,7 +199,8 @@ struct SelectionBar: View {
         }
         .padding(.horizontal)
         .padding(.vertical, 12)
-        .background(.bar)
+        .background(Theme.paperRaised)
+        .overlay(alignment: .top) { Rectangle().fill(Theme.rule).frame(height: Theme.hairline) }
     }
 }
 

@@ -4,7 +4,7 @@ import SwiftUI
 /// numeral/number word drawn large, the same substitution the PDF makes.
 struct CardFaceView: View {
     let card: Card
-    var cornerRadius: Double = 16
+    var cornerRadius: Double = Theme.Radius.large
     var showsBorder = true
 
     var body: some View {
@@ -12,12 +12,18 @@ struct CardFaceView: View {
             let side = min(geometry.size.width, geometry.size.height)
 
             ZStack {
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .fill(Color(.systemBackground))
+                // Deliberately white in both appearances rather than
+                // `.systemBackground`. Card pictures are 500×500 JPEGs with white
+                // padding baked in, and a printed card is white, so a dark card
+                // face would put a white square inside a black one — and would
+                // draw the numeral in white on white.
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(.white)
 
                 if let text = card.faceText {
                     Text(text)
                         .font(.system(size: side * 0.5, weight: .bold, design: .default))
+                        .foregroundStyle(.black)
                         .minimumScaleFactor(0.2)
                         .lineLimit(1)
                         .padding(side * 0.1)
@@ -25,18 +31,18 @@ struct CardFaceView: View {
                     Image(uiImage: image)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+                        .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
                 } else {
                     Image(systemName: "photo")
                         .font(.system(size: side * 0.25))
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(.black.opacity(0.25))
                 }
             }
             .frame(width: side, height: side)
             .overlay {
                 if showsBorder {
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                        .stroke(Color(.separator), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                        .stroke(Theme.rule, lineWidth: Theme.hairline)
                 }
             }
             .frame(width: geometry.size.width, height: geometry.size.height)
@@ -55,7 +61,7 @@ struct CardThumbnail: View {
     var side: Double = 44
 
     var body: some View {
-        CardFaceView(card: card, cornerRadius: 8)
+        CardFaceView(card: card, cornerRadius: Theme.Radius.small)
             .frame(width: side, height: side)
     }
 }
@@ -67,7 +73,7 @@ struct CardDetailLine: View {
     var body: some View {
         Text(descriptor)
             .font(.caption)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(Theme.inkSoft)
     }
 
     private var descriptor: String {

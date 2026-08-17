@@ -56,6 +56,7 @@ struct LearnersView: View {
                     }
                 }
             }
+            .paperBackground()
             .navigationTitle("Learners")
             .navigationDestination(for: Learner.self) { learner in
                 LearnerDecksView(learner: learner)
@@ -100,12 +101,12 @@ struct LearnersView: View {
         let count = decks.decks(for: learner).count
         return HStack {
             Image(systemName: "folder.fill")
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(Theme.brand)
             VStack(alignment: .leading, spacing: 2) {
                 Text(learner.name)
                 Text(count == 1 ? "1 deck" : "\(count) decks")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Theme.inkSoft)
             }
         }
     }

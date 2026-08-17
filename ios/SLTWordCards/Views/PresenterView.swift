@@ -131,16 +131,16 @@ struct PresenterView: View {
             }
             controls
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Theme.paper)
     }
 
     private func cardPage(_ card: Card) -> some View {
         VStack(spacing: 20) {
             Spacer(minLength: 0)
 
-            CardFaceView(card: card, cornerRadius: 24)
+            CardFaceView(card: card, cornerRadius: Theme.Radius.hero)
                 .padding(.horizontal, 24)
-                .shadow(color: .black.opacity(0.12), radius: 12, y: 6)
+                .shadow(color: .black.opacity(0.10), radius: 18, y: 8)
                 .id(card.id)
                 .transition(.opacity)
                 .offset(x: dragOffset)
@@ -154,7 +154,8 @@ struct PresenterView: View {
             // truncation would change with the length of the word.
             ZStack {
                 Text(card.label.capitalizedFirst)
-                    .font(.system(size: 44, weight: .semibold, design: .rounded))
+                    .font(Theme.display(44))
+                    .foregroundStyle(Theme.ink)
                     .minimumScaleFactor(0.4)
                     .lineLimit(1)
                     .opacity(showsWord ? 1 : 0)
@@ -162,7 +163,7 @@ struct PresenterView: View {
 
                 Text(revealHint)
                     .font(.footnote)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Theme.inkSoft)
                     .lineLimit(1)
                     .opacity(showsWord ? 0 : 1)
                     .accessibilityHidden(showsWord)
@@ -199,7 +200,7 @@ struct PresenterView: View {
                         .padding(.vertical, 10)
                 }
                 .buttonStyle(.bordered)
-                .tint(.orange)
+                .tint(Theme.terracotta)
 
                 Button {
                     mark(card, correct: true)
@@ -209,7 +210,7 @@ struct PresenterView: View {
                         .padding(.vertical, 10)
                 }
                 .buttonStyle(.borderedProminent)
-                .tint(.green)
+                .tint(Theme.success)
             }
         } else {
             Color.clear
@@ -284,7 +285,8 @@ struct PresenterView: View {
         }
         .padding(.horizontal, 24)
         .padding(.bottom, 8)
-        .background(.bar)
+        .background(Theme.paperRaised)
+        .overlay(alignment: .top) { Rectangle().fill(Theme.rule).frame(height: Theme.hairline) }
         .overlay {
             // Space bar reveals, without taking focus from the arrow keys.
             Button("") {
@@ -300,9 +302,9 @@ struct PresenterView: View {
     private var scoreLine: some View {
         HStack(spacing: 10) {
             Label("\(correctCount)", systemImage: "checkmark")
-                .foregroundStyle(.green)
+                .foregroundStyle(Theme.success)
             Label("\(incorrectCount)", systemImage: "xmark")
-                .foregroundStyle(.orange)
+                .foregroundStyle(Theme.terracotta)
         }
         .font(.subheadline.weight(.semibold).monospacedDigit())
         .labelStyle(.titleAndIcon)
@@ -317,11 +319,12 @@ struct PresenterView: View {
             VStack(spacing: 20) {
                 VStack(spacing: 6) {
                     Text("\(correctCount) of \(marks.count)")
-                        .font(.system(size: 54, weight: .bold, design: .rounded))
+                        .font(Theme.display(54, weight: .bold))
+                        .foregroundStyle(Theme.ink)
                         .monospacedDigit()
                     Text(scoreSummaryLine)
                         .font(.headline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Theme.inkSoft)
                 }
                 .padding(.top, 24)
 
@@ -329,7 +332,7 @@ struct PresenterView: View {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Not yet")
                             .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Theme.inkSoft)
                         ForEach(missed) { card in
                             HStack(spacing: 12) {
                                 CardThumbnail(card: card)
@@ -343,7 +346,7 @@ struct PresenterView: View {
                         }
                     }
                     .padding()
-                    .background(RoundedRectangle(cornerRadius: 14).fill(Color(.secondarySystemGroupedBackground)))
+                    .paperSurface()
                 }
 
                 VStack(spacing: 10) {
@@ -375,7 +378,7 @@ struct PresenterView: View {
             .frame(maxWidth: 520)
             .frame(maxWidth: .infinity)
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Theme.paper)
     }
 
     private var scoreSummaryLine: String {

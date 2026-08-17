@@ -69,7 +69,7 @@ struct CustomCardEditor: View {
                 Section {
                     Text("Your cards stay in your own iCloud and are never uploaded or shared. Because nobody else has a copy, they are left out of decks you send to someone else.")
                         .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Theme.inkSoft)
                 }
 
                 if isEditing, let existing {
@@ -122,8 +122,8 @@ struct CustomCardEditor: View {
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(maxWidth: 160, maxHeight: 160)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color(.separator)))
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.large, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: Theme.Radius.large, style: .continuous).stroke(Theme.rule))
             }
 
             PhotosPicker(selection: $pickedItem, matching: .images) {
@@ -236,13 +236,13 @@ struct MyCardsView: View {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(card.word)
                                         .font(.body.weight(.medium))
-                                        .foregroundStyle(.primary)
+                                        .foregroundStyle(Theme.ink)
                                     CardDetailLine(card: card.asCard)
                                 }
                                 Spacer()
                                 if !card.hasImage {
                                     Image(systemName: "photo.badge.exclamationmark")
-                                        .foregroundStyle(.tertiary)
+                                        .foregroundStyle(Theme.inkSoft.opacity(0.6))
                                 }
                             }
                         }

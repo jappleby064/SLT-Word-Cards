@@ -63,9 +63,9 @@ struct ReportCardMistakeSheet: View {
                             HStack {
                                 Image(systemName: faults.contains(fault)
                                       ? "checkmark.circle.fill" : "circle")
-                                    .foregroundStyle(faults.contains(fault) ? Color.accentColor : .secondary)
+                                    .foregroundStyle(faults.contains(fault) ? Theme.brand : Theme.inkSoft)
                                 Text(fault.title)
-                                    .foregroundStyle(Color.primary)
+                                    .foregroundStyle(Theme.ink)
                                 Spacer()
                             }
                         }
@@ -199,13 +199,13 @@ private struct CardChooser: View {
                             CardThumbnail(card: card)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(card.label)
-                                    .foregroundStyle(Color.primary)
+                                    .foregroundStyle(Theme.ink)
                                 CardDetailLine(card: card)
                             }
                             Spacer()
                             if selected?.id == card.id {
                                 Image(systemName: "checkmark")
-                                    .foregroundStyle(Color.accentColor)
+                                    .foregroundStyle(Theme.brand)
                             }
                         }
                     }

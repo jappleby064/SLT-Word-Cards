@@ -184,7 +184,7 @@ struct ReceivedPackSheet: View {
                     HStack(spacing: -14) {
                         ForEach(Array(resolved.prefix(4).enumerated()), id: \.offset) { _, card in
                             CardThumbnail(card: card, side: 44)
-                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(.systemBackground), lineWidth: 2))
+                                .thumbnailRing()
                         }
                     }
                     VStack(alignment: .leading, spacing: 2) {
@@ -192,7 +192,7 @@ struct ReceivedPackSheet: View {
                             .font(.headline)
                         Text(pack.cardIDs.count == 1 ? "1 card" : "\(pack.cardIDs.count) cards")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Theme.inkSoft)
                     }
                 }
             } header: {

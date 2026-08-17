@@ -30,6 +30,7 @@ struct DeckDetailView: View {
                 ContentUnavailableView("Deck not found", systemImage: "questionmark.folder")
             }
         }
+        .paperBackground()
         .navigationTitle(deck?.name ?? "Deck")
         .navigationBarTitleDisplayMode(.inline)
         .environment(\.editMode, $editMode)
@@ -194,7 +195,8 @@ struct DeckDetailView: View {
                     .buttonStyle(.bordered)
                 }
                 .padding()
-                .background(.bar)
+                .background(Theme.paperRaised)
+        .overlay(alignment: .top) { Rectangle().fill(Theme.rule).frame(height: Theme.hairline) }
             }
         }
     }
@@ -234,13 +236,13 @@ struct AddCardsSheet: View {
                             HStack(spacing: 12) {
                                 Image(systemName: "checkmark.circle.fill")
                                     .font(.title3)
-                                    .foregroundStyle(.tertiary)
+                                    .foregroundStyle(Theme.inkSoft.opacity(0.6))
                                 CardThumbnail(card: card)
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(card.label)
                                     Text("Already in deck")
                                         .font(.caption)
-                                        .foregroundStyle(.secondary)
+                                        .foregroundStyle(Theme.inkSoft)
                                 }
                             }
                         } else {

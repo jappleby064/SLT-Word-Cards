@@ -24,14 +24,14 @@ struct IPASoundField: View {
         } label: {
             HStack {
                 Text(title)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Theme.ink)
                 Spacer()
                 Text(symbol.isEmpty ? "Any" : symbol)
                     .font(symbol.isEmpty ? .body : .body.weight(.semibold))
-                    .foregroundStyle(symbol.isEmpty ? .secondary : Color.accentColor)
+                    .foregroundStyle(symbol.isEmpty ? Theme.inkSoft : Theme.brand)
                 Image(systemName: "chevron.up.chevron.down")
                     .font(.caption2)
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(Theme.inkSoft.opacity(0.6))
             }
         }
         .sheet(isPresented: $isPresented) {
@@ -56,7 +56,7 @@ private struct IPAKeyboardSheet: View {
                         VStack(alignment: .leading, spacing: 8) {
                             Text(group.name)
                                 .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(Theme.inkSoft)
 
                             LazyVGrid(columns: columns, spacing: 8) {
                                 ForEach(group.symbols, id: \.self) { candidate in
@@ -96,10 +96,10 @@ private struct IPAKeyboardSheet: View {
                 .font(.title3)
                 .frame(maxWidth: .infinity, minHeight: 46)
                 .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(isSelected ? Color.accentColor : Color(.secondarySystemBackground))
+                    RoundedRectangle(cornerRadius: Theme.Radius.small, style: .continuous)
+                        .fill(isSelected ? Theme.brand : Theme.paperSunk)
                 )
-                .foregroundStyle(isSelected ? Color.white : Color.primary)
+                .foregroundStyle(isSelected ? Theme.onBrand : Theme.ink)
         }
         .buttonStyle(.plain)
     }

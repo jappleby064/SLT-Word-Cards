@@ -37,6 +37,7 @@ struct LearnerDecksView: View {
                 }
             }
         }
+        .paperBackground()
         .navigationTitle(learner.name)
         .navigationDestination(for: Deck.self) { deck in
             DeckDetailView(learner: learner, deckID: deck.id)
@@ -68,7 +69,7 @@ struct LearnerDecksView: View {
             HStack(spacing: -14) {
                 ForEach(Array(cards.prefix(3).enumerated()), id: \.offset) { _, card in
                     CardThumbnail(card: card, side: 38)
-                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(.systemBackground), lineWidth: 2))
+                        .thumbnailRing()
                 }
             }
             .frame(width: 74, alignment: .leading)
@@ -78,7 +79,7 @@ struct LearnerDecksView: View {
                     .font(.body.weight(.medium))
                 Text(subtitle(for: deck))
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Theme.inkSoft)
             }
         }
     }

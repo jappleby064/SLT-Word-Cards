@@ -37,7 +37,7 @@ struct CardSelectRow: View {
             HStack(spacing: 12) {
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .font(.title3)
-                    .foregroundStyle(isSelected ? Color.accentColor : Color.secondary)
+                    .foregroundStyle(isSelected ? Theme.brand : Theme.inkSoft)
 
                 CardThumbnail(card: card)
 
@@ -45,14 +45,14 @@ struct CardSelectRow: View {
                     HStack(spacing: 6) {
                         Text(card.label)
                             .font(.body.weight(.medium))
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(Theme.ink)
                         if card.isCustom {
                             Text("Mine")
                                 .font(.caption2.weight(.semibold))
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
-                                .background(Capsule().fill(Color.accentColor.opacity(0.15)))
-                                .foregroundStyle(Color.accentColor)
+                                .background(Capsule().fill(Theme.brand.opacity(0.12)))
+                                .foregroundStyle(Theme.brand)
                         }
                     }
                     CardDetailLine(card: card)

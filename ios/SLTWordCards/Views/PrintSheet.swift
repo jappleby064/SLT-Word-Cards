@@ -60,7 +60,7 @@ struct PrintSheet: View {
 
     private var preview: some View {
         ZStack {
-            Color(.systemGroupedBackground)
+            Theme.paper
 
             if let document {
                 PDFPreview(document: document)
@@ -89,7 +89,7 @@ struct PrintSheet: View {
 
             Text(summary)
                 .font(.footnote)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Theme.inkSoft)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             Button {
@@ -102,7 +102,8 @@ struct PrintSheet: View {
             .disabled(fileURL == nil)
         }
         .padding()
-        .background(.bar)
+        .background(Theme.paperRaised)
+        .overlay(alignment: .top) { Rectangle().fill(Theme.rule).frame(height: Theme.hairline) }
     }
 
     private var summary: String {
@@ -145,7 +146,7 @@ private struct PDFPreview: UIViewRepresentable {
         view.autoScales = true
         view.displayMode = .singlePageContinuous
         view.displayDirection = .vertical
-        view.backgroundColor = .systemGroupedBackground
+        view.backgroundColor = UIColor(Theme.paper)
         return view
     }
 

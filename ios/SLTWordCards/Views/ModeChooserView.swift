@@ -10,14 +10,15 @@ struct ModeChooserView: View {
             VStack(spacing: 12) {
                 Image(systemName: "rectangle.on.rectangle.angled")
                     .font(.system(size: 52))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.brand)
 
                 Text("SLT Word Cards")
-                    .font(.largeTitle.weight(.bold))
+                    .font(Theme.display(34, weight: .semibold))
+                    .foregroundStyle(Theme.ink)
 
                 Text("How will you be using the app?")
                     .font(.body)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Theme.inkSoft)
             }
             .padding(.top, 48)
             .padding(.bottom, 36)
@@ -34,11 +35,11 @@ struct ModeChooserView: View {
 
             Text("You can change this at any time in Settings.")
                 .font(.footnote)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Theme.inkSoft)
                 .padding(.bottom, 24)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(.systemGroupedBackground))
+        .background(Theme.paper)
     }
 
     private func choice(_ mode: AppSettings.Mode) -> some View {
@@ -49,14 +50,14 @@ struct ModeChooserView: View {
                 Image(systemName: mode.symbol)
                     .font(.title)
                     .frame(width: 44)
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.brand)
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(mode.title)
                         .font(.headline)
                     Text(mode.summary)
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Theme.inkSoft)
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
@@ -64,14 +65,14 @@ struct ModeChooserView: View {
 
                 Image(systemName: "chevron.right")
                     .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(Theme.inkSoft.opacity(0.6))
                     .padding(.top, 4)
             }
             .multilineTextAlignment(.leading)
             .padding(18)
             .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(.secondarySystemGroupedBackground))
+                RoundedRectangle(cornerRadius: Theme.Radius.large, style: .continuous)
+                    .fill(Theme.paperRaised)
             )
         }
         .buttonStyle(.plain)

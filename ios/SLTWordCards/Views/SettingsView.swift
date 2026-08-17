@@ -25,7 +25,7 @@ struct SettingsView: View {
 
                     Text(settings.effectiveMode.summary)
                         .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Theme.inkSoft)
                 } header: {
                     Text("Mode")
                 } footer: {
@@ -68,7 +68,7 @@ struct SettingsView: View {
 
                     Text(syncDescription)
                         .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Theme.inkSoft)
                 }
 
                 Section {
@@ -85,7 +85,7 @@ struct SettingsView: View {
                 Section {
                     Text("A test score lasts for the run and is not saved anywhere — not on this device, not in iCloud, and never sent to us. Nothing is kept against a learner.")
                         .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Theme.inkSoft)
                 } header: {
                     Text("Test scores")
                 }
@@ -103,6 +103,7 @@ struct SettingsView: View {
                     Link("speakeasy-slt.uk", destination: URL(string: "https://speakeasy-slt.uk/")!)
                 }
             }
+            .paperBackground()
             .navigationTitle("Settings")
             // Re-applied for the same reason as in RootView: modal content does
             // not reliably inherit the environment on Mac Catalyst.

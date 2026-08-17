@@ -56,6 +56,7 @@ struct MyDecksView: View {
                     }
                 }
             }
+            .paperBackground()
             .navigationTitle("My Decks")
             .navigationDestination(for: Deck.self) { deck in
                 if let collection {
@@ -134,7 +135,7 @@ struct MyDecksView: View {
             HStack(spacing: -14) {
                 ForEach(Array(cards.prefix(3).enumerated()), id: \.offset) { _, card in
                     CardThumbnail(card: card, side: 38)
-                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(.systemBackground), lineWidth: 2))
+                        .thumbnailRing()
                 }
             }
             .frame(width: 74, alignment: .leading)
@@ -147,11 +148,11 @@ struct MyDecksView: View {
                         Label("Shared with me", systemImage: "tray.and.arrow.down")
                             .font(.caption2)
                             .labelStyle(.titleAndIcon)
-                            .foregroundStyle(Color.accentColor)
+                            .foregroundStyle(Theme.brand)
                     }
                     Text(deck.cardCount == 1 ? "1 card" : "\(deck.cardCount) cards")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Theme.inkSoft)
                 }
             }
         }

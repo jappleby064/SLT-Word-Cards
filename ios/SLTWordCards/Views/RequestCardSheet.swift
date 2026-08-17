@@ -118,7 +118,7 @@ struct RequestCardSheet: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(maxWidth: 160, maxHeight: 160)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.large, style: .continuous))
         }
 
         PhotosPicker(selection: $pickedItem, matching: .images) {
