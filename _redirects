@@ -1,10 +1,13 @@
-# Netlify / Cloudflare Pages syntax.
+# Netlify syntax.
 #
-# Memorable aliases for the chart. They 301 to the one real page rather than
-# duplicating it: two near-identical pages would compete with each other in
-# search and neither would rank.
-/ipa-keyboard      /ipa-chart.html   301
-/ipa-keyboard/     /ipa-chart.html   301
-/ipa-chart         /ipa-chart.html   301
-/ipa-chart/        /ipa-chart.html   301
-/ipa               /ipa-chart.html   301
+# The chart lives at /ipa-chart (Netlify resolves that to ipa-chart.html), which
+# is what the canonical tag, the sitemap and every internal link now say. These
+# are memorable aliases onto it, not copies: two near-identical pages would
+# compete with each other in search and neither would rank.
+#
+# There is deliberately no rule for /ipa-chart itself — it is the destination,
+# and a rule pointing it at itself would loop.
+/ipa-keyboard      /ipa-chart   301
+/ipa-keyboard/     /ipa-chart   301
+/ipa-chart/        /ipa-chart   301
+/ipa               /ipa-chart   301
