@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rosie's Dictionary — Meanings, Word Origins and Synonyms</title>
+    <meta name="description" content="Look up a word: its meanings, how it is said, where it came from, and words that mean much the same. A plain, fast dictionary with an etymology tree.">
+    <link rel="canonical" href="https://speakeasy-slt.uk/dictionary">
+    <meta name="theme-color" content="#135e5c">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://speakeasy-slt.uk/dictionary">
+    <meta property="og:title" content="Rosie's Dictionary — Meanings, Word Origins and Synonyms">
+    <meta property="og:description" content="Look up a word: its meanings, how it is said, where it came from, and words that mean much the same. Free, no sign-up.">
+    <meta property="og:site_name" content="Speakeasy SLT">
+    <meta property="og:locale" content="en_GB">
+    <meta property="og:image" content="https://speakeasy-slt.uk/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Rosie's Dictionary — Meanings, Word Origins and Synonyms">
+    <meta name="twitter:description" content="Meanings, pronunciation, an etymology tree and synonyms for any English word. Free, and it works on a phone.">
+    <meta name="twitter:image" content="https://speakeasy-slt.uk/og-image.png">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "@id": "https://speakeasy-slt.uk/dictionary#app",
+          "name": "Rosie's Dictionary",
+          "alternateName": ["Dictionary", "Etymology dictionary", "Word origin lookup"],
+          "url": "https://speakeasy-slt.uk/dictionary",
+          "description": "A free online dictionary. Search a word for its meanings and part of speech, its pronunciation, a diagram of where it came from, and a list of synonyms you can search in turn.",
+          "applicationCategory": "EducationalApplication",
+          "operatingSystem": "Any modern web browser",
+          "browserRequirements": "Requires JavaScript",
+          "inLanguage": "en-GB",
+          "isAccessibleForFree": true,
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "GBP" },
+          "featureList": [
+            "Definitions grouped by part of speech, with examples",
+            "Pronunciation in the International Phonetic Alphabet",
+            "Etymology drawn as a tree of ancestor languages",
+            "Cognates shown alongside the word they share a root with",
+            "Synonym chips that search when clicked",
+            "Spelling suggestions when a word is not found",
+            "Falls back to a Wikipedia summary for names and terms"
+          ],
+          "audience": {
+            "@type": "Audience",
+            "audienceType": "Speech and language therapists, teachers, students and anyone curious about words"
+          }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            { "@type": "ListItem", "position": 1, "name": "Speakeasy SLT", "item": "https://speakeasy-slt.uk/" },
+            { "@type": "ListItem", "position": 2, "name": "Dictionary", "item": "https://speakeasy-slt.uk/dictionary" }
+          ]
+        }
+      ]
+    }
+    </script>
+
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.ico?v=2" sizes="16x16 32x32 48x48">
+    <link rel="icon" href="/logo.svg?v=2" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2">
+
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        /*
+            Ported from the standalone Rosie's Dictionary. The layout is the one
+            it always had — a narrow column, a rounded search box, one card of
+            results. Only the palette and the type were brought over onto the
+            site's tokens: warm paper instead of grey, teal instead of Google
+            blue, the display serif on the word being looked up.
+        */
+
+        /* A dictionary entry is prose, so the column stays near the reading
+           measure rather than the 1060px the card grid wants. */
+        .app-container { max-width: 46rem; }
+
+        /* The pill has its own placeholder; the label is for screen readers,
+           which do not get one from a placeholder. */
+        .sr-only {
+            position: absolute;
+            width: 1px; height: 1px;
+            padding: 0; margin: -1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* --- Search ------------------------------------------------------- */
+
+        .search-wrapper { position: relative; }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            background: var(--paper-raised);
+            border: 1px solid var(--rule-strong);
+            border-radius: var(--r-pill);
+            padding: 0.45rem 0.45rem 0.45rem 1rem;
+            box-shadow: var(--shadow-flat);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 3px var(--brand-tint);
+        }
+
+        /* Beats the global input rule: inside the pill the field carries no
+           border or box of its own. */
+        #search-input[type='text'] {
+            flex: 1;
+            min-width: 0;
+            border: none;
+            outline: none;
+            background: transparent;
+            padding: 0.1rem 0;
+            font-size: 1.05rem;
+            color: var(--ink);
+        }
+
+        #search-input[type='text']:focus {
+            border: none;
+            box-shadow: none;
+        }
+
+        .clear-btn,
+        #search-btn {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+            background: none;
+            border: none;
+            padding: 0.35rem;
+            border-radius: var(--r-pill);
+        }
+
+        .clear-btn { color: var(--ink-faint); }
+        .clear-btn:hover { color: var(--ink); }
+
+        #search-btn { color: var(--brand); padding: 0.4rem; }
+        #search-btn:hover { background: var(--brand-tint); }
+
+        .divider-v {
+            width: 1px;
+            height: 1.5rem;
+            background: var(--rule);
+            flex-shrink: 0;
+            margin: 0 0.25rem;
+        }
+
+        /* --- Suggestions -------------------------------------------------- */
+
+        .suggestions-dropdown {
+            position: absolute;
+            top: calc(100% + 0.35rem);
+            left: 0;
+            right: 0;
+            z-index: 100;
+            overflow: hidden;
+            background: var(--paper-raised);
+            border: 1px solid var(--rule);
+            border-radius: var(--r-md);
+            box-shadow: var(--shadow-lift);
+        }
+
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.6rem 1rem;
+            font-size: 0.94rem;
+            color: var(--ink);
+            cursor: pointer;
+            border-bottom: 1px solid var(--rule);
+        }
+
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-item:hover { background: var(--brand-tint); }
+        .suggestion-item svg { color: var(--ink-faint); flex-shrink: 0; }
+
+        .hidden { display: none !important; }
+
+        /* --- Results card ------------------------------------------------- */
+
+        .results {
+            margin-top: 1.25rem;
+            background: var(--paper-raised);
+            border: 1px solid var(--rule);
+            border-radius: var(--r-md);
+            box-shadow: var(--shadow-flat);
+            padding: 1.5rem;
+        }
+
+        .word-header {
+            display: flex;
+            align-items: baseline;
+            gap: 0.6rem;
+        }
+
+        .word-title {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            line-height: 1.15;
+            color: var(--ink);
+        }
+
+        /* Phonetic transcription, so it gets the IPA stack the rest of the
+           site uses rather than whatever the body font has in that block. */
+        .phonetic {
+            font-family: var(--font-ipa);
+            font-size: 1rem;
+            color: var(--ink-soft);
+            margin: 0.15rem 0 1.25rem;
+        }
+
+        .rule {
+            border: none;
+            border-top: 1px solid var(--rule);
+            margin: 1.15rem 0;
+        }
+
+        .pos-block { margin-bottom: 0.25rem; }
+
+        .pos-label {
+            font-family: var(--font-display);
+            font-size: 0.95rem;
+            font-style: italic;
+            color: var(--ink-soft);
+            margin-bottom: 0.6rem;
+        }
+
+        .def-list { list-style: none; padding: 0; }
+
+        .def-list li {
+            padding: 0 0 0.65rem 0.85rem;
+            margin-bottom: 0.25rem;
+            border-left: 2px solid var(--rule);
+            font-size: 0.96rem;
+            line-height: 1.6;
+        }
+
+        .def-list li:last-child { padding-bottom: 0; margin-bottom: 0; }
+
+        .def-text { color: var(--ink); }
+
+        .def-example {
+            color: var(--ink-soft);
+            font-family: var(--font-display);
+            font-style: italic;
+            margin-top: 0.2rem;
+        }
+
+        .def-example::before { content: '\201C'; }
+        .def-example::after  { content: '\201D'; }
+
+        .section-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--ink-soft);
+            margin-bottom: 0.7rem;
+        }
+
+        .etymology-text {
+            font-size: 0.96rem;
+            line-height: 1.6;
+            color: var(--ink);
+        }
+
+        /* --- Etymology tree ------------------------------------------------
+           Kept exactly as it was drawn in the original: language label, word
+           beneath it, a hairline and an arrowhead down to the next. */
+
+        .etym-tree {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.25rem 0;
+            /* A branching tree with three siblings is wider than a phone. Let it
+               scroll rather than run off the edge of the card; safe centring keeps
+               the left of a wide tree reachable instead of clipped. */
+            align-items: safe center;
+            overflow-x: auto;
+        }
+
+        .etym-node,
+        .etym-sib-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .etym-lang {
+            display: inline-block;
+            background: var(--brand-tint);
+            color: var(--brand-dark);
+            border: 1px solid var(--brand-line);
+            font-size: 0.66rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            padding: 0.2rem 0.7rem;
+            border-radius: var(--r-xs);
+        }
+
+        .etym-word {
+            font-family: var(--font-display);
+            font-size: 0.95rem;
+            color: var(--ink-soft);
+            margin-top: 0.25rem;
+        }
+
+        .etym-arrow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .etym-arrow::before {
+            content: '';
+            display: block;
+            width: 1px;
+            height: 14px;
+            background: var(--rule-strong);
+        }
+
+        .etym-arrow::after {
+            content: '';
+            display: block;
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 5px solid var(--rule-strong);
+        }
+
+        .etym-final {
+            font-family: var(--font-display);
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--ink);
+            margin-top: 0.4rem;
+        }
+
+        /* Plain connector, no arrowhead — root down to the siblings row. */
+        .etym-connector {
+            width: 1px;
+            height: 14px;
+            background: var(--rule-strong);
+        }
+
+        .etym-siblings-row {
+            display: flex;
+            gap: clamp(0.75rem, 4vw, 1.5rem);
+            justify-content: center;
+            align-items: stretch;   /* equal height, so the connectors line up */
+            padding: 14px 0 16px;
+            border-top: 1px solid var(--rule-strong);
+            border-bottom: 1px solid var(--rule-strong);
+            width: fit-content;
+            margin: 0 auto;
+        }
+
+        .etym-sib-node {
+            justify-content: flex-start;
+            position: relative;
+        }
+
+        .etym-sib-node::before,
+        .etym-sib-node::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1px;
+            background: var(--rule-strong);
+        }
+
+        .etym-sib-node::before { top: -14px; height: 14px; }
+        .etym-sib-node::after  { bottom: -16px; height: 16px; }
+
+        /* --- Synonyms ------------------------------------------------------ */
+
+        .synonym-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+        }
+
+        .synonym-chip {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border: 1px solid var(--rule-strong);
+            border-radius: var(--r-pill);
+            background: none;
+            color: var(--brand-dark);
+            font-family: var(--font-text);
+            font-size: 0.88rem;
+            font-weight: 500;
+        }
+
+        .synonym-chip:hover {
+            background: var(--brand-tint);
+            border-color: var(--brand-line);
+        }
+
+        /* --- Wikipedia fallback, errors, loading --------------------------- */
+
+        .wiki-source {
+            display: flex;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--ink-soft);
+            margin-bottom: 0.9rem;
+        }
+
+        .wiki-link {
+            margin-left: auto;
+            color: var(--brand-dark);
+            font-size: 0.8rem;
+            text-decoration: none;
+        }
+
+        .wiki-link:hover { text-decoration: underline; }
+
+        .error-msg {
+            margin-top: 1.25rem;
+            padding: 1.25rem;
+            text-align: center;
+            font-size: 0.94rem;
+            color: var(--ink-soft);
+            background: var(--paper-raised);
+            border: 1px solid var(--rule);
+            border-radius: var(--r-md);
+        }
+
+        .error-msg .synonym-chip { margin: 0.25rem 0.15rem 0; }
+
+        .loading-msg {
+            padding: 1.25rem 0;
+            text-align: center;
+            font-size: 0.94rem;
+            color: var(--ink-soft);
+        }
+
+        /* --- Sources line --------------------------------------------------- */
+
+        .source-note {
+            margin-top: 1.5rem;
+            font-size: 0.8rem;
+            color: var(--ink-faint);
+            max-width: var(--measure);
+        }
+
+        .source-note a {
+            color: var(--ink-soft);
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+
+        .source-note a:hover { color: var(--ink); }
+    </style>
+</head>
+
+<body>
+    <a class="skip-link" href="#search-section">Skip to the search box</a>
+
+    <div class="app-container">
+        <header class="site-head">
+            <a class="wordmark" href="/">
+                <img src="/logo.svg" alt="" width="26" height="26">
+                <b>Speakeasy</b>&nbsp;<span>SLT</span>
+            </a>
+            <nav class="site-nav" aria-label="Main">
+                <a href="/" class="nav-link">Word cards</a>
+                <a href="/ipa-chart" class="nav-link">IPA keyboard</a>
+                <a href="/dictionary" class="nav-link" aria-current="page">Dictionary</a>
+            </nav>
+        </header>
+
+        <div class="page-head">
+            <h1>Rosie's Dictionary</h1>
+        </div>
+
+        <main>
+            <div class="search-section" id="search-section">
+                <div class="search-wrapper">
+                    <div class="search-box">
+                        <label class="sr-only" for="search-input">Search for a word</label>
+                        <input type="text" id="search-input" placeholder="Search for a word" autocomplete="off" spellcheck="false">
+                        <button type="button" id="clear-btn" class="clear-btn hidden" aria-label="Clear">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                            </svg>
+                        </button>
+                        <div class="divider-v"></div>
+                        <button type="button" id="search-btn" aria-label="Search">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="suggestions" class="suggestions-dropdown hidden"></div>
+                </div>
+            </div>
+
+            <div id="results" class="results hidden"></div>
+            <div id="error" class="error-msg hidden"></div>
+
+            <!--
+                The one tool here that talks to anything outside this site, so it
+                says which services and why, rather than leaving the privacy page
+                to carry a claim it cannot make for this page.
+            -->
+            <p class="source-note">
+                Entries come from <a href="https://dictionaryapi.dev/" target="_blank" rel="noopener noreferrer">dictionaryapi.dev</a>,
+                <a href="https://en.wikipedia.org/" target="_blank" rel="noopener noreferrer">Wikipedia</a> and
+                <a href="https://en.wiktionary.org/" target="_blank" rel="noopener noreferrer">Wiktionary</a>;
+                word origins from <a href="https://www.etymologyexplorer.com/" target="_blank" rel="noopener noreferrer">Etymology Explorer</a>
+                and <a href="https://github.com/agmmnn/etytree" target="_blank" rel="noopener noreferrer">etytree</a>;
+                synonyms and spelling suggestions from <a href="https://www.datamuse.com/api/" target="_blank" rel="noopener noreferrer">Datamuse</a>.
+                Unlike the rest of the site, a search here is sent to those services to be answered.
+            </p>
+        </main>
+
+        <footer class="site-foot">
+            <p class="foot-legal">
+                <span>Speakeasy SLT — free tools from Appleby Technical.</span>
+                <span><a href="/privacy/">Privacy</a></span>
+            </p>
+        </footer>
+    </div>
+
+    <script src="/dictionary.js?v=1.7"></script>
+</body>
+
+</html>

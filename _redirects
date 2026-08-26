@@ -11,3 +11,9 @@
 /ipa-keyboard/     /ipa-chart   301
 /ipa-chart/        /ipa-chart   301
 /ipa               /ipa-chart   301
+
+# Same arrangement for the dictionary: /dictionary is the page (Netlify serves
+# dictionary.html for it), and these are aliases onto it rather than copies.
+/dictionary/       /dictionary  301
+/dict              /dictionary  301
+/etymology         /dictionary  301

@@ -40,7 +40,7 @@
           "url": "https://speakeasy-slt.uk/",
           "name": "Speakeasy SLT",
           "alternateName": "SLT Word Cards",
-          "description": "Free speech and language therapy tools: a printable word card builder and an interactive IPA chart.",
+          "description": "Free speech and language therapy tools: a printable word card builder, an interactive IPA chart and a dictionary with word origins.",
           "inLanguage": "en-GB",
           "publisher": { "@id": "https://speakeasy-slt.uk/#publisher" }
         },
@@ -109,10 +109,18 @@
             },
             {
               "@type": "Question",
+              "name": "Where can I look up what a word means or where it came from?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Use the dictionary at /dictionary. Search a word for its meanings and part of speech, its pronunciation in IPA, a diagram of the languages it came through, and synonyms you can search in turn."
+              }
+            },
+            {
+              "@type": "Question",
               "name": "Does anything about my clients leave the device?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "No. The card list downloads once; every search, selection and PDF after that happens in your browser. No accounts, no analytics. A shared deck keeps its contents after the # in the address, which browsers never send to a server."
+                "text": "No. The card list downloads once; every search, selection and PDF after that happens in your browser. No accounts, no analytics. A shared deck keeps its contents after the # in the address, which browsers never send to a server. The one exception on this site is the dictionary page, which has to send the word you look up to the services that answer it."
               }
             }
           ]
@@ -142,6 +150,7 @@
             <nav class="site-nav" aria-label="Main">
                 <a href="/" class="nav-link" aria-current="page">Word cards</a>
                 <a href="/ipa-chart" class="nav-link">IPA keyboard</a>
+                <a href="/dictionary" class="nav-link">Dictionary</a>
             </nav>
         </header>
 
@@ -276,12 +285,22 @@
                 </p>
             </details>
             <details>
+                <summary>Where can I look up what a word means or where it came from?</summary>
+                <p>
+                    In <a href="/dictionary">Rosie's Dictionary</a>. Search a word for
+                    its meanings and part of speech, how it is said in IPA, a diagram of
+                    the languages it came through, and synonyms you can search in turn.
+                </p>
+            </details>
+            <details>
                 <summary>Does anything about my clients leave the device?</summary>
                 <p>
                     No. The card list downloads once; every search, selection and PDF
                     after that happens in your browser. No accounts, no analytics. A
                     shared deck keeps its contents after the <code>#</code>, which
-                    browsers never send to a server. Full detail in the
+                    browsers never send to a server. The one exception on this site is
+                    the <a href="/dictionary">dictionary</a>, which has to send the word
+                    you look up to the services that answer it. Full detail in the
                     <a href="/privacy/">privacy policy</a>.
                 </p>
             </details>
