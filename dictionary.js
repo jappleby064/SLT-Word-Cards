@@ -111,6 +111,7 @@ async function search() {
     resultsEl.innerHTML = '<div class="loading-msg">Looking up&hellip;</div>';
     show(resultsEl);
     hide(errorEl);
+    networkTrouble = false;
 
     const [dictData, etymology, synonyms] = await Promise.all([
         fetchDictionary(word),
@@ -124,6 +125,25 @@ async function search() {
     if (wikiData) { renderWiki(wikiData, etymology, synonyms); return; }
 
     hide(resultsEl);
+
+    /*
+        Nothing came back — but "the word is not in the dictionary" and "the
+        request never got through" are different answers, and only one of them
+        is about the word. If any request failed outright, say so, and name the
+        usual culprit: a content or tracking blocker, which sees calls to five
+        third-party APIs and treats them as exactly what it is there to stop.
+    */
+    if (networkTrouble) {
+        errorEl.innerHTML =
+            `Could not reach the services that answer a lookup, so there is nothing to ` +
+            `show for &ldquo;${esc(word)}&rdquo; — this is not a comment on the word. ` +
+            `If it keeps happening, a content or tracking blocker is the usual cause: ` +
+            `this page has to call dictionaryapi.dev, Wikipedia and Datamuse, and a ` +
+            `blocker cannot tell those apart from anything else third-party.`;
+        show(errorEl);
+        return;
+    }
+
     const suggestions = await fetchSpellingSuggestions(word);
     if (suggestions.length) {
         const chips = suggestions.map(s =>
@@ -138,22 +158,46 @@ async function search() {
 
 // ── API fetchers ──────────────────────────────────────────────────────────────
 
-async function fetchDictionary(word) {
+/*
+    Every lookup goes through here, for two reasons.
+
+    A request that never comes back used to leave "Looking up…" on screen for
+    good, because nothing imposed a deadline. And a request that was refused —
+    offline, a content blocker, a service having a bad morning — was caught and
+    turned into null, which the caller reported as "No results found for X".
+    That sends you hunting for a typo when the word was never the problem. A
+    404 is the API answering; anything else is the API not answering, and the
+    two now say different things.
+*/
+const LOOKUP_TIMEOUT_MS = 12000;
+
+let networkTrouble = false;
+
+async function getJson(url) {
+    const ctrl  = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), LOOKUP_TIMEOUT_MS);
     try {
-        const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${enc(word)}`);
-        if (!res.ok) return null;
-        return res.json();
-    } catch { return null; }
+        const res = await fetch(url, { signal: ctrl.signal });
+        if (res.status === 404) return null;   // asked, and answered: no entry
+        if (!res.ok) { networkTrouble = true; return null; }
+        return await res.json();
+    } catch {
+        networkTrouble = true;                 // blocked, offline, or timed out
+        return null;
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+async function fetchDictionary(word) {
+    const data = await getJson(`https://api.dictionaryapi.dev/api/v2/entries/en/${enc(word)}`);
+    return Array.isArray(data) && data.length ? data : null;
 }
 
 async function fetchWikipedia(word) {
-    try {
-        const res  = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${enc(word)}`);
-        if (!res.ok) return null;
-        const data = await res.json();
-        if (data.type === 'disambiguation') return null;
-        return data;
-    } catch { return null; }
+    const data = await getJson(`https://en.wikipedia.org/api/rest_v1/page/summary/${enc(word)}`);
+    if (!data || data.type === 'disambiguation') return null;
+    return data;
 }
 
 // Tries Etymology Explorer API first, falls back to Wiktionary HTML parsing.
@@ -171,21 +215,20 @@ async function fetchEtymologyExplorer(word) {
     // Resolve word ID — use cache if available from autocomplete
     let wordId = wordIdCache[key];
     if (!wordId) {
-        const res  = await fetch(
+        const data = await getJson(
             `https://api.etymologyexplorer.com/prod/autocomplete?word=${enc(word)}&language=English`
         );
-        const data = await res.json();
-        const items = data.auto_complete_data || [];
+        const items = data?.auto_complete_data || [];
         items.forEach(i => { wordIdCache[i.word.toLowerCase()] = i._id; });
         const exact = items.find(i => i.word.toLowerCase() === key);
         wordId = exact?._id || items[0]?._id;
     }
     if (!wordId) return null;
 
-    const treeRes  = await fetch(
+    const treeData = await getJson(
         `https://api.etymologyexplorer.com/prod/get_trees?ids[]=${wordId}`
     );
-    const treeData = await treeRes.json();
+    if (!treeData) return null;
 
     // Locate words map and edges array robustly (indices 1 and 3 per API spec)
     let wordsObj = null, edges = null;
@@ -286,11 +329,10 @@ function buildEtymTreeFromGraph(wordsObj, edges, searchedWord) {
 // Wiktionary fallback — parses raw HTML, separates "from" chain from "cognate with"
 async function fetchEtymologyWiktionary(word) {
     try {
-        const res  = await fetch(
+        const data = await getJson(
             `https://en.wiktionary.org/w/api.php?action=parse&page=${enc(word)}&prop=text&format=json&origin=*`
         );
-        const data = await res.json();
-        if (!data.parse) return null;
+        if (!data?.parse) return null;
 
         const doc     = new DOMParser().parseFromString(data.parse.text['*'], 'text/html');
         const heading = doc.querySelector('[id^="Etymology"]');
@@ -339,19 +381,14 @@ function parseEtymParagraph(pElem) {
 }
 
 async function fetchSynonyms(word) {
-    try {
-        const res  = await fetch(`https://api.datamuse.com/words?rel_syn=${enc(word)}&max=14`);
-        const data = await res.json();
-        return data.map(w => w.word);
-    } catch { return []; }
+    const data = await getJson(`https://api.datamuse.com/words?rel_syn=${enc(word)}&max=14`);
+    return Array.isArray(data) ? data.map(w => w.word) : [];
 }
 
 async function fetchSpellingSuggestions(word) {
-    try {
-        const res  = await fetch(`https://api.datamuse.com/words?sp=${enc(word)}&max=5`);
-        const data = await res.json();
-        return data.map(w => w.word).filter(w => w.toLowerCase() !== word.toLowerCase());
-    } catch { return []; }
+    const data = await getJson(`https://api.datamuse.com/words?sp=${enc(word)}&max=5`);
+    if (!Array.isArray(data)) return [];
+    return data.map(w => w.word).filter(w => w.toLowerCase() !== word.toLowerCase());
 }
 
 // ── Renderers ─────────────────────────────────────────────────────────────────
