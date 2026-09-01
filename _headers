@@ -4,3 +4,9 @@
 # Netlify / Cloudflare Pages syntax.
 /.well-known/apple-app-site-association
   Content-Type: application/json
+
+# The local dictionary. These change only when tools/build_dictionary_data.py
+# is run against a new WordNet or ipa-dict, which is close to never, so a
+# browser that has fetched a shard should keep it.
+/dict-data/*
+  Cache-Control: public, max-age=604800

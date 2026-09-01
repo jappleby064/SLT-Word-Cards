@@ -126,18 +126,29 @@ async function search() {
         feel broken. So the card is painted the moment the definition lands,
         and the other two sections are dropped in as they arrive.
     */
+    // Origin is online-only whatever happens, so it goes out straight away.
+    const etymP = fetchEtymology(word);
+    etymP.catch(() => null);
+
     let view = null;
-    const defsP = fetchDefinitions(word, phonetic => {
+    const entries = await fetchDefinitions(word, phonetic => {
         if (!view || stale(token)) return;
         view.data[0].phonetic = phonetic;
         paint(view);
     });
-    const etymP = fetchEtymology(word);
-    const synP  = fetchSynonyms(word);
-    [etymP, synP].forEach(pr => pr.catch(() => null));
-
-    const entries = await defsP;
     if (stale(token)) return;
+
+    /*
+        WordNet is built out of synonym sets, so when the local copy answers it
+        has already brought the synonyms with it and there is no reason to ask
+        Datamuse as well. One fewer service in the path, for the case that is
+        now the common one.
+    */
+    const localSynonyms = entries?.[0]?.localSynonyms;
+    const synP = localSynonyms?.length
+        ? Promise.resolve(localSynonyms)
+        : fetchSynonyms(word);
+    synP.catch(() => null);
 
     if (entries) {
         view = { kind: 'dict', data: entries, word: entries[0].word };
@@ -286,6 +297,18 @@ function pause(ms) { return new Promise(res => setTimeout(res, ms)); }
     downstream knows or cares which one answered.
 */
 async function fetchDefinitions(word, onLatePhonetic) {
+    /*
+        The local copy first, and usually last. It is 147,000 words of WordNet
+        with British pronunciations from ipa-dict, built by
+        tools/build_dictionary_data.py and served from this site as one small
+        shard per lookup. No third party, nothing to be down, and it works
+        behind the kind of firewall that is the reason PapaParse is self-hosted
+        too. The online sources stay for what it does not have — recent words,
+        proper nouns, anything coined since WordNet was compiled.
+    */
+    const local = await fetchLocal(word);
+    if (local) return local;
+
     const primary = fetchDictionaryApi(word);
     const backup  = fetchWiktionaryDefs(word);
 
@@ -325,6 +348,64 @@ async function fetchDefinitions(word, onLatePhonetic) {
     case that can still succeed, and there is no point retrying a 522 when the
     origin is the thing that is down. If it comes back, so does this path.
 */
+const LOCAL_SHARDS = 1024;
+
+// Loaded shards are kept: the next lookup often lands in one already here.
+const shardCache = new Map();
+
+/*
+    32-bit FNV-1a, the same hash tools/build_dictionary_data.py used to decide
+    which shard a word went into. Change one and you must change the other, or
+    every lookup lands in the wrong file.
+*/
+function fnv1a(text) {
+    let h = 0x811c9dc5;
+    for (let i = 0; i < text.length; i++) {
+        h ^= text.charCodeAt(i) & 0xff;
+        h = Math.imul(h, 0x01000193) >>> 0;
+    }
+    return h;
+}
+
+async function fetchLocal(word) {
+    const key    = word.toLowerCase().trim();
+    const bucket = fnv1a(key) % LOCAL_SHARDS;
+
+    let shard = shardCache.get(bucket);
+    if (!shard) {
+        // Our own file on our own domain: no third-party budget, no retry
+        // dance, and a failure here is a failure of this site, not of a
+        // service somewhere else — so it must not set networkTrouble.
+        try {
+            const res = await fetch(`/dict-data/${bucket}.json`);
+            if (!res.ok) return null;
+            shard = await res.json();
+        } catch {
+            return null;
+        }
+        shardCache.set(bucket, shard);
+    }
+
+    const record = shard[key];
+    if (!record) return null;
+
+    // Some entries carry a pronunciation and no definition — an inflection, or
+    // a word ipa-dict knows and WordNet does not. Worth an online lookup that
+    // can do better, so hand back only the transcription for it to wear.
+    if (!record.m) return null;
+
+    return [{
+        word: key,
+        phonetic: record.i || '',
+        source: 'local',
+        meanings: record.m.map(m => ({
+            partOfSpeech: m.p,
+            definitions: m.s.map(sense => ({ definition: sense.d, example: sense.x || '' })),
+        })),
+        localSynonyms: record.y || [],
+    }];
+}
+
 async function fetchDictionaryApi(word) {
     const data = await getJson(
         `https://api.dictionaryapi.dev/api/v2/entries/en/${enc(word)}`,
