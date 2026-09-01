@@ -316,8 +316,20 @@ async function fetchDefinitions(word, onLatePhonetic) {
     return fallback;
 }
 
+/*
+    Kept on a short leash, because as of 27 August 2026 this service's origin
+    is unreachable: Cloudflare answers 522 after about twenty seconds trying to
+    connect to it, and the only words that come back are ones its edge still
+    has cached — one such copy was twenty-eight days old. A cached word returns
+    in under two-tenths of a second, so five seconds is generous for the only
+    case that can still succeed, and there is no point retrying a 522 when the
+    origin is the thing that is down. If it comes back, so does this path.
+*/
 async function fetchDictionaryApi(word) {
-    const data = await getJson(`https://api.dictionaryapi.dev/api/v2/entries/en/${enc(word)}`);
+    const data = await getJson(
+        `https://api.dictionaryapi.dev/api/v2/entries/en/${enc(word)}`,
+        { budget: 5000, retry: false }
+    );
     return Array.isArray(data) && data.length ? data : null;
 }
 
