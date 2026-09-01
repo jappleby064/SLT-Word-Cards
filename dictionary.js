@@ -107,44 +107,76 @@ async function search() {
     const word = searchInput.value.trim();
     if (!word) return;
 
+    const token = ++searchToken;
     hideSuggestions();
-    resultsEl.innerHTML = '<div class="loading-msg">Looking up&hellip;</div>';
-    show(resultsEl);
     hide(errorEl);
     networkTrouble = false;
 
-    const [dictData, etymology, synonyms] = await Promise.all([
-        fetchDictionary(word),
-        fetchEtymology(word),
-        fetchSynonyms(word),
-    ]);
+    const cached = lookupCache.get(word.toLowerCase());
+    if (cached) { paint(cached); return; }
 
-    if (dictData) { render(dictData, etymology, synonyms); return; }
+    resultsEl.innerHTML = '<div class="loading-msg">Looking up&hellip;</div>';
+    show(resultsEl);
 
-    const wikiData = await fetchWikipedia(word);
-    if (wikiData) { renderWiki(wikiData, etymology, synonyms); return; }
+    /*
+        All three requests go out together, but the definition is the only one
+        the reader is waiting for. Origin and synonyms come from services that
+        can be slow or throttled, and holding a definition that arrived in half
+        a second behind a tree that takes twenty is how a working page comes to
+        feel broken. So the card is painted the moment the definition lands,
+        and the other two sections are dropped in as they arrive.
+    */
+    let view = null;
+    const defsP = fetchDefinitions(word, phonetic => {
+        if (!view || stale(token)) return;
+        view.data[0].phonetic = phonetic;
+        paint(view);
+    });
+    const etymP = fetchEtymology(word);
+    const synP  = fetchSynonyms(word);
+    [etymP, synP].forEach(pr => pr.catch(() => null));
+
+    const entries = await defsP;
+    if (stale(token)) return;
+
+    if (entries) {
+        view = { kind: 'dict', data: entries, word: entries[0].word };
+        paint(view);
+        fillIn(view, etymP, synP, token);
+        return;
+    }
+
+    const wiki = await fetchWikipedia(word);
+    if (stale(token)) return;
+
+    if (wiki) {
+        const view = { kind: 'wiki', data: wiki, word: wiki.title };
+        paint(view);
+        fillIn(view, etymP, synP, token);
+        return;
+    }
 
     hide(resultsEl);
 
     /*
         Nothing came back — but "the word is not in the dictionary" and "the
         request never got through" are different answers, and only one of them
-        is about the word. If any request failed outright, say so, and name the
-        usual culprit: a content or tracking blocker, which sees calls to five
-        third-party APIs and treats them as exactly what it is there to stop.
+        is about the word. Saying the first when the second happened sends the
+        reader hunting for a typo that was never there.
     */
     if (networkTrouble) {
         errorEl.innerHTML =
             `Could not reach the services that answer a lookup, so there is nothing to ` +
             `show for &ldquo;${esc(word)}&rdquo; — this is not a comment on the word. ` +
-            `If it keeps happening, a content or tracking blocker is the usual cause: ` +
-            `this page has to call dictionaryapi.dev, Wikipedia and Datamuse, and a ` +
-            `blocker cannot tell those apart from anything else third-party.`;
+            `Try again in a moment; if it keeps happening, a content or tracking blocker ` +
+            `is the other usual cause, since this page has to call several other sites to ` +
+            `answer a search.`;
         show(errorEl);
         return;
     }
 
     const suggestions = await fetchSpellingSuggestions(word);
+    if (stale(token)) return;
     if (suggestions.length) {
         const chips = suggestions.map(s =>
             `<button class="synonym-chip" data-word="${esc(s)}">${esc(s)}</button>`
@@ -154,6 +186,29 @@ async function search() {
         errorEl.textContent = `No results found for "${word}".`;
     }
     show(errorEl);
+}
+
+// A result from a search the reader has already moved on from.
+function stale(token) { return token !== searchToken; }
+
+// Origin and synonyms arrive later and repaint the card in place. Each is
+// independent: whichever comes back is shown, and one failing costs the other
+// nothing.
+function fillIn(view, etymP, synP, token) {
+    etymP.then(etymology => {
+        view.etymology = etymology;          // recorded even if we have moved on,
+        if (!stale(token)) paint(view);      // so the cached copy stays complete
+    });
+    synP.then(synonyms => {
+        view.synonyms = synonyms;
+        if (!stale(token)) paint(view);
+    });
+}
+
+function paint(view) {
+    lookupCache.set(view.word.toLowerCase(), view);
+    if (view.kind === 'wiki') renderWiki(view.data, view.etymology, view.synonyms);
+    else                      render(view.data, view.etymology, view.synonyms);
 }
 
 // ── API fetchers ──────────────────────────────────────────────────────────────
@@ -171,14 +226,39 @@ async function search() {
 */
 const LOOKUP_TIMEOUT_MS = 12000;
 
+/*
+    How long dictionaryapi.dev gets to answer before Wiktionary is used
+    instead. Measured on 2026-08-27: dictionaryapi.dev connects instantly and
+    then takes anywhere from 2 to 20+ seconds at the origin — nine of twelve
+    words timed out at ten seconds — while Wiktionary answered in under half a
+    second. Both are asked at once; this is only how long the nicer answer is
+    worth waiting for.
+*/
+const PRIMARY_GRACE_MS = 3500;
+
 let networkTrouble = false;
 
-async function getJson(url) {
+// Rising counter. Type "cat" then "dog" and the slower "cat" must not land on
+// top of "dog" — anything carrying a stale token is dropped on arrival.
+let searchToken = 0;
+
+// A word already looked up costs nothing to show again, which matters because
+// clicking a synonym chip and coming back is the usual way to read this page.
+const lookupCache = new Map();
+
+async function getJson(url, { budget = LOOKUP_TIMEOUT_MS, retry = true } = {}) {
     const ctrl  = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), LOOKUP_TIMEOUT_MS);
+    const timer = setTimeout(() => ctrl.abort(), budget);
     try {
         const res = await fetch(url, { signal: ctrl.signal });
         if (res.status === 404) return null;   // asked, and answered: no entry
+        // 429 is Wikimedia saying "not so fast", 5xx is a bad moment at the
+        // far end. Both are worth one more try; a 404 never is.
+        if ((res.status === 429 || res.status >= 500) && retry) {
+            clearTimeout(timer);
+            await pause(800);
+            return getJson(url, { budget, retry: false });
+        }
         if (!res.ok) { networkTrouble = true; return null; }
         return await res.json();
     } catch {
@@ -189,9 +269,89 @@ async function getJson(url) {
     }
 }
 
-async function fetchDictionary(word) {
+function pause(ms) { return new Promise(res => setTimeout(res, ms)); }
+
+/*
+    Two sources, asked at the same time.
+
+    dictionaryapi.dev has the nicer material — plain prose, examples, and a
+    phonetic transcription, which is the reason this page exists on a speech
+    therapy site. It is also a free service running on a strained origin, and
+    when it stalls it stalls for twenty seconds or more.
+
+    Wiktionary's definition endpoint is Wikimedia infrastructure: fast and
+    steady, but its definitions arrive as HTML and it carries no phonetics. So
+    the good source gets a few seconds' head start and the dependable one
+    catches whatever it drops. Both return the same shape, so nothing
+    downstream knows or cares which one answered.
+*/
+async function fetchDefinitions(word, onLatePhonetic) {
+    const primary = fetchDictionaryApi(word);
+    const backup  = fetchWiktionaryDefs(word);
+
+    // Swallow rejections nothing else is watching; both resolve to null.
+    primary.catch(() => null);
+    backup.catch(() => null);
+
+    const early = await Promise.race([primary, pause(PRIMARY_GRACE_MS)]);
+    if (early) return early;
+
+    const fallback = await backup;
+    if (!fallback) return primary;
+
+    /*
+        Wiktionary carries no phonetic transcription, and on a speech therapy
+        site that is the part worth waiting for. So if the slow source does
+        eventually arrive, take the transcription from it and leave the
+        definitions alone — a line appearing under the headword is a small
+        addition, where swapping the definitions out from under someone
+        mid-sentence would not be.
+    */
+    primary.then(entries => {
+        const phonetic = entries?.[0]?.phonetic
+            || entries?.[0]?.phonetics?.find(ph => ph.text)?.text;
+        if (phonetic) onLatePhonetic?.(phonetic);
+    });
+
+    return fallback;
+}
+
+async function fetchDictionaryApi(word) {
     const data = await getJson(`https://api.dictionaryapi.dev/api/v2/entries/en/${enc(word)}`);
     return Array.isArray(data) && data.length ? data : null;
+}
+
+/*
+    Wiktionary returns definitions as HTML fragments, and the first entry under
+    a part of speech is often an empty string — a heading with nothing under
+    it. Strip the markup, drop the empties, and reshape into what render()
+    already expects from the other source.
+*/
+async function fetchWiktionaryDefs(word) {
+    const data = await getJson(
+        `https://en.wiktionary.org/api/rest_v1/page/definition/${enc(word)}`
+    );
+    const senses = data?.en;
+    if (!Array.isArray(senses) || !senses.length) return null;
+
+    const meanings = senses.map(sense => ({
+        partOfSpeech: (sense.partOfSpeech || '').toLowerCase(),
+        definitions: (sense.definitions || [])
+            .map(d => ({
+                definition: stripHtml(d.definition),
+                example: d.examples?.length ? stripHtml(d.examples[0]) : '',
+            }))
+            .filter(d => d.definition.length > 1),
+    })).filter(m => m.definitions.length);
+
+    if (!meanings.length) return null;
+    return [{ word, phonetic: '', meanings, source: 'wiktionary' }];
+}
+
+function stripHtml(html) {
+    const el = document.createElement('div');
+    el.innerHTML = html || '';
+    return (el.textContent || '').replace(/\s+/g, ' ').trim();
 }
 
 async function fetchWikipedia(word) {
@@ -399,6 +559,14 @@ function render(entries, etymology, synonyms) {
 
     let h = `<div class="word-header"><span class="word-title">${esc(entry.word)}</span></div>`;
     if (phonetic) h += `<div class="phonetic">${esc(phonetic)}</div>`;
+
+    // Only worth saying when it is not the usual source.
+    if (entry.source === 'wiktionary') {
+        h += `<div class="wiki-source">Source: Wiktionary
+                  <a class="wiki-link" href="https://en.wiktionary.org/wiki/${enc(entry.word)}"
+                     target="_blank" rel="noopener noreferrer">View on Wiktionary &#8599;</a>
+              </div>`;
+    }
 
     entry.meanings.forEach((meaning, i) => {
         if (i > 0) h += '<hr class="rule">';
