@@ -307,7 +307,17 @@ async function fetchDefinitions(word, onLatePhonetic) {
         proper nouns, anything coined since WordNet was compiled.
     */
     const local = await fetchLocal(word);
-    if (local) return local;
+    if (local?.entries) return local.entries;
+
+    /*
+        The local copy may know how a word is said without knowing what it
+        means — every inflection is like this, and "cats" and "jumped" are the
+        bread and butter of a speech therapy session. Its transcription is
+        ipa-dict en_UK, so it outranks anything the online sources offer:
+        dictionaryapi.dev leads with the American reading, and a child working
+        on /ɑː/ in "bath" should not be shown /bæθ/.
+    */
+    const localIpa = local?.phonetic || '';
 
     const primary = fetchDictionaryApi(word);
     const backup  = fetchWiktionaryDefs(word);
@@ -317,10 +327,10 @@ async function fetchDefinitions(word, onLatePhonetic) {
     backup.catch(() => null);
 
     const early = await Promise.race([primary, pause(PRIMARY_GRACE_MS)]);
-    if (early) return early;
+    if (early) return withBritishPhonetic(early, localIpa);
 
     const fallback = await backup;
-    if (!fallback) return primary;
+    if (!fallback) return primary.then(entries => withBritishPhonetic(entries, localIpa));
 
     /*
         Wiktionary carries no phonetic transcription, and on a speech therapy
@@ -330,13 +340,59 @@ async function fetchDefinitions(word, onLatePhonetic) {
         addition, where swapping the definitions out from under someone
         mid-sentence would not be.
     */
-    primary.then(entries => {
-        const phonetic = entries?.[0]?.phonetic
-            || entries?.[0]?.phonetics?.find(ph => ph.text)?.text;
-        if (phonetic) onLatePhonetic?.(phonetic);
-    });
+    if (!localIpa) {
+        primary.then(entries => {
+            const phonetic = entries && britishPhonetic(entries[0]);
+            if (phonetic) onLatePhonetic?.(phonetic);
+        });
+    }
 
-    return fallback;
+    return withBritishPhonetic(fallback, localIpa);
+}
+
+/*
+    Which transcription to wear, in order of how British it is known to be.
+
+    The local en_UK copy wins outright. Failing that, dictionaryapi.dev hands
+    over several transcriptions for a word and its top-level `phonetic` is
+    whichever came first, which for most words is the American one. Each
+    transcription travels with the audio clip it belongs to, and those are
+    named by accent — .../lorry-uk.mp3, .../lorry-us.mp3 — so the label on the
+    audio is what picks the text.
+*/
+const UK_AUDIO = /(?:[-_/](?:uk|gb|rp)[-_./]|[-_](?:uk|gb)\.[a-z0-9]+$|en[-_](?:uk|gb))/i;
+const US_AUDIO = /(?:[-_/]us[-_./]|[-_]us\.[a-z0-9]+$|en[-_]us)/i;
+
+// Vowels and r-colouring that only one side of the Atlantic writes. A weak
+// signal, and only ever used to separate transcriptions carrying no audio.
+const UK_SYMBOLS = /[ɒɜ]|ɑː|əʊ|ɪə|eə|ʊə/;
+const US_SYMBOLS = /[ɚɝɾ]|oʊ/;
+
+function britishPhonetic(entry) {
+    if (!entry) return '';
+
+    const options = (entry.phonetics || []).filter(ph => ph.text);
+    if (!options.length) return entry.phonetic || '';
+
+    const score = ph => {
+        const audio = ph.audio || '';
+        if (UK_AUDIO.test(audio)) return 3;
+        if (US_AUDIO.test(audio)) return 0;
+        if (UK_SYMBOLS.test(ph.text) && !US_SYMBOLS.test(ph.text)) return 2;
+        if (US_SYMBOLS.test(ph.text)) return 0;
+        return 1;
+    };
+
+    const best = options.reduce((a, b) => (score(b) > score(a) ? b : a));
+    return score(best) ? best.text : (entry.phonetic || best.text);
+}
+
+// Same entries, wearing the most British transcription available for them.
+function withBritishPhonetic(entries, localIpa) {
+    if (!entries?.length) return entries;
+    const phonetic = localIpa || britishPhonetic(entries[0]);
+    if (phonetic) entries[0].phonetic = phonetic;
+    return entries;
 }
 
 /*
@@ -392,9 +448,9 @@ async function fetchLocal(word) {
     // Some entries carry a pronunciation and no definition — an inflection, or
     // a word ipa-dict knows and WordNet does not. Worth an online lookup that
     // can do better, so hand back only the transcription for it to wear.
-    if (!record.m) return null;
+    if (!record.m) return { phonetic: record.i || '' };
 
-    return [{
+    return { entries: [{
         word: key,
         phonetic: record.i || '',
         source: 'local',
@@ -403,7 +459,7 @@ async function fetchLocal(word) {
             definitions: m.s.map(sense => ({ definition: sense.d, example: sense.x || '' })),
         })),
         localSynonyms: record.y || [],
-    }];
+    }] };
 }
 
 async function fetchDictionaryApi(word) {
@@ -648,7 +704,7 @@ async function fetchSpellingSuggestions(word) {
 
 function render(entries, etymology, synonyms) {
     const entry    = entries[0];
-    const phonetic = entry.phonetic || entry.phonetics?.find(p => p.text)?.text || '';
+    const phonetic = entry.phonetic || britishPhonetic(entry);
 
     let h = `<div class="word-header"><span class="word-title">${esc(entry.word)}</span></div>`;
     if (phonetic) h += `<div class="phonetic">${esc(phonetic)}</div>`;
