@@ -157,7 +157,14 @@
         .ipa-chip:hover { background: var(--brand); color: #fff; border-color: var(--brand); }
         .ipa-chip.copied { background: var(--ok); color: #fff; border-color: var(--ok); }
         /* Underline marks symbols that can be played aloud */
-        .ipa-chip.has-audio { text-decoration: underline; text-decoration-color: var(--brand); text-decoration-thickness: 2px; text-underline-offset: 2px; }
+        /*
+            skip-ink must be off. A chip's label is a single glyph, so the
+            underline is one glyph wide, and any symbol with a descender —
+            ʃ ʒ ɟ g ʈ ɽ ʙ β — passes straight through it. The browser then
+            skips the whole line rather than a notch of it, and the symbol
+            reads as having no recording when it has one.
+        */
+        .ipa-chip.has-audio { text-decoration: underline; text-decoration-color: var(--brand); text-decoration-thickness: 2px; text-underline-offset: 2px; text-decoration-skip-ink: none; }
 
         .sound-bar { display: flex; justify-content: center; }
         .sound-toggle {
