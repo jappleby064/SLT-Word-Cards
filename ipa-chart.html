@@ -44,7 +44,7 @@
           "keywords": "IPA keyboard, IPA chart, IPA sounds, IPA sound keyboard, phonetic keyboard, International Phonetic Alphabet, IPA symbols, phonetic transcription, accent coaching, accent softening, pronunciation practice",
           "featureList": [
             "IPA keyboard: click a phonetic symbol to copy it to the clipboard",
-            "IPA sounds: click an underlined symbol to hear it",
+            "IPA sounds: click a symbol to hear it",
             "Full pulmonic consonant table",
             "Vowel quadrilateral",
             "Non-pulmonic consonants: clicks, implosives and ejectives",
@@ -80,7 +80,7 @@
               "name": "Can I hear the IPA sounds?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Many symbols have a recording attached and are shown underlined; clicking one plays the IPA sound as well as copying the symbol. The speaker button at the top of the page turns audio off. The practice mode can also play a sound and ask you to identify the symbol."
+                "text": "Yes. Clicking a symbol plays its recording as well as copying it. The speaker button at the top of the page turns audio off. The practice mode can also play a sound and ask you to identify the symbol."
               }
             },
             {
@@ -157,14 +157,6 @@
         .ipa-chip:hover { background: var(--brand); color: #fff; border-color: var(--brand); }
         .ipa-chip.copied { background: var(--ok); color: #fff; border-color: var(--ok); }
         /* Underline marks symbols that can be played aloud */
-        /*
-            skip-ink must be off. A chip's label is a single glyph, so the
-            underline is one glyph wide, and any symbol with a descender —
-            ʃ ʒ ɟ g ʈ ɽ ʙ β — passes straight through it. The browser then
-            skips the whole line rather than a notch of it, and the symbol
-            reads as having no recording when it has one.
-        */
-        .ipa-chip.has-audio { text-decoration: underline; text-decoration-color: var(--brand); text-decoration-thickness: 2px; text-underline-offset: 2px; text-decoration-skip-ink: none; }
 
         .sound-bar { display: flex; justify-content: center; }
         .sound-toggle {
@@ -200,7 +192,6 @@
             fill: var(--paper-raised); stroke: var(--rule-strong);
             stroke-width: 1; transition: fill 0.12s ease, stroke 0.12s ease;
         }
-        .vowel-chip.has-audio .v-chip-bg { stroke: var(--brand); stroke-width: 1.5; }
         .vowel-chip:hover .v-chip-bg { fill: var(--primary-color); stroke: var(--primary-color); }
         .vowel-chip:hover .vowel-sym { fill: #fff; }
         .vowel-chip.copied .v-chip-bg { fill: var(--ok); stroke: var(--ok); }
@@ -318,7 +309,7 @@
             <h1>IPA keyboard and chart</h1>
             <p class="lead">
                 The full International Phonetic Alphabet, and a keyboard for it. Click
-                a symbol to copy it; <u>underlined</u> symbols play the IPA sound.
+                a symbol to copy it and hear the IPA sound.
             </p>
         </div>
 
@@ -347,10 +338,10 @@
                 <details>
                     <summary>Can I hear the IPA sounds?</summary>
                     <p>
-                        Many symbols have a recording and are shown underlined; clicking
-                        one plays the sound as well as copying the symbol. The speaker
-                        button at the top turns audio off. <em>Practice</em> further down
-                        can play a sound and ask you to name the symbol.
+                        Yes. Clicking a symbol plays its recording as well as copying
+                        it. The speaker button at the top turns audio off.
+                        <em>Practice</em> further down can play a sound and ask you to
+                        name the symbol.
                     </p>
                 </details>
                 <details>
@@ -562,7 +553,7 @@
 
         function chip(copyChar, display, title) {
             const d = display !== undefined ? display : copyChar;
-            const cls = 'ipa-chip' + (AUDIO[copyChar] ? ' has-audio' : '');
+            const cls = 'ipa-chip';
             return `<button type="button" class="${cls}" data-char="${attr(copyChar)}"${title ? ` title="${attr(title)}"` : ''}>${esc(d)}</button>`;
         }
 
@@ -645,7 +636,7 @@
                     if (!sym) return;
                     const hasAudio = !!AUDIO[sym];
                     chips.push(
-                        `<g class="vowel-chip${hasAudio ? ' has-audio' : ''}" data-char="${attr(sym)}">` +
+                        `<g class="vowel-chip" data-char="${attr(sym)}">` +
                         `<rect class="v-chip-bg" x="${f(cx - CW/2)}" y="${f(y - CH/2)}" width="${CW}" height="${CH}" rx="${CR}"/>` +
                         `<text class="vowel-sym" x="${f(cx)}" y="${f(y)}" text-anchor="middle" dominant-baseline="central">${esc(sym)}</text>` +
                         `</g>`
