@@ -261,33 +261,6 @@ body {
 }
 
 /* ==========================================================================
-   Notices.
-   ========================================================================== */
-
-.notice {
-    display: flex;
-    gap: 1rem 1.5rem;
-    align-items: baseline;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    padding: 0.9rem 1.1rem;
-    background: var(--accent-tint);
-    border-left: 3px solid var(--accent);
-    border-radius: 0 var(--r-sm) var(--r-sm) 0;
-    font-size: 0.92rem;
-    color: var(--ink-soft);
-}
-
-.notice p {
-    max-width: 52rem;
-}
-
-.notice strong {
-    color: var(--ink);
-    font-weight: 600;
-}
-
-/* ==========================================================================
    Layout. The two columns are deliberately unequal: the search form has a
    fixed amount to say, the results list does not.
    ========================================================================== */
@@ -1436,7 +1409,6 @@ body.deck-drop-active::after {
 @media print {
     .site-head,
     .site-foot,
-    .notice,
     .button-row,
     .print-controls,
     .skip-link {
