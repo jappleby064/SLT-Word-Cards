@@ -2,6 +2,7 @@
 """Fetch missing IPA audio from Wikimedia Commons and convert to MP3."""
 
 import os, subprocess, urllib.request, urllib.error, time
+from urllib.parse import quote
 
 AUDIO_DIR = os.path.join(os.path.dirname(__file__), "audio")
 
@@ -65,14 +66,21 @@ MISSING = {
     'ɠ': ('velar_implosive',          'Voiced_velar_implosive'),
     'ʛ': ('uvular_implosive',         'Voiced_uvular_implosive'),
     # Other symbols
-    'ʍ': ('labial_velar_fric_vl',     'Voiceless_labial%E2%80%93velar_fricative'),
-    'ɥ': ('labial_palatal_approx',    'Voiced_labial-palatal_approximant'),
+    'ʍ': ('labial_velar_fric_vl',     'Voiceless_labio-velar_fricative'),
+    'ɥ': ('labial_palatal_approx',    'LL-Q150_(fra)-WikiLucas00-IPA_ɥ.wav'),
     'ʜ': ('epiglottal_fric_vl',       'Voiceless_epiglottal_fricative'),
     'ʢ': ('epiglottal_fric_vd',       'Voiced_epiglottal_fricative'),
     'ʡ': ('epiglottal_stop',          'Epiglottal_stop'),
     'ɕ': ('alveolo_palatal_fric_vl',  'Voiceless_alveolo-palatal_sibilant'),
     'ʑ': ('alveolo_palatal_fric_vd',  'Voiced_alveolo-palatal_sibilant'),
-    # ɺ and ɧ have no Wikimedia recordings; ejectives (ʼ pʼ tʼ kʼ sʼ) are omitted likewise
+    'ɺ': ('alveolar_lat_flap',        'Voiced_alveolar_lateral_flap.wav'),
+    'ɧ': ('sj_sound',                 'Voiceless_dorso-palatal_velar_fricative'),
+    # Ejectives. The modifier on its own (ʼ) stays silent: it is a diacritic
+    # meaning "said with a glottalic airstream", not a sound anybody can make.
+    'pʼ': ('bilabial_ejective',       'Bilabial_ejective_plosive'),
+    'tʼ': ('alveolar_ejective',       'Alveolar_ejective_plosive'),
+    'kʼ': ('velar_ejective',          'Velar_ejective_plosive'),
+    'sʼ': ('alveolar_ejective_fric',  'Alveolar_ejective_fricative'),
     # Vowels
     'ɨ': ('close_central_unrounded',  'Close_central_unrounded_vowel'),
     'ʉ': ('close_central_rounded',    'Close_central_rounded_vowel'),
@@ -92,9 +100,13 @@ def fetch_and_convert(sym, slug, wiki_name):
         print(f"  already exists: {slug}.mp3")
         return True
 
-    # try .ogg, then .oga as fallback
-    ogg_url = f"https://commons.wikimedia.org/wiki/Special:FilePath/{wiki_name}.ogg"
-    ogg_tmp = os.path.join(AUDIO_DIR, slug + '.ogg')
+    # Most of Commons' phoneme recordings are .ogg, so a bare name means that.
+    # Lingua Libre's are .wav, so those entries carry their own extension.
+    stem, ext = os.path.splitext(wiki_name)
+    if ext.lower() not in ('.ogg', '.oga', '.wav', '.flac', '.mp3'):
+        stem, ext = wiki_name, '.ogg'
+    ogg_url = f"https://commons.wikimedia.org/wiki/Special:FilePath/{quote(stem)}{ext}"
+    ogg_tmp = os.path.join(AUDIO_DIR, slug + ext)
 
     for attempt in range(4):
         try:
